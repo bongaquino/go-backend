@@ -1,0 +1,13 @@
+services:
+  tyk-gateway:
+    image: tykio/tyk-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"    # API Gateway Port
+      - "8081:8081"    # Tyk Admin API
+    volumes:
+      - ./tyk.conf:/opt/tyk-gateway/tyk.conf
+      - ./apis:/opt/tyk-gateway/apis
+    environment:
+      TYK_DB_MONGOURL: ""
+    command: ["tyk"]
