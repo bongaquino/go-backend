@@ -1,0 +1,4 @@
+[build]
+cmd = "go build -o main main.go"
+bin = "main"
+full_bin = "./main"
