@@ -7,8 +7,8 @@ services:
       - "8080:8080"    # API Gateway Port
       - "8081:8081"    # Admin API Port
     volumes:
-      - ./tyk.conf:/opt/tyk-gateway/tyk.conf
-      - ./apis:/opt/tyk-gateway/apis
+      - ./api-gateway/tyk.conf:/opt/tyk-gateway/tyk.conf
+      - ./api-gateway/apis:/opt/tyk-gateway/apis
     environment:
       TYK_DB_MONGOURL: ""
     command: ["tyk"]
@@ -71,18 +71,17 @@ services:
 
   # IAM Service
   iam-service:
-    image: koneksi/iam-service:latest
     build:
-      context: .
-      dockerfile: services/iam-service/Dockerfile
+      context: services/iam-service
+      dockerfile: Dockerfile
     container_name: iam-service
     restart: unless-stopped
     ports:
-      - "8084:8080"  # Changed from 8080 to avoid conflicts
+      - "8084:8080"
     env_file:
       - services/iam-service/.env
     volumes:
-      - ./src:/app/src   # Mount only the necessary source files
+      - ./services/iam-service/src:/app/src
     # depends_on:
     #   - mongo
     #   - redis
