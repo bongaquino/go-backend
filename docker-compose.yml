@@ -1,4 +1,58 @@
 services:
+  # MongoDB
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+      - ./docker/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
+    networks:
+      - network
+
+  # MongoDB Web UI
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo-express
+    restart: unless-stopped
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: password
+      ME_CONFIG_MONGODB_SERVER: mongo
+    ports:
+      - "8085:8081"
+    networks:
+      - network
+
+  # Redis
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - network
+
+  # Redis Commander (Web UI for Redis)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: redis-commander
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS: "local:redis:6379"
+    ports:
+      - "8086:8081"
+    networks:
+      - network
+
   # API Gateway
   tyk-gateway:
     image: tykio/tyk-gateway
@@ -10,64 +64,12 @@ services:
       - ./api-gateway/tyk.conf:/opt/tyk-gateway/tyk.conf
       - ./api-gateway/apis:/opt/tyk-gateway/apis
     environment:
-      TYK_DB_MONGOURL: ""
+      TYK_DB_MONGOURL: "mongodb://root:password@mongo:27017"
     command: ["tyk"]
+    depends_on:
+      - mongo
     networks:
       - network
-
-  # # MongoDB
-  # mongo:
-  #   image: mongo:latest
-  #   container_name: mongo
-  #   restart: unless-stopped
-  #   environment:
-  #     MONGO_INITDB_ROOT_USERNAME: root
-  #     MONGO_INITDB_ROOT_PASSWORD: password
-  #   ports:
-  #     - "27017:27017"
-  #   volumes:
-  #     - mongo-data:/data/db
-  #     - ./docker/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
-  #   networks:
-  #     - network
-
-  # # MongoDB Web UI
-  # mongo-express:
-  #   image: mongo-express:latest
-  #   container_name: mongo-express
-  #   restart: unless-stopped
-  #   environment:
-  #     ME_CONFIG_MONGODB_ADMINUSERNAME: root
-  #     ME_CONFIG_MONGODB_ADMINPASSWORD: password
-  #     ME_CONFIG_MONGODB_SERVER: mongo
-  #   ports:
-  #     - "8081:8081"
-  #   networks:
-  #     - network
-
-  # # Redis
-  # redis:
-  #   image: redis:latest
-  #   container_name: redis
-  #   restart: unless-stopped
-  #   ports:
-  #     - "6379:6379"
-  #   volumes:
-  #     - redis-data:/data
-  #   networks:
-  #     - network
-
-  # # Redis Commander (Web UI for Redis)
-  # redis-commander:
-  #   image: rediscommander/redis-commander:latest
-  #   container_name: redis-commander
-  #   restart: unless-stopped
-  #   environment:
-  #     REDIS_HOSTS: "local:redis:6379"
-  #   ports:
-  #     - "8082:8081"
-  #   networks:
-  #     - network
 
   # IAM Service
   iam-service:
@@ -82,15 +84,15 @@ services:
       - services/iam-service/.env
     volumes:
       - ./services/iam-service/src:/app/src
-    # depends_on:
-    #   - mongo
-    #   - redis
+    depends_on:
+      - mongo
+      - redis
     networks:
       - network
 
-# volumes:
-#   mongo-data:
-#   redis-data:
+volumes:
+  mongo-data:
+  redis-data:
 
 networks:
   network:
