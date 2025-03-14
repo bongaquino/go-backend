@@ -57,22 +57,25 @@ services:
   tyk-gateway:
     image: tykio/tyk-gateway
     container_name: api-gateway
+    restart: unless-stopped
     ports:
-      - "8082:8080"    # API Gateway Port
-      - "8083:8081"    # Admin API Port
+      - "8082:8080"  # Public API
+      - "8083:8081"  # Admin API
     volumes:
       - ./api-gateway/tyk.conf:/opt/tyk-gateway/tyk.conf
-      - ./api-gateway/apis:/opt/tyk-gateway/apis
     environment:
-      TYK_DB_MONGOURL: "mongodb://root:password@mongo:27017"
-    command: ["tyk"]
+      TYK_GW_SECRET: "96b1249557b5aa5ed97e7a439f5834a2c52a7f57cdfc5b44e127acc211edcfb4"
+      TYK_DB_STORAGE_TYPE: "redis"
+      TYK_DB_REDIS_HOST: "redis"
+      TYK_DB_REDIS_PORT: "6379"
     depends_on:
-      - mongo
+      - redis
     networks:
       - network
 
   # IAM Service
   iam-service:
+    image: koneksi/iam-service:latest
     build:
       context: services/iam-service
       dockerfile: Dockerfile
