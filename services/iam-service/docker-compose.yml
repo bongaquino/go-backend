@@ -49,12 +49,12 @@ services:
     networks:
       - network
 
-  api-server:
-    image: argo/api-server:latest
+  iam-service:
+    image: koneksi/iam-service:latest
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: api-server
+    container_name: iam-service
     restart: unless-stopped
     ports:
       - "8080:8080"
