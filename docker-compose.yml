@@ -1,6 +1,98 @@
 services:
+  # API Gateway
   tyk-gateway:
-    build: ./api-gateway
+    image: tykio/tyk-gateway
+    container_name: api-gateway
     ports:
-      - "8080:8080"
-      - "8081:8081"
+      - "8080:8080"    # API Gateway Port
+      - "8081:8081"    # Admin API Port
+    volumes:
+      - ./tyk.conf:/opt/tyk-gateway/tyk.conf
+      - ./apis:/opt/tyk-gateway/apis
+    environment:
+      TYK_DB_MONGOURL: ""
+    command: ["tyk"]
+    networks:
+      - network
+
+  # # MongoDB
+  # mongo:
+  #   image: mongo:latest
+  #   container_name: mongo
+  #   restart: unless-stopped
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: root
+  #     MONGO_INITDB_ROOT_PASSWORD: password
+  #   ports:
+  #     - "27017:27017"
+  #   volumes:
+  #     - mongo-data:/data/db
+  #     - ./docker/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
+  #   networks:
+  #     - network
+
+  # # MongoDB Web UI
+  # mongo-express:
+  #   image: mongo-express:latest
+  #   container_name: mongo-express
+  #   restart: unless-stopped
+  #   environment:
+  #     ME_CONFIG_MONGODB_ADMINUSERNAME: root
+  #     ME_CONFIG_MONGODB_ADMINPASSWORD: password
+  #     ME_CONFIG_MONGODB_SERVER: mongo
+  #   ports:
+  #     - "8081:8081"
+  #   networks:
+  #     - network
+
+  # # Redis
+  # redis:
+  #   image: redis:latest
+  #   container_name: redis
+  #   restart: unless-stopped
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis-data:/data
+  #   networks:
+  #     - network
+
+  # # Redis Commander (Web UI for Redis)
+  # redis-commander:
+  #   image: rediscommander/redis-commander:latest
+  #   container_name: redis-commander
+  #   restart: unless-stopped
+  #   environment:
+  #     REDIS_HOSTS: "local:redis:6379"
+  #   ports:
+  #     - "8082:8081"
+  #   networks:
+  #     - network
+
+  # IAM Service
+  iam-service:
+    image: koneksi/iam-service:latest
+    build:
+      context: .
+      dockerfile: services/iam-service/Dockerfile
+    container_name: iam-service
+    restart: unless-stopped
+    ports:
+      - "8084:8080"  # Changed from 8080 to avoid conflicts
+    env_file:
+      - services/iam-service/.env
+    volumes:
+      - ./src:/app/src   # Mount only the necessary source files
+    # depends_on:
+    #   - mongo
+    #   - redis
+    networks:
+      - network
+
+# volumes:
+#   mongo-data:
+#   redis-data:
+
+networks:
+  network:
+    driver: bridge
