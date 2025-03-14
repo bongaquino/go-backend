@@ -10,12 +10,12 @@ The following microservices and dependencies are available in this local develop
 
 | Service             | Description                              | Exposed Ports                           |
 |---------------------|------------------------------------------|-----------------------------------------|
-| **Tyk API Gateway** | API Gateway for managing requests        | `8080` (Public API), `8081` (Admin API) |
-| **IAM Service**     | Identity & Access Management Service     | `8084`                                  |
 | **MongoDB**         | NoSQL Database                           | `27017`                                 |
-| **Mongo Express**   | Web UI for MongoDB                       | `8085`                                  |
 | **Redis**           | In-memory key-value store                | `6379`                                  |
-| **Redis Commander** | Web UI for Redis                         | `8086`                                  |
+| **Mongo Express**   | Web UI for MongoDB                       | `8080`                                  |
+| **Redis Commander** | Web UI for Redis                         | `8081`                                  |
+| **Tyk API Gateway** | API Gateway for managing requests        | `8082` (Public API), `8083` (Admin API) |
+| **IAM Service**     | Identity & Access Management Service     | `8084`                                  |
 
 ### **📌 Prerequisites**
 Ensure you have the following installed:
@@ -30,11 +30,9 @@ cd koneksi-backend
 
 ### **🛠 Running the Services**
 To start all services, run:
-
 ```sh
 docker compose up -d
 ```
-
 This will:
 - Build any missing images.
 - Start all containers in detached mode (`-d`).
@@ -42,7 +40,6 @@ This will:
 
 ### **📌 Stopping Services**
 To stop the running services:
-
 ```sh
 docker compose down
 ```
@@ -51,7 +48,6 @@ To stop a specific service:
 ```sh
 docker compose stop <service_name>
 ```
-
 Example:
 ```sh
 docker compose stop mongo
@@ -67,10 +63,9 @@ To view logs for a specific service:
 ```sh
 docker compose logs -f <service_name>
 ```
-
 Example:
 ```sh
-docker-compose logs -f tyk-gateway
+docker compose logs -f tyk-gateway
 ```
 
 ## ⚙ **Configuration**
@@ -118,7 +113,7 @@ To add a new service:
    ```
 4. Start the service:
    ```sh
-   docker-compose up -d new-service
+   docker compose up -d new-service
    ```
 
 ## 🛠 **Common Issues & Fixes**
@@ -142,12 +137,12 @@ docker stop <container_id>
 **Fix:**  
 Ensure MongoDB is running:
 ```sh
-docker-compose up -d mongo
+docker compose up -d mongo
 ```
 
 Then check logs:
 ```sh
-docker-compose logs -f mongo
+docker compose logs -f mongo
 ```
 
 ### **❌ Service Not Found**
@@ -158,16 +153,6 @@ docker network inspect network
 ```
 If the service is missing, restart:
 ```sh
-docker-compose down
-docker-compose up -d
+docker compose down
+docker compose up -d
 ```
-
----
-
-## 🎯 **Next Steps**
-- ✅ Ensure all microservices are running and accessible.
-- ✅ Update `.env` files with the correct configuration.
-- ✅ Use the **Mongo Express UI (`localhost:8085`)** and **Redis Commander UI (`localhost:8086`)** to inspect the database.
-
-🚀 Happy Coding! 🎉
-

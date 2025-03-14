@@ -15,20 +15,6 @@ services:
     networks:
       - network
 
-  # MongoDB Web UI
-  mongo-express:
-    image: mongo-express:latest
-    container_name: mongo-express
-    restart: unless-stopped
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: password
-      ME_CONFIG_MONGODB_SERVER: mongo
-    ports:
-      - "8085:8081"
-    networks:
-      - network
-
   # Redis
   redis:
     image: redis:latest
@@ -41,6 +27,20 @@ services:
     networks:
       - network
 
+  # Mongo Express (Web UI for MongoDB)
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo-express
+    restart: unless-stopped
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: password
+      ME_CONFIG_MONGODB_SERVER: mongo
+    ports:
+      - "8080:8081"  # Moved to the next available port
+    networks:
+      - network
+
   # Redis Commander (Web UI for Redis)
   redis-commander:
     image: rediscommander/redis-commander:latest
@@ -49,7 +49,7 @@ services:
     environment:
       REDIS_HOSTS: "local:redis:6379"
     ports:
-      - "8086:8081"
+      - "8081:8081"  # Adjusted to maintain order
     networks:
       - network
 
@@ -58,8 +58,8 @@ services:
     image: tykio/tyk-gateway
     container_name: api-gateway
     ports:
-      - "8080:8080"    # API Gateway Port
-      - "8081:8081"    # Admin API Port
+      - "8082:8080"    # API Gateway Port
+      - "8083:8081"    # Admin API Port
     volumes:
       - ./api-gateway/tyk.conf:/opt/tyk-gateway/tyk.conf
       - ./api-gateway/apis:/opt/tyk-gateway/apis
