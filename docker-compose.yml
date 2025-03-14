@@ -37,7 +37,7 @@ services:
       ME_CONFIG_MONGODB_ADMINPASSWORD: password
       ME_CONFIG_MONGODB_SERVER: mongo
     ports:
-      - "8080:8081"
+      - "8082:8081"
     networks:
       - network
 
@@ -49,7 +49,7 @@ services:
     environment:
       REDIS_HOSTS: "local:redis:6379"
     ports:
-      - "8081:8081"
+      - "8083:8081"
     networks:
       - network
 
@@ -59,8 +59,8 @@ services:
     container_name: api-gateway
     restart: unless-stopped
     ports:
-      - "8082:8080"  # Public API
-      - "8083:8081"  # Admin API
+      - "8080:8080"  # Public API
+      - "8081:8081"  # Admin API
     volumes:
       - ./api-gateway/apis:/opt/tyk-gateway/apis
       - ./api-gateway/apis:/opt/tyk-gateway/plugins
@@ -84,12 +84,10 @@ services:
       dockerfile: Dockerfile
     container_name: iam-service
     restart: unless-stopped
-    ports:
-      - "8084:8080"
     env_file:
       - services/iam-service/.env
     volumes:
-      - ./services/iam-service/src:/app/src
+      - ./services/iam-service:/app
     depends_on:
       - mongo
       - redis

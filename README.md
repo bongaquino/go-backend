@@ -12,10 +12,9 @@ The following microservices and dependencies are available in this local develop
 |---------------------|------------------------------------------|-----------------------------------------|
 | **MongoDB**         | NoSQL Database                           | `27017`                                 |
 | **Redis**           | In-memory key-value store                | `6379`                                  |
-| **Mongo Express**   | Web UI for MongoDB                       | `8080`                                  |
-| **Redis Commander** | Web UI for Redis                         | `8081`                                  |
-| **Tyk API Gateway** | API Gateway for managing requests        | `8082` (Public API), `8083` (Admin API) |
-| **IAM Service**     | Identity & Access Management Service     | `8084`                                  |
+| **Tyk API Gateway** | API Gateway for managing requests        | `8081` (Public API), `8082` (Admin API) |
+| **Mongo Express**   | Web UI for MongoDB                       | `8082`                                  |
+| **Redis Commander** | Web UI for Redis                         | `8083`                                  |
 
 ### **📌 Prerequisites**
 Ensure you have the following installed:
