@@ -37,7 +37,7 @@ services:
       ME_CONFIG_MONGODB_ADMINPASSWORD: password
       ME_CONFIG_MONGODB_SERVER: mongo
     ports:
-      - "8080:8081"  # Moved to the next available port
+      - "8080:8081"
     networks:
       - network
 
@@ -49,7 +49,7 @@ services:
     environment:
       REDIS_HOSTS: "local:redis:6379"
     ports:
-      - "8081:8081"  # Adjusted to maintain order
+      - "8081:8081"
     networks:
       - network
 
