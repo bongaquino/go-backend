@@ -63,6 +63,8 @@ services:
       - "8083:8081"  # Admin API
     volumes:
       - ./api-gateway/tyk.conf:/opt/tyk-gateway/tyk.conf
+      - ./api-gateway/apis:/opt/tyk-gateway/apis
+      - ./api-gateway/templates:/opt/tyk-gateway/templates
     environment:
       TYK_GW_SECRET: "96b1249557b5aa5ed97e7a439f5834a2c52a7f57cdfc5b44e127acc211edcfb4"
       TYK_DB_STORAGE_TYPE: "redis"
