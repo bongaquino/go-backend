@@ -27,43 +27,16 @@ services:
     networks:
       - network
 
-  # Mongo Express (Web UI for MongoDB)
-  mongo-express:
-    image: mongo-express:latest
-    container_name: mongo-express
-    restart: unless-stopped
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: password
-      ME_CONFIG_MONGODB_SERVER: mongo
-    ports:
-      - "8082:8081"
-    networks:
-      - network
-
-  # Redis Commander (Web UI for Redis)
-  redis-commander:
-    image: rediscommander/redis-commander:latest
-    container_name: redis-commander
-    restart: unless-stopped
-    environment:
-      REDIS_HOSTS: "local:redis:6379"
-    ports:
-      - "8083:8081"
-    networks:
-      - network
-
   # API Gateway
   tyk-gateway:
     image: tykio/tyk-gateway
-    container_name: api-gateway
+    container_name: tyk-gateway
     restart: unless-stopped
     ports:
       - "8080:8080"  # Public API
       - "8081:8081"  # Admin API
     volumes:
-      - ./api-gateway/apis:/opt/tyk-gateway/apis
-      - ./api-gateway/apis:/opt/tyk-gateway/plugins
+      - ./api-gateway/apps:/opt/tyk-gateway/apps
       - ./api-gateway/templates:/opt/tyk-gateway/templates
       - ./api-gateway/tyk.conf:/opt/tyk-gateway/tyk.conf
     environment:
@@ -75,6 +48,76 @@ services:
       - redis
     networks:
       - network
+
+  # # Mongo Express (Web UI for MongoDB)
+  # mongo-express:
+  #   image: mongo-express:latest
+  #   container_name: mongo-express
+  #   restart: unless-stopped
+  #   environment:
+  #     ME_CONFIG_MONGODB_ADMINUSERNAME: root
+  #     ME_CONFIG_MONGODB_ADMINPASSWORD: password
+  #     ME_CONFIG_MONGODB_SERVER: mongo
+  #   ports:
+  #     - "8082:8081"
+  #   networks:
+  #     - network
+
+  # # Redis Commander (Web UI for Redis)
+  # redis-commander:
+  #   image: rediscommander/redis-commander:latest
+  #   container_name: redis-commander
+  #   restart: unless-stopped
+  #   environment:
+  #     REDIS_HOSTS: "local:redis:6379"
+  #   ports:
+  #     - "8083:8081"
+  #   networks:
+  #     - network
+
+  # # Tyk Dashboard (Web UI for Tyk Gateway)
+  # tyk-dashboard:
+  #   image: tykio/tyk-dashboard
+  #   container_name: tyk-dashboard
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - mongo
+  #     - redis
+  #     - tyk-gateway
+  #   environment:
+  #     TYK_DB_STORAGE_TYPE: "mongo"
+  #     TYK_DB_MONGO_URL: "mongodb://root:password@mongo:27017/tyk_analytics?authSource=admin"
+  #     TYK_DB_MONGO_DATABASE: "tyk_analytics"
+  #     TYK_DB_REDIS_HOST: "redis"
+  #     TYK_DB_REDIS_PORT: "6379"
+  #     TYK_GW_SECRET: "96b1249557b5aa5ed97e7a439f5834a2c52a7f57cdfc5b44e127acc211edcfb4"
+  #     TYK_HOST: "http://tyk-gateway:8081"
+  #     TYK_ADMIN_SECRET: "admin-secret"
+  #     TYK_NEW_USER: "true"
+  #     TYK_NEW_USER_EMAIL: "admin@example.com"
+  #     TYK_NEW_USER_PASSWORD: "password"
+  #   ports:
+  #     - "8084:3000"
+  #   networks:
+  #     - network
+
+  # # Tyk Pump (Analytics Processor)
+  # tyk-pump:
+  #   image: tykio/tyk-pump
+  #   container_name: tyk-pump
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - mongo
+  #     - redis
+  #     - tyk-gateway
+  #   environment:
+  #     TYK_PMP_STORAGE_TYPE: "mongo"
+  #     TYK_PMP_MONGO_URL: "mongodb://root:password@mongo:27017/tyk_analytics?authSource=admin"
+  #     TYK_PMP_MONGO_DATABASE: "tyk_analytics"
+  #     TYK_PMP_REDIS_HOST: "redis"
+  #     TYK_PMP_REDIS_PORT: "6379"
+  #   networks:
+  #     - network
 
   # IAM Service
   iam-service:
