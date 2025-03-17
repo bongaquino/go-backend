@@ -1,33 +1,33 @@
 services:
-  # # MongoDB
-  # mongo:
-  #   image: mongo:latest
-  #   container_name: mongo
-  #   restart: unless-stopped
-  #   environment:
-  #     MONGO_INITDB_ROOT_USERNAME: root
-  #     MONGO_INITDB_ROOT_PASSWORD: password
-  #   ports:
-  #     - "27017:27017"
-  #   volumes:
-  #     - mongo-data:/data/db
-  #     - ./docker/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
-  #   networks:
-  #     - network
+  # MongoDB
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+      - ./docker/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
+    networks:
+      - network
 
-  # # Mongo Express (Web UI for MongoDB)
-  # mongo-express:
-  #   image: mongo-express:latest
-  #   container_name: mongo-express
-  #   restart: unless-stopped
-  #   environment:
-  #     ME_CONFIG_MONGODB_ADMINUSERNAME: root
-  #     ME_CONFIG_MONGODB_ADMINPASSWORD: password
-  #     ME_CONFIG_MONGODB_SERVER: mongo
-  #   ports:
-  #     - "8082:8081"
-  #   networks:
-  #     - network
+  # Mongo Express (Web UI for MongoDB)
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo-express
+    restart: unless-stopped
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: password
+      ME_CONFIG_MONGODB_SERVER: mongo
+    ports:
+      - "8082:8081"
+    networks:
+      - network
 
   # Redis
   redis:
