@@ -14,10 +14,10 @@ The following microservices and dependencies are available in this local develop
 | **Mongo Express**   | Web UI for MongoDB                       | `8082`                                  |
 | **Redis**           | In-memory key-value store                | `6379`                                  |
 | **Redis Commander** | Web UI for Redis                         | `8083`                                  |
-| **RabbitMQ**        | Message Broker                           | `5672`, `15672`                         |
+| **RabbitMQ**        | Message broker                           | `5672`, `15672`                         |
 | **Elasticsearch**   | Search and analytics engine              | `9200`                                  |
 | **Logstash**        | Data processing pipeline                 | `12201/udp`                             |
-| **Kibana**         | Visualization for Elasticsearch          | `5601`                                  |
+| **Kibana**          | Visualization for Elasticsearch          | `5601`                                  |
 | **Tyk API Gateway** | API Gateway for managing requests        | `8080`                                  |
 | **Orchestrator**    | Manages workflow and events              | `3000`                                  |
 
