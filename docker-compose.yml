@@ -53,6 +53,51 @@ services:
     networks:
       - network
 
+  # Elasticsearch (ELK Stack)
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.9.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+    networks:
+      - network
+    volumes:
+      - elastic-data:/usr/share/elasticsearch/data
+
+  # Logstash (ELK Stack)
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.9.0
+    container_name: logstash
+    volumes:
+      - ./docker/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    environment:
+      - "LS_JAVA_OPTS=-Xms256m -Xmx256m"
+    depends_on:
+      - elasticsearch
+    ports:
+      - "12201:12201/udp"
+    networks:
+      - network
+
+  # Kibana (ELK Stack)
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.9.0
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - network
+
   # Gateway
   gateway:
     image: tykio/tyk-gateway:latest
@@ -88,14 +133,21 @@ services:
     depends_on:
       - mongo
       - redis
+      - logstash
     ports:
       - "3000:3000"
     networks:
       - network
+    logging:
+      driver: "gelf"
+      options:
+        gelf-address: "udp://logstash:12201"
+        tag: "orchestrator"
 
 volumes:
   mongo-data:
   redis-data:
+  elastic-data:
 
 networks:
   network:
