@@ -1,53 +1,19 @@
 services:
-  # MongoDB
-  mongo:
-    image: mongo:latest
-    container_name: mongo
-    restart: unless-stopped
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: password
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo-data:/data/db
-      - ./docker/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
-    networks:
-      - network
-
-  # Redis
-  redis:
-    image: redis:latest
-    container_name: redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis-data:/data
-    networks:
-      - network
-
-  # API Gateway
-  tyk-gateway:
-    image: tykio/tyk-gateway
-    container_name: tyk-gateway
-    restart: unless-stopped
-    ports:
-      - "8080:8080"  # Public API
-      - "8081:8081"  # Admin API
-    volumes:
-      - ./api-gateway/apps:/opt/tyk-gateway/apps
-      - ./api-gateway/templates:/opt/tyk-gateway/templates
-      - ./api-gateway/tyk.conf:/opt/tyk-gateway/tyk.conf
-    environment:
-      TYK_GW_SECRET: "96b1249557b5aa5ed97e7a439f5834a2c52a7f57cdfc5b44e127acc211edcfb4"
-      TYK_DB_STORAGE_TYPE: "redis"
-      TYK_DB_REDIS_HOST: "redis"
-      TYK_DB_REDIS_PORT: "6379"
-    depends_on:
-      - redis
-    networks:
-      - network
+  # # MongoDB
+  # mongo:
+  #   image: mongo:latest
+  #   container_name: mongo
+  #   restart: unless-stopped
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: root
+  #     MONGO_INITDB_ROOT_PASSWORD: password
+  #   ports:
+  #     - "27017:27017"
+  #   volumes:
+  #     - mongo-data:/data/db
+  #     - ./docker/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
+  #   networks:
+  #     - network
 
   # # Mongo Express (Web UI for MongoDB)
   # mongo-express:
@@ -63,74 +29,62 @@ services:
   #   networks:
   #     - network
 
-  # # Redis Commander (Web UI for Redis)
-  # redis-commander:
-  #   image: rediscommander/redis-commander:latest
-  #   container_name: redis-commander
-  #   restart: unless-stopped
-  #   environment:
-  #     REDIS_HOSTS: "local:redis:6379"
-  #   ports:
-  #     - "8083:8081"
-  #   networks:
-  #     - network
+  # Redis
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - network
 
-  # # Tyk Dashboard (Web UI for Tyk Gateway)
-  # tyk-dashboard:
-  #   image: tykio/tyk-dashboard
-  #   container_name: tyk-dashboard
-  #   restart: unless-stopped
-  #   depends_on:
-  #     - mongo
-  #     - redis
-  #     - tyk-gateway
-  #   environment:
-  #     TYK_DB_STORAGE_TYPE: "mongo"
-  #     TYK_DB_MONGO_URL: "mongodb://root:password@mongo:27017/tyk_analytics?authSource=admin"
-  #     TYK_DB_MONGO_DATABASE: "tyk_analytics"
-  #     TYK_DB_REDIS_HOST: "redis"
-  #     TYK_DB_REDIS_PORT: "6379"
-  #     TYK_GW_SECRET: "96b1249557b5aa5ed97e7a439f5834a2c52a7f57cdfc5b44e127acc211edcfb4"
-  #     TYK_HOST: "http://tyk-gateway:8081"
-  #     TYK_ADMIN_SECRET: "admin-secret"
-  #     TYK_NEW_USER: "true"
-  #     TYK_NEW_USER_EMAIL: "admin@example.com"
-  #     TYK_NEW_USER_PASSWORD: "password"
-  #   ports:
-  #     - "8084:3000"
-  #   networks:
-  #     - network
+  # Redis Commander (Web UI for Redis)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: redis-commander
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS: "local:redis:6379"
+    ports:
+      - "8083:8081"
+    networks:
+      - network
 
-  # # Tyk Pump (Analytics Processor)
-  # tyk-pump:
-  #   image: tykio/tyk-pump
-  #   container_name: tyk-pump
-  #   restart: unless-stopped
-  #   depends_on:
-  #     - mongo
-  #     - redis
-  #     - tyk-gateway
-  #   environment:
-  #     TYK_PMP_STORAGE_TYPE: "mongo"
-  #     TYK_PMP_MONGO_URL: "mongodb://root:password@mongo:27017/tyk_analytics?authSource=admin"
-  #     TYK_PMP_MONGO_DATABASE: "tyk_analytics"
-  #     TYK_PMP_REDIS_HOST: "redis"
-  #     TYK_PMP_REDIS_PORT: "6379"
-  #   networks:
-  #     - network
+  # Gateway
+  gateway:
+    image: tykio/tyk-gateway:latest
+    container_name: gateway
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./gateway/tyk.conf:/opt/tyk-gateway/tyk.conf
+      - ./gateway/api.json:/opt/tyk-gateway/apps/api.json
+    environment:
+      TYK_GW_SECRET: "352d20ee67be67f6340b4c0605b044b7"
+      TYK_GW_STORAGE_HOST: "redis"
+      TYK_GW_STORAGE_PORT: "6379"
+      TYK_GW_STORAGE_PASSWORD: ""
+      TYK_GW_STORAGE_DB: "0"
+    depends_on:
+      - redis
+    networks:
+      - network
 
-  # IAM Service
-  iam-service:
-    image: koneksi/iam-service:latest
+  # Orchestrator
+  orchestrator:
+    image: koneksi/orchestrator:latest
     build:
-      context: services/iam-service
+      context: orchestrator
       dockerfile: Dockerfile
-    container_name: iam-service
+    container_name: orchestrator
     restart: unless-stopped
     env_file:
-      - services/iam-service/.env
+      - services/orchestrator/.env
     volumes:
-      - ./services/iam-service:/app
+      - ./services/orchestrator:/app
     depends_on:
       - mongo
       - redis
