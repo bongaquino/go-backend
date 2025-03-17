@@ -82,9 +82,9 @@ services:
     container_name: orchestrator
     restart: unless-stopped
     env_file:
-      - services/orchestrator/.env
+      - orchestrator/.env
     volumes:
-      - ./services/orchestrator:/app
+      - ./orchestrator:/app
     depends_on:
       - mongo
       - redis
