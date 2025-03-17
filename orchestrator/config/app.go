@@ -1,6 +1,6 @@
 package config
 
-import "argo/core/env"
+import "koneksi/orchestrator/core/env"
 
 // AppConfig holds the application configuration
 type AppConfig struct {

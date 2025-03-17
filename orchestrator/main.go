@@ -1,13 +1,13 @@
 package main
 
 import (
-	_ "argo/docs"
-	"argo/start"
+	_ "koneksi/orchestrator/docs"
+	"koneksi/orchestrator/start"
 )
 
-// @title Argo API
+// @title Koneksi Orchestrator API
 // @version 1.0
-// @description This is the API documentation for Argo.
+// @description This is the API documentation for Koneksi Orchestrator.
 
 // @host localhost:8080
 // @BasePath /

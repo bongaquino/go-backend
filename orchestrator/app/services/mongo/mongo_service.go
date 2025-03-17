@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"argo/config"
-	"argo/core/logger"
+	"koneksi/orchestrator/config"
+	"koneksi/orchestrator/core/logger"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"

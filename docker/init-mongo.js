@@ -8,12 +8,12 @@ if (db.system.users.find({ user: 'root' }).count() === 0) {
   });
 }
 
-db = db.getSiblingDB('argo');
+db = db.getSiblingDB('koneksi');
 
 db.createUser({
-  user: 'argo_user',
-  pwd: 'argo_password',
-  roles: [{ role: 'readWrite', db: 'argo' }]
+  user: 'koneksi_user',
+  pwd: 'koneksi_password',
+  roles: [{ role: 'readWrite', db: 'koneksi' }]
 });
 
 db.sampleCollection.insertMany([

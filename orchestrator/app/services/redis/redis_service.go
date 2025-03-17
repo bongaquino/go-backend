@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"time"
 
-	"argo/config"
-	"argo/core/logger"
+	"koneksi/orchestrator/config"
+	"koneksi/orchestrator/core/logger"
 
 	"github.com/go-redis/redis/v8"
 )

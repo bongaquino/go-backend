@@ -1,8 +1,9 @@
 package config
 
 import (
-	"argo/core/env"
 	"fmt"
+
+	"koneksi/orchestrator/core/env"
 )
 
 // MongoConfig holds the MongoDB configuration

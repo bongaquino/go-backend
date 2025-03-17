@@ -1,7 +1,7 @@
 package env
 
 import (
-	"argo/core/logger"
+	"koneksi/orchestrator/core/logger"
 
 	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
@@ -9,15 +9,15 @@ import (
 
 // Env holds the environment variables
 type Env struct {
-	AppName       string `envconfig:"APP_NAME" default:"Argo"`
+	AppName       string `envconfig:"APP_NAME" default:"Koneksi"`
 	AppVersion    string `envconfig:"APP_VERSION" default:"1.0.0"`
 	Port          int    `envconfig:"PORT" default:"8080"`
 	Mode          string `envconfig:"MODE" default:"debug"`
 	MongoHost     string `envconfig:"MONGO_HOST" default:"mongo"`
 	MongoPort     int    `envconfig:"MONGO_PORT" default:"27017"`
-	MongoUser     string `envconfig:"MONGO_USER" default:"argo_user"`
-	MongoPassword string `envconfig:"MONGO_PASSWORD" default:"argo_password"`
-	MongoDatabase string `envconfig:"MONGO_DATABASE" default:"argo"`
+	MongoUser     string `envconfig:"MONGO_USER" default:"koneksi_user"`
+	MongoPassword string `envconfig:"MONGO_PASSWORD" default:"koneksi_password"`
+	MongoDatabase string `envconfig:"MONGO_DATABASE" default:"koneksi"`
 	RedisHost     string `envconfig:"REDIS_HOST" default:"redis"`
 	RedisPort     int    `envconfig:"REDIS_PORT" default:"6379"`
 	RedisPassword string `envconfig:"REDIS_PASSWORD" default:""`

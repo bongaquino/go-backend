@@ -1,5 +1,5 @@
 {
-  "name": "Koneksi API",
+  "name": "Koneksi API Gateway",
   "api_id": "1",
   "org_id": "default",
   "use_keyless": true,
@@ -9,7 +9,7 @@
   },
   "proxy": {
     "listen_path": "/",
-    "target_url": "http://mos:3000",
+    "target_url": "http://orchestrator:3000",
     "strip_listen_path": true
   },
   "version_data": {

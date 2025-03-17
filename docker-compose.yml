@@ -88,6 +88,8 @@ services:
     depends_on:
       - mongo
       - redis
+    ports:
+      - "3000:3000"
     networks:
       - network
 

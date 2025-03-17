@@ -1,10 +1,10 @@
 package container
 
 import (
-	"argo/app/controllers/health"
-	"argo/app/repositories/user"
-	"argo/app/services/mongo"
-	"argo/app/services/redis"
+	"koneksi/orchestrator/app/controllers/health"
+	"koneksi/orchestrator/app/repositories/user"
+	"koneksi/orchestrator/app/services/mongo"
+	"koneksi/orchestrator/app/services/redis"
 )
 
 // Container holds the dependencies for the application

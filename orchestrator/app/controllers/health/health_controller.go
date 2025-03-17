@@ -1,9 +1,10 @@
 package health
 
 import (
-	"argo/app/helpers"
-	"argo/config"
 	"net/http"
+
+	"koneksi/orchestrator/app/helpers"
+	"koneksi/orchestrator/config"
 
 	"github.com/gin-gonic/gin"
 )

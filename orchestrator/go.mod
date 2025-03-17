@@ -1,4 +1,4 @@
-module argo
+module koneksi/orchestrator
 
 go 1.22.3
 

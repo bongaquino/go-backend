@@ -1,6 +1,6 @@
 package config
 
-import "argo/core/env"
+import "koneksi/orchestrator/core/env"
 
 // RedisConfig holds the Redis configuration
 type RedisConfig struct {
