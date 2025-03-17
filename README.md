@@ -11,10 +11,15 @@ The following microservices and dependencies are available in this local develop
 | Service             | Description                              | Exposed Ports                           |
 |---------------------|------------------------------------------|-----------------------------------------|
 | **MongoDB**         | NoSQL Database                           | `27017`                                 |
-| **Redis**           | In-memory key-value store                | `6379`                                  |
-| **Tyk API Gateway** | API Gateway for managing requests        | `8080` (Public API), `8081` (Admin API) |
 | **Mongo Express**   | Web UI for MongoDB                       | `8082`                                  |
+| **Redis**           | In-memory key-value store                | `6379`                                  |
 | **Redis Commander** | Web UI for Redis                         | `8083`                                  |
+| **RabbitMQ**        | Message Broker                           | `5672`, `15672`                         |
+| **Elasticsearch**   | Search and analytics engine              | `9200`                                  |
+| **Logstash**        | Data processing pipeline                 | `12201/udp`                             |
+| **Kibana**         | Visualization for Elasticsearch          | `5601`                                  |
+| **Tyk API Gateway** | API Gateway for managing requests        | `8080`                                  |
+| **Orchestrator**    | Manages workflow and events              | `3000`                                  |
 
 ### **📌 Prerequisites**
 Ensure you have the following installed:
@@ -64,7 +69,7 @@ docker compose logs -f <service_name>
 ```
 Example:
 ```sh
-docker compose logs -f tyk-gateway
+docker compose logs -f gateway
 ```
 
 ## ⚙ **Configuration**
@@ -72,9 +77,9 @@ docker compose logs -f tyk-gateway
 ### **🔹 Environment Variables**
 Each microservice has its own `.env` file. The default locations are:
 
-- **IAM Service**: `services/iam-service/.env`
+- **Orchestrator**: `orchestrator/.env`
 - **MongoDB**: Configured inside `docker-compose.yml`
-- **Tyk API Gateway**: Configured via `api-gateway/tyk.conf`
+- **Tyk API Gateway**: Configured via `gateway/tyk.conf`
 
 Make sure you update these files with the correct values before running the services.
 
@@ -82,7 +87,7 @@ Make sure you update these files with the correct values before running the serv
 All services are attached to the `network` defined in `docker-compose.yml`, allowing them to communicate using **service names**.
 
 Example:
-- **IAM Service can connect to MongoDB** using:  
+- **Orchestrator can connect to MongoDB** using:  
   ```
   mongodb://root:password@mongo:27017
   ```
