@@ -2,7 +2,6 @@ package container
 
 import (
 	"koneksi/services/backup/app/controllers/health"
-	"koneksi/services/backup/app/repositories/user"
 	"koneksi/services/backup/app/services/mongo"
 )
 
@@ -12,7 +11,6 @@ type Container struct {
 	MongoService *mongo.MongoService
 
 	// Repositories
-	UserRepository *user.UserRepository
 
 	// Middleware
 
@@ -26,7 +24,6 @@ func NewContainer() *Container {
 	mongoService := mongo.NewMongoService()
 
 	// Initialize repositories
-	userRepository := user.NewUserRepository(mongoService)
 
 	// Initialize middleware
 
@@ -35,7 +32,6 @@ func NewContainer() *Container {
 
 	return &Container{
 		MongoService:     mongoService,
-		UserRepository:   userRepository,
 		HealthController: healthController,
 	}
 }
