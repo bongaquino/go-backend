@@ -107,38 +107,64 @@ We will implement authentication and authorization for two types of accounts:
 ## **MongoDB Schema Design**
 
 ### **Users Collection**
-| Field           | Type      | Description                           |
-|----------------|----------|---------------------------------------|
-| `_id`          | ObjectId | Unique user identifier               |
-| `email`        | String   | User's email address                  |
-| `password_hash`| String   | Hashed password for authentication    |
-| `roles`        | Array    | List of roles assigned to the user    |
-| `created_at`   | Date     | Timestamp when the user was created   |
-| `updated_at`   | Date     | Timestamp when the user was updated   |
+
+| Field           | Type     | Description                         |
+| --------------- | -------- | ----------------------------------- |
+| `_id`           | ObjectId | Unique user identifier              |
+| `email`         | String   | User's email address                |
+| `password_hash` | String   | Hashed password for authentication  |
+| `created_at`    | Date     | Timestamp when the user was created |
+| `updated_at`    | Date     | Timestamp when the user was updated |
+
+### **User Roles Collection**
+
+| Field    | Type     | Description                           |
+| -------- | -------- | ------------------------------------  |
+| `_id`    | ObjectId | Unique user-role identifier           |
+| `user_id`| ObjectId | Reference to the user                 |
+| `role_id`| ObjectId | Reference to the assigned role        |
 
 ### **Roles Collection**
-| Field         | Type      | Description                          |
-|--------------|----------|--------------------------------------|
+
+| Field        | Type     | Description                         |
+|------------- | -------- | ----------------------------------- |
 | `_id`        | ObjectId | Unique role identifier              |
 | `name`       | String   | Name of the role                    |
-| `permissions`| Array    | List of permissions for this role   |
 | `created_at` | Date     | Timestamp when the role was created |
 
+### **Role Permissions Collection**
+
+| Field         | Type     | Description                            |
+|-------------- | -------- | -------------------------------------- |
+| `_id`        | ObjectId | Unique role-permission identifier       |
+| `role_id`    | ObjectId | Reference to a role                     |
+| `permission_id` | ObjectId | Reference to a permission            |
+
+### **Permissions Collection**
+
+| Field        | Type     | Description                           |
+|------------- | -------- | ------------------------------------- |
+| `_id`        | ObjectId | Unique permission identifier          |
+| `name`       | String   | Name of the permission                |
+| `created_at` | Date     | Timestamp when the permission was created |
+
 ### **Service Accounts Collection**
-| Field            | Type      | Description                             |
-|-----------------|----------|-----------------------------------------|
-| `_id`           | ObjectId | Unique service account identifier      |
-| `name`          | String   | Name of the service account            |
-| `client_id`     | String   | Unique client identifier               |
-| `client_secret_hash` | String | Hashed secret for authentication      |
-| `policy_id`     | ObjectId | Reference to a policy document        |
-| `created_at`    | Date     | Timestamp when created                 |
-| `updated_at`    | Date     | Timestamp when updated                 |
+
+| Field                | Type     | Description                       |
+| -------------------- | -------- | --------------------------------- |
+| `_id`                | ObjectId | Unique service account identifier |
+| `name`               | String   | Name of the service account       |
+| `description`        | String   | Description of the service account |
+| `client_id`          | String   | Unique client identifier          |
+| `client_secret_hash` | String   | Hashed secret for authentication  |
+| `policy_id`          | ObjectId | Reference to a policy document    |
+| `created_at`         | Date     | Timestamp when created            |
+| `updated_at`         | Date     | Timestamp when updated            |
 
 ### **Policies Collection**
-| Field      | Type      | Description                                  |
-|-----------|----------|----------------------------------------------|
-| `_id`     | ObjectId | Unique policy identifier                    |
-| `name`    | String   | Name of the policy                          |
-| `rules`   | Array    | List of access control rules                |
-| `created_at` | Date  | Timestamp when the policy was created       |
+
+| Field        | Type     | Description                           |
+| ------------ | -------- | ------------------------------------- |
+| `_id`        | ObjectId | Unique policy identifier              |
+| `name`       | String   | Name of the policy                    |
+| `created_at` | Date     | Timestamp when the policy was created |
