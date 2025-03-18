@@ -58,7 +58,13 @@ Example:
 docker compose stop mongo
 ```
 
-### **🔹 Refreshing the Setup**
+### Restarting Services
+To restart all services:
+```sh
+./scripts/restart.sh
+```
+
+### **🔹 Rebuilding the Setup**
 If you need to **rebuild everything and reset volumes**, run:
 ```sh
 ./scripts/rebuild.sh
