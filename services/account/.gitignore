@@ -7,7 +7,6 @@ main
 
 # Environment
 .env
-.env.*
 
 # Temporary files
 tmp
