@@ -18,8 +18,4 @@ fi
 echo "Starting all services..."
 docker compose up -d
 
-# Check running containers
-echo "Checking running containers..."
-docker ps
-
 echo "Services started successfully."

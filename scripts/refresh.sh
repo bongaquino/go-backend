@@ -24,8 +24,4 @@ echo "Specified volumes deleted successfully."
 echo "Starting services..."
 docker compose up -d --build
 
-# Check running containers
-echo "Checking running containers..."
-docker ps
-
 echo "Services refreshed successfully."
