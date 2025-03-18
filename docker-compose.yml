@@ -114,16 +114,16 @@ services:
     networks:
       - network
 
-  # Gateway
-  gateway:
+  # API Gateway
+  api-gateway:
     image: tykio/tyk-gateway:latest
     container_name: api-gateway
     ports:
       - "8080:8080"
     volumes:
-      - ./gateway/apps:/opt/tyk-gateway/apps
-      - ./gateway/scripts:/opt/tyk-gateway/scripts
-      - ./gateway/tyk.conf:/opt/tyk-gateway/tyk.conf
+      - ./api-gateway/apps:/opt/tyk-gateway/apps
+      - ./api-gateway/scripts:/opt/tyk-gateway/scripts
+      - ./api-gateway/tyk.conf:/opt/tyk-gateway/tyk.conf
     environment:
       TYK_GW_SECRET: "352d20ee67be67f6340b4c0605b044b7"
       TYK_GW_STORAGE_HOST: "redis"
