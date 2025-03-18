@@ -9,7 +9,7 @@
   },
   "proxy": {
     "listen_path": "/",
-    "target_url": "http://orchestrator:3000",
+    "target_url": "http://account-service:3000",
     "strip_listen_path": true
   },
   "version_data": {
