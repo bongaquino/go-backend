@@ -4,7 +4,7 @@
   "org_id": "default",
   "use_keyless": true,
   "proxy": {
-    "listen_path": "/health",
+    "listen_path": "/health/",
     "target_url": "http://localhost",
     "strip_listen_path": true
   },
