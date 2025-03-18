@@ -81,12 +81,12 @@ services:
       memlock:
         soft: -1
         hard: -1
+    volumes:
+      - elastic-data:/usr/share/elasticsearch/data
     ports:
       - "9200:9200"
     networks:
       - network
-    volumes:
-      - elastic-data:/usr/share/elasticsearch/data
 
   # Logstash (ELK Stack)
   logstash:
