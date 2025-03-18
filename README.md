@@ -34,7 +34,7 @@ git clone https://github.com/koneksi-tech/koneksi-backend
 cd koneksi-backend
 ```
 
-### **🛠 Running the Services**
+### **🔹 Starting the Services**
 To start all services, run:
 ```sh
 ./scripts/start.sh
@@ -43,7 +43,7 @@ This will:
 - Start all containers in detached mode (`-d`).
 - Automatically create and attach the **Docker network**.
 
-### **🔹 Stopping Services**
+### **🔹 Stopping the Services**
 To stop the running services:
 ```sh
 ./scripts/stop.sh
@@ -58,7 +58,7 @@ Example:
 docker compose stop mongo
 ```
 
-### Restarting Services
+### **🔹 Restarting Services**
 To restart all services:
 ```sh
 ./scripts/restart.sh
