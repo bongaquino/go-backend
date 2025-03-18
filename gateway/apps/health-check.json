@@ -1,6 +1,6 @@
 {
-  "name": "aggregated-health",
-  "api_id": "aggregated-health",
+  "name": "health-check",
+  "api_id": "health-check",
   "org_id": "default",
   "use_keyless": true,
   "proxy": {
