@@ -122,6 +122,7 @@ services:
       - "8080:8080"
     volumes:
       - ./gateway/apps:/opt/tyk-gateway/apps
+      - ./gateway/scripts:/opt/tyk-gateway/scripts
       - ./gateway/tyk.conf:/opt/tyk-gateway/tyk.conf
     environment:
       TYK_GW_SECRET: "352d20ee67be67f6340b4c0605b044b7"
