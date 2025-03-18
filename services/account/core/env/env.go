@@ -18,9 +18,6 @@ type Env struct {
 	MongoUser     string `envconfig:"MONGO_USER" default:"koneksi_user"`
 	MongoPassword string `envconfig:"MONGO_PASSWORD" default:"koneksi_password"`
 	MongoDatabase string `envconfig:"MONGO_DATABASE" default:"koneksi"`
-	RedisHost     string `envconfig:"REDIS_HOST" default:"redis"`
-	RedisPort     int    `envconfig:"REDIS_PORT" default:"6379"`
-	RedisPassword string `envconfig:"REDIS_PASSWORD" default:""`
 	// Add more environment variables here
 }
 
