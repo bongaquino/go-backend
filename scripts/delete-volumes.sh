@@ -14,12 +14,8 @@ then
     exit 1
 fi
 
-# Stop all services
-echo "Stopping all services before deleting volumes..."
-docker compose down
+# Remove only the volumes defined in the current docker-compose file
+echo "Deleting named volumes from docker-compose.yml..."
+docker compose down -v
 
-# Remove all named volumes
-echo "Deleting all named volumes..."
-docker volume prune -f
-
-echo "All volumes deleted successfully."
+echo "Specified volumes deleted successfully."
