@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func FormatResponse(c *gin.Context, status string, httpStatus int, message string, data interface{}, meta interface{}) {
+func FormatResponse(c *gin.Context, status string, httpStatus int, message interface{}, data interface{}, meta interface{}) {
 	c.JSON(httpStatus, gin.H{
 		"status":  status,
 		"message": message,

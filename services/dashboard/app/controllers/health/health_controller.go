@@ -29,8 +29,9 @@ func (hc *HealthController) Check(c *gin.Context) {
 	appConfig := config.LoadAppConfig()
 
 	// Respond with success
-	helpers.FormatResponse(c, "success", http.StatusOK, "Health check successful", gin.H{
+	helpers.FormatResponse(c, "success", http.StatusOK, nil, gin.H{
 		"name":    appConfig.AppName,
 		"version": appConfig.AppVersion,
+		"healthy": true,
 	}, nil)
 }
