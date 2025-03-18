@@ -1,9 +1,9 @@
 package container
 
 import (
-	"koneksi/orchestrator/app/controllers/health"
-	"koneksi/orchestrator/app/repositories/user"
-	"koneksi/orchestrator/app/services/mongo"
+	"koneksi/services/account/app/controllers/health"
+	"koneksi/services/account/app/repositories/user"
+	"koneksi/services/account/app/services/mongo"
 )
 
 // Container holds the dependencies for the application

@@ -3,7 +3,7 @@ package config
 import (
 	"fmt"
 
-	"koneksi/orchestrator/core/env"
+	"koneksi/services/account/core/env"
 )
 
 // MongoConfig holds the MongoDB configuration

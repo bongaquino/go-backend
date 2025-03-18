@@ -1,6 +1,6 @@
 package config
 
-import "koneksi/orchestrator/core/env"
+import "koneksi/services/account/core/env"
 
 // AppConfig holds the application configuration
 type AppConfig struct {

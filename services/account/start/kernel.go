@@ -3,9 +3,9 @@ package start
 import (
 	"fmt"
 
-	ioc "koneksi/orchestrator/core/container"
-	"koneksi/orchestrator/core/env"
-	"koneksi/orchestrator/core/logger"
+	ioc "koneksi/services/account/core/container"
+	"koneksi/services/account/core/env"
+	"koneksi/services/account/core/logger"
 
 	"github.com/gin-gonic/gin"
 )

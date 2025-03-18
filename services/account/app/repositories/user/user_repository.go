@@ -3,10 +3,10 @@ package user
 import (
 	"context"
 
-	"koneksi/orchestrator/app/helpers"
-	"koneksi/orchestrator/app/models"
-	"koneksi/orchestrator/app/services/mongo"
-	"koneksi/orchestrator/core/logger"
+	"koneksi/services/account/app/helpers"
+	"koneksi/services/account/app/models"
+	"koneksi/services/account/app/services/mongo"
+	"koneksi/services/account/core/logger"
 
 	"go.mongodb.org/mongo-driver/bson"
 	mongoDriver "go.mongodb.org/mongo-driver/mongo"

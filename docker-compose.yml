@@ -136,7 +136,7 @@ services:
 
   # Orchestrator
   orchestrator:
-    image: koneksi/orchestrator:latest
+    image: koneksi/services/account:latest
     build:
       context: orchestrator
       dockerfile: Dockerfile

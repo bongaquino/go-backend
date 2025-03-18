@@ -3,8 +3,8 @@ package health
 import (
 	"net/http"
 
-	"koneksi/orchestrator/app/helpers"
-	"koneksi/orchestrator/config"
+	"koneksi/services/account/app/helpers"
+	"koneksi/services/account/config"
 
 	"github.com/gin-gonic/gin"
 )

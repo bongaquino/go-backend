@@ -1,7 +1,7 @@
 package env
 
 import (
-	"koneksi/orchestrator/core/logger"
+	"koneksi/services/account/core/logger"
 
 	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"

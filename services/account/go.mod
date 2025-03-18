@@ -1,4 +1,4 @@
-module koneksi/orchestrator
+module koneksi/services/account
 
 go 1.22.3
 
