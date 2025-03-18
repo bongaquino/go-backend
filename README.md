@@ -19,7 +19,9 @@ The following microservices and dependencies are available in this local develop
 | **Logstash**        | Data processing pipeline                 | `12201/udp`                             |
 | **Kibana**          | Visualization for Elasticsearch          | `5601`                                  |
 | **Tyk API Gateway** | API Gateway for managing requests        | `8080`                                  |
-| **Orchestrator**    | Manages workflow and events              | `3000`                                  |
+| **Account Service** | Handles user authentication & accounts   | `3000`                                  |
+| **Backup Service**  | Manages backup and restore operations    | `3001`                                  |
+| **Dashboard Service** | Provides analytics and admin dashboard | `3002`                                  |
 
 ### **📌 Prerequisites**
 Ensure you have the following installed:
@@ -35,17 +37,16 @@ cd koneksi-backend
 ### **🛠 Running the Services**
 To start all services, run:
 ```sh
-docker compose up -d
+./scripts/start.sh
 ```
 This will:
-- Build any missing images.
 - Start all containers in detached mode (`-d`).
 - Automatically create and attach the **Docker network**.
 
-### **📌 Stopping Services**
+### **🔹 Stopping Services**
 To stop the running services:
 ```sh
-docker compose down
+./scripts/stop.sh
 ```
 
 To stop a specific service:
@@ -57,7 +58,17 @@ Example:
 docker compose stop mongo
 ```
 
-### **📌 Viewing Logs**
+### **🔹 Refreshing the Setup**
+If you need to **rebuild everything and reset volumes**, run:
+```sh
+./scripts/rebuild.sh
+```
+This will:
+- Stop all services.
+- Remove named volumes.
+- Restart everything with a clean state.
+
+### **🔹 Viewing Logs**
 To see logs for all services:
 ```sh
 docker compose logs -f
@@ -69,7 +80,7 @@ docker compose logs -f <service_name>
 ```
 Example:
 ```sh
-docker compose logs -f gateway
+docker compose logs -f api-gateway
 ```
 
 ## ⚙ **Configuration**
@@ -77,9 +88,9 @@ docker compose logs -f gateway
 ### **🔹 Environment Variables**
 Each microservice has its own `.env` file. The default locations are:
 
-- **Orchestrator**: `orchestrator/.env`
-- **MongoDB**: Configured inside `docker-compose.yml`
-- **Tyk API Gateway**: Configured via `gateway/tyk.conf`
+- **Account Service**: `services/account/.env`
+- **Backup Service**: `services/backup/.env`
+- **Dashboard Service**: `services/dashboard/.env`
 
 Make sure you update these files with the correct values before running the services.
 
@@ -87,16 +98,12 @@ Make sure you update these files with the correct values before running the serv
 All services are attached to the `network` defined in `docker-compose.yml`, allowing them to communicate using **service names**.
 
 Example:
-- **Orchestrator can connect to MongoDB** using:  
+- **Account Service can connect to MongoDB** using:  
   ```
   mongodb://root:password@mongo:27017
   ```
-- **Redis can be accessed at**:  
-  ```
-  redis://redis:6379
-  ```
 
-## 🔧 **Adding a New Microservice**
+## 🛠 **Adding a New Microservice**
 To add a new service:
 1. Create a directory under `services/` (e.g., `services/new-service`).
 2. Add a `Dockerfile` and configuration files.
@@ -109,7 +116,7 @@ To add a new service:
      container_name: new-service
      restart: unless-stopped
      ports:
-       - "808X:8080"
+       - "300X:3000"
      env_file:
        - services/new-service/.env
      networks:
@@ -143,7 +150,6 @@ Ensure MongoDB is running:
 ```sh
 docker compose up -d mongo
 ```
-
 Then check logs:
 ```sh
 docker compose logs -f mongo
@@ -157,6 +163,7 @@ docker network inspect network
 ```
 If the service is missing, restart:
 ```sh
-docker compose down
-docker compose up -d
+./scripts/stop.sh
+./scripts/start.sh
 ```
+
