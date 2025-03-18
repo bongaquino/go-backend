@@ -117,7 +117,7 @@ services:
   # Gateway
   gateway:
     image: tykio/tyk-gateway:latest
-    container_name: gateway
+    container_name: api-gateway
     ports:
       - "8080:8080"
     volumes:
@@ -134,22 +134,20 @@ services:
     networks:
       - network
 
-  # Orchestrator
-  orchestrator:
+  # Account Service
+  account-service:
     image: koneksi/services/account:latest
     build:
-      context: orchestrator
+      context: services/account
       dockerfile: Dockerfile
-    container_name: orchestrator
+    container_name: account-service
     restart: unless-stopped
     env_file:
-      - orchestrator/.env
+      - services/account/.env
     volumes:
-      - ./orchestrator:/app
+      - ./services/account:/app
     depends_on:
-      - redis
-      - rabbitmq
-      - logstash
+      - mongo
     ports:
       - "3000:3000"
     networks:
