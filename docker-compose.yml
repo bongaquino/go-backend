@@ -158,6 +158,44 @@ services:
     #     gelf-address: "udp://logstash:12201"
     #     tag: "orchestrator"
 
+  # Backup Service
+  backup-service:
+    image: koneksi/services/backup:latest
+    build:
+      context: services/backup
+      dockerfile: Dockerfile
+    container_name: backup-service
+    restart: unless-stopped
+    env_file:
+      - services/backup/.env
+    volumes:
+      - ./services/backup:/app
+    depends_on:
+      - mongo
+    ports:
+      - "3001:3001"
+    networks:
+      - network
+
+  # Dashboard Service
+  dashboard-service:
+    image: koneksi/services/dashboard:latest
+    build:
+      context: services/dashboard
+      dockerfile: Dockerfile
+    container_name: dashboard-service
+    restart: unless-stopped
+    env_file:
+      - services/dashboard/.env
+    volumes:
+      - ./services/dashboard:/app
+    depends_on:
+      - mongo
+    ports:
+      - "3002:3002"
+    networks:
+      - network
+
 volumes:
   mongo-data:
   redis-data:
