@@ -4,7 +4,7 @@
   "org_id": "default",
   "use_keyless": true,
   "proxy": {
-    "listen_path": "/backup/",
+    "listen_path": "/backups",
     "target_url": "http://backup-service:3001/",
     "strip_listen_path": true
   },

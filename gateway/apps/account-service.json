@@ -4,7 +4,7 @@
   "org_id": "default",
   "use_keyless": true,
   "proxy": {
-    "listen_path": "/account/",
+    "listen_path": "/accounts",
     "target_url": "http://account-service:3000/",
     "strip_listen_path": true
   },

@@ -4,7 +4,7 @@
   "org_id": "default",
   "use_keyless": true,
   "proxy": {
-    "listen_path": "/dashboard/",
+    "listen_path": "/dashboards",
     "target_url": "http://dashboard-service:3002/",
     "strip_listen_path": true
   },
