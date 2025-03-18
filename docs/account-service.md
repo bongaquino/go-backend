@@ -53,8 +53,8 @@ We will implement authentication and authorization for two types of accounts:
 - **Policy** → **defines** → **Resource access rules**
 
 #### **Example**
-- **Backup Agent Policy**: Allows **upload, download, list**
-- **Analytics Engine Policy**: Allows **download, list**
+- **Client Tool**: Allows **upload, download, list**
+- **SDK Integrations**: Allows **download, list**
 
 ```
 [Service Account] ---> [Policy] ---> [Access Rules]
@@ -134,18 +134,18 @@ We will implement authentication and authorization for two types of accounts:
 
 ### **Role Permissions Collection**
 
-| Field         | Type     | Description                            |
-|-------------- | -------- | -------------------------------------- |
-| `_id`        | ObjectId | Unique role-permission identifier       |
-| `role_id`    | ObjectId | Reference to a role                     |
-| `permission_id` | ObjectId | Reference to a permission            |
+| Field          | Type     | Description                            |
+|--------------- | -------- | -------------------------------------- |
+| `_id`          | ObjectId | Unique role-permission identifier      |
+| `role_id`      | ObjectId | Reference to a role                    |
+| `permission_id`| ObjectId | Reference to a permission              |
 
 ### **Permissions Collection**
 
-| Field        | Type     | Description                           |
-|------------- | -------- | ------------------------------------- |
-| `_id`        | ObjectId | Unique permission identifier          |
-| `name`       | String   | Name of the permission                |
+| Field        | Type     | Description                               |
+|------------- | -------- | ----------------------------------------- |
+| `_id`        | ObjectId | Unique permission identifier              |
+| `name`       | String   | Name of the permission                    |
 | `created_at` | Date     | Timestamp when the permission was created |
 
 ### **Service Accounts Collection**
@@ -154,8 +154,8 @@ We will implement authentication and authorization for two types of accounts:
 | -------------------- | -------- | --------------------------------- |
 | `_id`                | ObjectId | Unique service account identifier |
 | `name`               | String   | Name of the service account       |
-| `description`        | String   | Description of the service account |
-| `client_id`          | String   | Unique client identifier          |
+| `description`        | String   | Description of the service account|
+| `client_key`         | String   | Unique client key                 |
 | `client_secret_hash` | String   | Hashed secret for authentication  |
 | `policy_id`          | ObjectId | Reference to a policy document    |
 | `created_at`         | Date     | Timestamp when created            |
