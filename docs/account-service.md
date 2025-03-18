@@ -101,3 +101,44 @@ We will implement authentication and authorization for two types of accounts:
 3. **Access Enforcement**
    - **Users:** Match roles to permissions.
    - **Services:** Validate requests against policies before granting access.
+
+---
+
+## **MongoDB Schema Design**
+
+### **Users Collection**
+| Field           | Type      | Description                           |
+|----------------|----------|---------------------------------------|
+| `_id`          | ObjectId | Unique user identifier               |
+| `email`        | String   | User's email address                  |
+| `password_hash`| String   | Hashed password for authentication    |
+| `roles`        | Array    | List of roles assigned to the user    |
+| `created_at`   | Date     | Timestamp when the user was created   |
+| `updated_at`   | Date     | Timestamp when the user was updated   |
+
+### **Roles Collection**
+| Field         | Type      | Description                          |
+|--------------|----------|--------------------------------------|
+| `_id`        | ObjectId | Unique role identifier              |
+| `name`       | String   | Name of the role                    |
+| `permissions`| Array    | List of permissions for this role   |
+| `created_at` | Date     | Timestamp when the role was created |
+
+### **Service Accounts Collection**
+| Field            | Type      | Description                             |
+|-----------------|----------|-----------------------------------------|
+| `_id`           | ObjectId | Unique service account identifier      |
+| `name`          | String   | Name of the service account            |
+| `client_id`     | String   | Unique client identifier               |
+| `client_secret_hash` | String | Hashed secret for authentication      |
+| `policy_id`     | ObjectId | Reference to a policy document        |
+| `created_at`    | Date     | Timestamp when created                 |
+| `updated_at`    | Date     | Timestamp when updated                 |
+
+### **Policies Collection**
+| Field      | Type      | Description                                  |
+|-----------|----------|----------------------------------------------|
+| `_id`     | ObjectId | Unique policy identifier                    |
+| `name`    | String   | Name of the policy                          |
+| `rules`   | Array    | List of access control rules                |
+| `created_at` | Date  | Timestamp when the policy was created       |
