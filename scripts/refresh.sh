@@ -14,8 +14,18 @@ then
     exit 1
 fi
 
-# Remove only the volumes defined in the current docker-compose file
-echo "Deleting named volumes from docker-compose.yml..."
+# Stop all services and delete named volumes
+echo "Stopping all services and deleting volumes..."
 docker compose down -v
 
 echo "Specified volumes deleted successfully."
+
+# Start services again
+echo "Starting services..."
+docker compose up -d --build
+
+# Check running containers
+echo "Checking running containers..."
+docker ps
+
+echo "Services refreshed successfully."

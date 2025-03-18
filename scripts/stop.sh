@@ -18,4 +18,4 @@ fi
 echo "Stopping all services..."
 docker compose down
 
-echo "All services stopped successfully."
+echo "Services stopped successfully."
