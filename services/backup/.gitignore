@@ -1,0 +1,36 @@
+# Binaries
+main
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Environment
+.env
+
+# Temporary files
+tmp
+*.tmp
+*.log
+*.swp
+*.bak
+*.old
+
+# Dependency directories
+vendor/
+node_modules/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.iml
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Go specific
+*.test
+*.out
+*.cover
+*.prof
