@@ -24,7 +24,5 @@ db.createUser({
   roles: [{ role: 'readWrite', db: 'koneksi' }]
 });
 
-// Insert data into structured collections
-db.account_service.insertMany(sampleData);
-db.dashboard_service.insertMany(sampleData);
-db.backup_service.insertMany(sampleData);
+// Insert data
+db.sample_collection.insertMany(sampleData);

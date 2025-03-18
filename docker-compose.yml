@@ -121,8 +121,8 @@ services:
     ports:
       - "8080:8080"
     volumes:
+      - ./gateway/apps:/opt/tyk-gateway/apps
       - ./gateway/tyk.conf:/opt/tyk-gateway/tyk.conf
-      - ./gateway/api.json:/opt/tyk-gateway/apps/api.json
     environment:
       TYK_GW_SECRET: "352d20ee67be67f6340b4c0605b044b7"
       TYK_GW_STORAGE_HOST: "redis"
