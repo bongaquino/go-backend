@@ -10,9 +10,9 @@ import (
 
 // RegisterRoutes sets up the application's routes
 func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
-	// Health check endpoint
+	// Check health
 	engine.GET("/", container.HealthController.Check)
 
-	// Register Swagger handler
+	// Swagger
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }
