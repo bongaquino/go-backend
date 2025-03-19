@@ -7,6 +7,7 @@ type RedisConfig struct {
 	RedisHost     string
 	RedisPort     int
 	RedisPassword string
+	RedisPrefix   string
 }
 
 func LoadRedisConfig() *RedisConfig {
@@ -18,5 +19,6 @@ func LoadRedisConfig() *RedisConfig {
 		RedisHost:     envVars.RedisHost,
 		RedisPort:     envVars.RedisPort,
 		RedisPassword: envVars.RedisPassword,
+		RedisPrefix:   envVars.RedisPrefix,
 	}
 }

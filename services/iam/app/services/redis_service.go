@@ -13,6 +13,7 @@ import (
 
 type RedisService struct {
 	client *redis.Client
+	prefix string // Add prefix field
 }
 
 // NewRedisService initializes a new RedisService
@@ -35,6 +36,7 @@ func NewRedisService() *RedisService {
 
 	return &RedisService{
 		client: client,
+		prefix: redisConfig.RedisPrefix, // Set prefix
 	}
 }
 
@@ -44,4 +46,9 @@ func (r *RedisService) GetRedis() *redis.Client {
 		logger.Log.Fatal("redis not initialized")
 	}
 	return r.client
+}
+
+// AddPrefix adds the global prefix to a key
+func (r *RedisService) AddPrefix(key string) string {
+	return r.prefix + ":" + key
 }

@@ -21,6 +21,7 @@ type Env struct {
 	RedisHost     string `envconfig:"REDIS_HOST" default:"redis"`
 	RedisPort     int    `envconfig:"REDIS_PORT" default:"6379"`
 	RedisPassword string `envconfig:"REDIS_PASSWORD" default:""`
+	RedisPrefix   string `envconfig:"REDIS_PREFIX" default:"iam_service"`
 	// Add more environment variables here
 }
 
