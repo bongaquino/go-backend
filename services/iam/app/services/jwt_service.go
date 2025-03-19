@@ -34,8 +34,9 @@ func NewJWTService() *JWTService {
 
 // Claims structure for JWT
 type Claims struct {
-	UserID string `json:"user_id"`
-	Email  string `json:"email"`
+	UserID    string `json:"user_id"`
+	Email     string `json:"email"`
+	TokenType string `json:"token_type"` // New claim to differentiate token types
 	jwt.RegisteredClaims
 }
 
@@ -43,8 +44,9 @@ type Claims struct {
 func (j *JWTService) GenerateTokens(userID string, email string) (accessToken string, refreshToken string, err error) {
 	// Generate access token (short-lived)
 	accessClaims := Claims{
-		UserID: userID,
-		Email:  email,
+		UserID:    userID,
+		Email:     email,
+		TokenType: "access", // Identifies this as an access token
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(j.tokenDuration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -58,8 +60,9 @@ func (j *JWTService) GenerateTokens(userID string, email string) (accessToken st
 
 	// Generate refresh token (long-lived)
 	refreshClaims := Claims{
-		UserID: userID,
-		Email:  email,
+		UserID:    userID,
+		Email:     email,
+		TokenType: "refresh", // Identifies this as a refresh token
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(j.refreshDuration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -89,4 +92,19 @@ func (j *JWTService) ValidateToken(tokenString string) (*Claims, error) {
 	}
 
 	return nil, errors.New("invalid token")
+}
+
+// ValidateRefreshToken ensures the token is a refresh token
+func (j *JWTService) ValidateRefreshToken(tokenString string) (*Claims, error) {
+	claims, err := j.ValidateToken(tokenString)
+	if err != nil {
+		return nil, err
+	}
+
+	// Ensure this is a refresh token
+	if claims.TokenType != "refresh" {
+		return nil, errors.New("invalid token type, expected refresh token")
+	}
+
+	return claims, nil
 }

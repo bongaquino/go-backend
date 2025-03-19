@@ -35,8 +35,8 @@ func (rc *RefreshTokenController) Handle(c *gin.Context) {
 		return
 	}
 
-	// Validate refresh token
-	claims, err := rc.jwtService.ValidateToken(request.RefreshToken)
+	// Validate refresh token using ValidateRefreshToken
+	claims, err := rc.jwtService.ValidateRefreshToken(request.RefreshToken)
 	if err != nil {
 		helpers.FormatResponse(c, "error", http.StatusUnauthorized, "Invalid or expired refresh token", nil, nil)
 		return
