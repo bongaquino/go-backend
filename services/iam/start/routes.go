@@ -10,21 +10,23 @@ import (
 
 // RegisterRoutes sets up the application's routes
 func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
-	// Swagger
+	// Swagger Route
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	// Check health
+	// Health Check Route
 	engine.GET("/check-health", container.CheckHealthController.Handle)
 
-	// Register
-	engine.POST("/users/register", container.RegisterController.Handle)
+	// User Routes
+	userGroup := engine.Group("/users")
+	{
+		userGroup.POST("/register", container.RegisterController.Handle)
+	}
 
-	// Request token
-	engine.POST("/tokens/request-token", container.RequestTokenController.Handle)
-
-	// Refresh token
-	engine.POST("/tokens/refresh-token", container.RefreshTokenController.Handle)
-
-	// Revoke token
-	engine.POST("/tokens/revoke-token", container.RevokeTokenController.Handle)
+	// Token Routes
+	tokenGroup := engine.Group("/tokens")
+	{
+		tokenGroup.POST("/request-token", container.RequestTokenController.Handle)
+		tokenGroup.POST("/refresh-token", container.RefreshTokenController.Handle)
+		tokenGroup.POST("/revoke-token", container.RevokeTokenController.Handle)
+	}
 }
