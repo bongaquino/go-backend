@@ -1,4 +1,4 @@
-package users
+package tokens
 
 import (
 	"net/http"

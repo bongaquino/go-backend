@@ -2,6 +2,7 @@ package container
 
 import (
 	"koneksi/services/iam/app/controllers/health"
+	"koneksi/services/iam/app/controllers/tokens"
 	"koneksi/services/iam/app/controllers/users"
 	"koneksi/services/iam/app/repositories"
 	"koneksi/services/iam/app/services"
@@ -29,9 +30,9 @@ type Container struct {
 	// Controllers
 	CheckHealthController  *health.CheckHealthController
 	RegisterController     *users.RegisterController
-	RequestTokenController *users.RequestTokenController
-	RefreshTokenController *users.RefreshTokenController
-	RevokeTokenController  *users.RevokeTokenController
+	RequestTokenController *tokens.RequestTokenController
+	RefreshTokenController *tokens.RefreshTokenController
+	RevokeTokenController  *tokens.RevokeTokenController
 }
 
 // NewContainer initializes a new IoC container
@@ -61,9 +62,9 @@ func NewContainer() *Container {
 	// Initialize controllers
 	checkHealthController := health.NewCheckHealthController()
 	registerController := users.NewRegisterController(userRepository, profileRepository, roleRepository, userRoleRepository)
-	requestTokenController := users.NewRequestTokenController(userRepository, jwtService)
-	refreshTokenController := users.NewRefreshTokenController(userRepository, jwtService)
-	revokeTokenController := users.NewRevokeTokenController(userRepository, jwtService)
+	requestTokenController := tokens.NewRequestTokenController(userRepository, jwtService)
+	refreshTokenController := tokens.NewRefreshTokenController(userRepository, jwtService)
+	revokeTokenController := tokens.NewRevokeTokenController(userRepository, jwtService)
 
 	// Return the container
 	return &Container{

@@ -17,14 +17,14 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 	engine.GET("/check-health", container.CheckHealthController.Handle)
 
 	// Register
-	engine.POST("/register", container.RegisterController.Handle)
+	engine.POST("/users/register", container.RegisterController.Handle)
 
 	// Request token
-	engine.POST("/request-token", container.RequestTokenController.Handle)
+	engine.POST("/tokens/request-token", container.RequestTokenController.Handle)
 
 	// Refresh token
-	engine.POST("/refresh-token", container.RefreshTokenController.Handle)
+	engine.POST("/tokens/refresh-token", container.RefreshTokenController.Handle)
 
 	// Revoke token
-	engine.POST("/revoke-token", container.RevokeTokenController.Handle)
+	engine.POST("/tokens/revoke-token", container.RevokeTokenController.Handle)
 }
