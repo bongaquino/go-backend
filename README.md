@@ -117,7 +117,7 @@ To add a new service:
      container_name: new-service
      restart: unless-stopped
      ports:
-       - "300X:3000"
+       - "300X:300X"
      env_file:
        - services/new-service/.env
      networks:
