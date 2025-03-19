@@ -13,9 +13,10 @@ type Container struct {
 	MongoService *mongo.MongoService
 
 	// Repositories
-	PermissionRepository *repositories.PermissionRepository
-	PolicyRepository     *repositories.PolicyRepository
-	UserRepository       *repositories.UserRepository
+	PermissionRepository       *repositories.PermissionRepository
+	PolicyRepository           *repositories.PolicyRepository
+	PolicyPermissionRepository *repositories.PolicyPermissionRepository
+	UserRepository             *repositories.UserRepository
 
 	// Middleware
 
@@ -36,6 +37,7 @@ func NewContainer() *Container {
 	// Initialize repositories
 	permissionRepository := repositories.NewPermissionRepository(mongoService)
 	policyRepository := repositories.NewPolicyRepository(mongoService)
+	policyPermissionRepository := repositories.NewPolicyPermissionRepository(mongoService)
 	userRepository := repositories.NewUserRepository(mongoService)
 
 	// Initialize middleware
@@ -44,10 +46,11 @@ func NewContainer() *Container {
 	healthController := health.NewHealthController()
 
 	return &Container{
-		MongoService:         mongoService,
-		PermissionRepository: permissionRepository,
-		PolicyRepository:     policyRepository,
-		UserRepository:       userRepository,
-		HealthController:     healthController,
+		MongoService:               mongoService,
+		PermissionRepository:       permissionRepository,
+		PolicyRepository:           policyRepository,
+		PolicyPermissionRepository: policyPermissionRepository,
+		UserRepository:             userRepository,
+		HealthController:           healthController,
 	}
 }
