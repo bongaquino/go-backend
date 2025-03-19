@@ -35,7 +35,7 @@ func (rc *RefreshTokenController) Handle(c *gin.Context) {
 		return
 	}
 
-	// Validate refresh token using ValidateRefreshToken
+	// Validate refresh token
 	claims, err := rc.jwtService.ValidateRefreshToken(request.RefreshToken)
 	if err != nil {
 		helpers.FormatResponse(c, "error", http.StatusUnauthorized, "Invalid or expired refresh token", nil, nil)
@@ -49,14 +49,14 @@ func (rc *RefreshTokenController) Handle(c *gin.Context) {
 		return
 	}
 
-	// Generate new access & refresh tokens
+	// Generate new access & refresh tokens (updates Redis)
 	accessToken, refreshToken, err := rc.jwtService.GenerateTokens(user.ID.Hex(), user.Email)
 	if err != nil {
 		helpers.FormatResponse(c, "error", http.StatusInternalServerError, "Could not generate new tokens", nil, nil)
 		return
 	}
 
-	// Return new tokens
+	// Return the new tokens
 	helpers.FormatResponse(c, "success", http.StatusOK, "Token refreshed successfully", gin.H{
 		"access_token":  accessToken,
 		"refresh_token": refreshToken,

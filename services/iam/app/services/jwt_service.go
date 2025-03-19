@@ -75,11 +75,11 @@ func (j *JWTService) GenerateTokens(userID string, email string) (accessToken st
 		return "", "", err
 	}
 
-	// Store refresh token in Redis
+	// Store the new refresh token in Redis (overwrite the old one)
 	ctx := context.Background()
 	err = j.redisService.Set(ctx, "refresh_token:"+userID, refreshToken, j.refreshDuration)
 	if err != nil {
-		logger.Log.Error("Failed to store refresh token in Redis", logger.Error(err))
+		logger.Log.Error("Failed to store new refresh token in Redis", logger.Error(err))
 		return "", "", err
 	}
 
