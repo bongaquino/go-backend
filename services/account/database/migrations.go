@@ -7,7 +7,8 @@ import (
 	"koneksi/services/account/app/services/mongo"
 	"koneksi/services/account/core/logger"
 
-	"go.mongodb.org/mongo-driver/mongo/options"
+	mongoDriver "go.mongodb.org/mongo-driver/mongo"
+	mongoOptions "go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // MigrateCollections creates or updates collections for each model
@@ -17,23 +18,23 @@ func MigrateCollections(mongoService *mongo.MongoService) {
 
 	collections := []struct {
 		Name    string
-		Indexes []mongo.IndexModel
+		Indexes []mongoDriver.IndexModel
 	}{
 		{
 			Name: "users",
-			Indexes: []mongo.IndexModel{
+			Indexes: []mongoDriver.IndexModel{
 				{
-					Keys:    models.User{}.GetIndexes(),
-					Options: options.Index().SetUnique(true),
+					Keys:    map[string]interface{}{"email": 1},
+					Options: mongoOptions.Index().SetUnique(true).SetName("unique_email"),
 				},
 			},
 		},
 		{
 			Name: "roles",
-			Indexes: []mongo.IndexModel{
+			Indexes: []mongoDriver.IndexModel{
 				{
 					Keys:    models.Role{}.GetIndexes(),
-					Options: options.Index().SetUnique(true),
+					Options: mongoOptions.Index().SetUnique(true).SetName("unique_roles"),
 				},
 			},
 		},
@@ -41,8 +42,7 @@ func MigrateCollections(mongoService *mongo.MongoService) {
 	}
 
 	for _, collection := range collections {
-		err := ensureCollection(db, ctx, collection.Name, collection.Indexes)
-		if err != nil {
+		if err := ensureCollection(db, ctx, collection.Name, collection.Indexes); err != nil {
 			logger.Log.Error(fmt.Sprintf("Failed to migrate collection: %s", collection.Name), logger.Error(err))
 		} else {
 			logger.Log.Info(fmt.Sprintf("Migrated collection: %s", collection.Name))
@@ -51,15 +51,26 @@ func MigrateCollections(mongoService *mongo.MongoService) {
 }
 
 // ensureCollection ensures the collection exists and applies indexes
-func ensureCollection(db *mongo.Database, ctx context.Context, name string, indexes []mongo.IndexModel) error {
-	// Create collection if it doesn't exist
-	err := db.CreateCollection(ctx, name)
-	if err != nil && !mongo.IsCollectionExistsError(err) {
+func ensureCollection(db *mongoDriver.Database, ctx context.Context, name string, indexes []mongoDriver.IndexModel) error {
+	// Check if collection exists before trying to create it
+	collectionNames, err := db.ListCollectionNames(ctx, map[string]interface{}{"name": name})
+	if err != nil {
 		return err
+	}
+	if len(collectionNames) == 0 {
+		err = db.CreateCollection(ctx, name)
+		if err != nil {
+			return fmt.Errorf("failed to create collection %s: %w", name, err)
+		}
 	}
 
 	// Apply indexes
 	collection := db.Collection(name)
-	_, err = collection.Indexes().CreateMany(ctx, indexes)
-	return err
+	if len(indexes) > 0 {
+		_, err = collection.Indexes().CreateMany(ctx, indexes)
+		if err != nil {
+			return fmt.Errorf("failed to create indexes on %s: %w", name, err)
+		}
+	}
+	return nil
 }

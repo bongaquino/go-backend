@@ -4,6 +4,7 @@ import (
 	"koneksi/services/account/app/controllers/health"
 	"koneksi/services/account/app/repositories/user"
 	"koneksi/services/account/app/services/mongo"
+	"koneksi/services/account/database"
 )
 
 // Container holds the dependencies for the application
@@ -24,6 +25,9 @@ type Container struct {
 func NewContainer() *Container {
 	// Initialize services
 	mongoService := mongo.NewMongoService()
+
+	// Run database migrations
+	database.MigrateCollections(mongoService)
 
 	// Initialize repositories
 	userRepository := user.NewUserRepository(mongoService)
