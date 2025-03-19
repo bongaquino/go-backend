@@ -24,7 +24,7 @@ func NewRequestTokenController(userRepo *repositories.UserRepository, jwtService
 	}
 }
 
-// Handle processes the login request and returns a JWT token
+// Handle processes the login request and returns an access & refresh token
 func (rc *RequestTokenController) Handle(c *gin.Context) {
 	var request struct {
 		Email    string `json:"email" binding:"required,email"`
@@ -49,15 +49,18 @@ func (rc *RequestTokenController) Handle(c *gin.Context) {
 		return
 	}
 
-	// Generate JWT token using the JWT service
-	token, err := rc.jwtService.GenerateToken(user.ID.Hex(), user.Email)
+	// Generate both access & refresh tokens
+	accessToken, refreshToken, err := rc.jwtService.GenerateTokens(user.ID.Hex(), user.Email)
 	if err != nil {
-		helpers.FormatResponse(c, "error", http.StatusInternalServerError, "Could not generate token", nil, nil)
+		helpers.FormatResponse(c, "error", http.StatusInternalServerError, "Could not generate tokens", nil, nil)
 		return
 	}
 
-	// Respond with the token
-	helpers.FormatResponse(c, "success", http.StatusOK, "Request token successful", gin.H{"token": token}, nil)
+	// Respond with tokens
+	helpers.FormatResponse(c, "success", http.StatusOK, "Request token successful", gin.H{
+		"access_token":  accessToken,
+		"refresh_token": refreshToken,
+	}, nil)
 }
 
 // validatePayload validates the incoming request payload
