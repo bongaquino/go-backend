@@ -7,6 +7,8 @@ We will implement authentication and authorization for two types of accounts:
 1. **User Accounts** – Follow **Role-Based Access Control (RBAC)**.
 2. **Service Accounts** – Follow **Policy-Based Access Control (PBAC)**.
 
+The application requires fine-grained control over both user and service account permissions to securely handle data within the system.
+
 ### **Authentication Flow**
 
 - **Users** authenticate via **email/password**.
@@ -22,48 +24,38 @@ We will implement authentication and authorization for two types of accounts:
 
 ## **High-Level Access Control Design**
 
-### **Role-Based Access Control (RBAC)**
+### **Role-Based Access Control (RBAC) for Users**
 
 **Roles** are predefined sets of **permissions**, and users are assigned roles to determine what actions they can perform.
 
 #### **Relationships**
 - **User** → **has one or more** → **Roles**
 - **Role** → **grants one or more** → **Permissions**
+- **Permissions** → **define allowed actions**
 
 #### **Example**
 - **Admin Role**: Can **upload, download, list**
 - **User Role**: Can **upload, download, list**
 
 ```
-[User] ---> [Role] ---> [Permissions]
-       |          |         |
-       |          |         --> Upload
-       |          |         --> Download
-       |          |         --> List
-       |          --> Admin
-       |          --> User
+[User] ---> [User_Role] ---> [Role] ---> [Role_Permission] ---> [Permission]
 ```
 
-### **Policy-Based Access Control (PBAC)**
+### **Policy-Based Access Control (PBAC) for Service Accounts**
 
 **Policies** define access rules dynamically and are linked to **service accounts** via a policy identifier.
 
 #### **Relationships**
 - **Service Account** → **assigned one** → **Policy**
 - **Policy** → **defines** → **Resource access rules**
+- **Rules** → **specify allowed actions and conditions**
 
 #### **Example**
-- **Client Tool**: Allows **upload, download, list**
-- **SDK Integrations**: Allows **download, list**
+- **Backup Agent Policy**: Allows **upload, download, list**
+- **Analytics Engine Policy**: Allows **download, list**
 
 ```
-[Service Account] ---> [Policy] ---> [Access Rules]
-         |                 |             |
-         |                 |             --> Upload ✅
-         |                 |             --> Download ✅
-         |                 |             --> List ✅
-         |                 --> Backup Agent Policy
-         |                 --> Analytics Engine Policy
+[Service Account] ---> [Policy] ---> [Policy_Permission] ---> [Permission]
 ```
 
 ### **Differences Between Policies and Roles**
