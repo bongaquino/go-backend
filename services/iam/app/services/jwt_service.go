@@ -32,19 +32,19 @@ func NewJWTService() *JWTService {
 
 // Claims structure for JWT
 type Claims struct {
-	UserID uint   `json:"user_id"`
+	UserID string `json:"user_id"`
 	Email  string `json:"email"`
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 }
 
 // GenerateToken creates a new JWT token for a user
-func (j *JWTService) GenerateToken(userID uint, email string) (string, error) {
+func (j *JWTService) GenerateToken(userID string, email string) (string, error) {
 	claims := Claims{
 		UserID: userID,
 		Email:  email,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(j.tokenDuration).Unix(),
-			IssuedAt:  time.Now().Unix(),
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(j.tokenDuration)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
 
