@@ -31,76 +31,36 @@ func MigrateCollections(mongoService *mongo.MongoService) {
 			},
 		},
 		{
-			Name: "profiles",
-			Indexes: []mongoDriver.IndexModel{
-				{
-					Keys:    models.Profile{}.GetIndexes(),
-					Options: mongoOptions.Index().SetUnique(true).SetName("unique_user_profile"),
-				},
-			},
+			Name:    "profiles",
+			Indexes: generateIndexModels(models.Profile{}.GetIndexes(), "unique_user_profile"),
 		},
 		{
-			Name: "roles",
-			Indexes: []mongoDriver.IndexModel{
-				{
-					Keys:    models.Role{}.GetIndexes(),
-					Options: mongoOptions.Index().SetUnique(true).SetName("unique_roles"),
-				},
-			},
+			Name:    "roles",
+			Indexes: generateIndexModels(models.Role{}.GetIndexes(), "unique_roles"),
 		},
 		{
-			Name: "permissions",
-			Indexes: []mongoDriver.IndexModel{
-				{
-					Keys:    models.Permission{}.GetIndexes(),
-					Options: mongoOptions.Index().SetUnique(true).SetName("unique_permission_name"),
-				},
-			},
+			Name:    "permissions",
+			Indexes: generateIndexModels(models.Permission{}.GetIndexes(), "unique_permission_name"),
 		},
 		{
-			Name: "policies",
-			Indexes: []mongoDriver.IndexModel{
-				{
-					Keys:    models.Policy{}.GetIndexes(),
-					Options: mongoOptions.Index().SetUnique(true).SetName("unique_policy_name"),
-				},
-			},
+			Name:    "policies",
+			Indexes: generateIndexModels(models.Policy{}.GetIndexes(), "unique_policy_name"),
 		},
 		{
-			Name: "policy_permissions",
-			Indexes: []mongoDriver.IndexModel{
-				{
-					Keys:    models.PolicyPermission{}.GetIndexes(),
-					Options: mongoOptions.Index().SetUnique(true).SetName("unique_policy_permission"),
-				},
-			},
+			Name:    "policy_permissions",
+			Indexes: generateIndexModels(models.PolicyPermission{}.GetIndexes(), "unique_policy_permission"),
 		},
 		{
-			Name: "role_permissions",
-			Indexes: []mongoDriver.IndexModel{
-				{
-					Keys:    models.RolePermission{}.GetIndexes(),
-					Options: mongoOptions.Index().SetUnique(true).SetName("unique_role_permission"),
-				},
-			},
+			Name:    "role_permissions",
+			Indexes: generateIndexModels(models.RolePermission{}.GetIndexes(), "unique_role_permission"),
 		},
 		{
-			Name: "user_roles",
-			Indexes: []mongoDriver.IndexModel{
-				{
-					Keys:    models.UserRole{}.GetIndexes(),
-					Options: mongoOptions.Index().SetUnique(true).SetName("unique_user_role"),
-				},
-			},
+			Name:    "user_roles",
+			Indexes: generateIndexModels(models.UserRole{}.GetIndexes(), "unique_user_role"),
 		},
 		{
-			Name: "service_accounts",
-			Indexes: []mongoDriver.IndexModel{
-				{
-					Keys:    models.ServiceAccount{}.GetIndexes(),
-					Options: mongoOptions.Index().SetUnique(true).SetName("unique_client_id"),
-				},
-			},
+			Name:    "service_accounts",
+			Indexes: generateIndexModels(models.ServiceAccount{}.GetIndexes(), "unique_client_id"),
 		},
 	}
 
@@ -111,6 +71,19 @@ func MigrateCollections(mongoService *mongo.MongoService) {
 			logger.Log.Info(fmt.Sprintf("Migrated collection: %s", collection.Name))
 		}
 	}
+}
+
+// generateIndexModels converts multiple indexes from GetIndexes() into []mongoDriver.IndexModel
+func generateIndexModels(indexes []bson.D, baseIndexName string) []mongoDriver.IndexModel {
+	var indexModels []mongoDriver.IndexModel
+	for i, index := range indexes {
+		indexName := fmt.Sprintf("%s_%d", baseIndexName, i+1) // Ensure unique names
+		indexModels = append(indexModels, mongoDriver.IndexModel{
+			Keys:    index,
+			Options: mongoOptions.Index().SetUnique(true).SetName(indexName),
+		})
+	}
+	return indexModels
 }
 
 // ensureCollection ensures the collection exists and applies indexes
