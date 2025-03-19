@@ -9,20 +9,13 @@ if (db.system.users.find({ user: 'root' }).count() === 0) {
   });
 }
 
-// Define sample data
-const sampleData = [
-  { name: 'Sample Data 1', value: 100 },
-  { name: 'Sample Data 2', value: 200 },
-  { name: 'Sample Data 3', value: 300 }
-];
-
 // Create 'koneksi' database and user
 db = db.getSiblingDB('koneksi');
-db.createUser({
-  user: 'koneksi_user',
-  pwd: 'koneksi_password',
-  roles: [{ role: 'readWrite', db: 'koneksi' }]
-});
 
-// Insert data
-db.sample_collection.insertMany(sampleData);
+if (db.system.users.find({ user: 'koneksi_user' }).count() === 0) {
+  db.createUser({
+    user: 'koneksi_user',
+    pwd: 'koneksi_password',
+    roles: [{ role: 'readWrite', db: 'koneksi' }]
+  });
+}

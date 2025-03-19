@@ -7,6 +7,7 @@ import (
 	"koneksi/services/account/app/services/mongo"
 	"koneksi/services/account/core/logger"
 
+	"go.mongodb.org/mongo-driver/bson"
 	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 	mongoOptions "go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -24,7 +25,7 @@ func MigrateCollections(mongoService *mongo.MongoService) {
 			Name: "users",
 			Indexes: []mongoDriver.IndexModel{
 				{
-					Keys:    map[string]any{"email": 1},
+					Keys:    bson.D{{Key: "email", Value: 1}},
 					Options: mongoOptions.Index().SetUnique(true).SetName("unique_email"),
 				},
 			},
@@ -38,7 +39,60 @@ func MigrateCollections(mongoService *mongo.MongoService) {
 				},
 			},
 		},
-		// Add more collections and their indexes here
+		{
+			Name: "permissions",
+			Indexes: []mongoDriver.IndexModel{
+				{
+					Keys:    models.Permission{}.GetIndexes(),
+					Options: mongoOptions.Index().SetUnique(true).SetName("unique_permission_name"),
+				},
+			},
+		},
+		{
+			Name: "policies",
+			Indexes: []mongoDriver.IndexModel{
+				{
+					Keys:    models.Policy{}.GetIndexes(),
+					Options: mongoOptions.Index().SetUnique(true).SetName("unique_policy_name"),
+				},
+			},
+		},
+		{
+			Name: "policy_permissions",
+			Indexes: []mongoDriver.IndexModel{
+				{
+					Keys:    models.PolicyPermission{}.GetIndexes(),
+					Options: mongoOptions.Index().SetUnique(true).SetName("unique_policy_permission"),
+				},
+			},
+		},
+		{
+			Name: "role_permissions",
+			Indexes: []mongoDriver.IndexModel{
+				{
+					Keys:    models.RolePermission{}.GetIndexes(),
+					Options: mongoOptions.Index().SetUnique(true).SetName("unique_role_permission"),
+				},
+			},
+		},
+		{
+			Name: "user_roles",
+			Indexes: []mongoDriver.IndexModel{
+				{
+					Keys:    models.UserRole{}.GetIndexes(),
+					Options: mongoOptions.Index().SetUnique(true).SetName("unique_user_role"),
+				},
+			},
+		},
+		{
+			Name: "service_accounts",
+			Indexes: []mongoDriver.IndexModel{
+				{
+					Keys:    models.ServiceAccount{}.GetIndexes(),
+					Options: mongoOptions.Index().SetUnique(true).SetName("unique_client_id"),
+				},
+			},
+		},
 	}
 
 	for _, collection := range collections {
@@ -53,7 +107,7 @@ func MigrateCollections(mongoService *mongo.MongoService) {
 // ensureCollection ensures the collection exists and applies indexes
 func ensureCollection(db *mongoDriver.Database, ctx context.Context, name string, indexes []mongoDriver.IndexModel) error {
 	// Check if collection exists before trying to create it
-	collectionNames, err := db.ListCollectionNames(ctx, map[string]interface{}{"name": name})
+	collectionNames, err := db.ListCollectionNames(ctx, bson.M{"name": name})
 	if err != nil {
 		return err
 	}
