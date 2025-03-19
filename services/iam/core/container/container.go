@@ -31,6 +31,7 @@ type Container struct {
 	CheckHealthController  *health.CheckHealthController
 	RegisterController     *users.RegisterController
 	RequestTokenController *users.RequestTokenController
+	RefreshTokenController *users.RefreshTokenController
 }
 
 // NewContainer initializes a new IoC container
@@ -62,6 +63,7 @@ func NewContainer() *Container {
 	checkHealthController := health.NewCheckHealthController()
 	registerController := users.NewRegisterController(userRepository, profileRepository, roleRepository, userRoleRepository)
 	requestTokenController := users.NewRequestTokenController(userRepository, jwtService)
+	refreshTokenController := users.NewRefreshTokenController(userRepository, jwtService)
 
 	// Return the container
 	return &Container{
@@ -79,5 +81,6 @@ func NewContainer() *Container {
 		CheckHealthController:      checkHealthController,
 		RegisterController:         registerController,
 		RequestTokenController:     requestTokenController,
+		RefreshTokenController:     refreshTokenController,
 	}
 }

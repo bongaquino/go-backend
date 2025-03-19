@@ -21,4 +21,7 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 
 	// Request token
 	engine.POST("/request-token", container.RequestTokenController.Handle)
+
+	// Refresh token
+	engine.POST("/refresh-token", container.RefreshTokenController.Handle)
 }
