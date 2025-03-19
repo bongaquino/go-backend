@@ -106,8 +106,15 @@ func (rc *RegisterController) Handle(c *gin.Context) {
 		return
 	}
 
+	// Prepare the response data
+	responseData := map[string]any{
+		"user":      user,
+		"profile":   profile,
+		"user_role": userRoleAssignment,
+	}
+
 	// Respond with success
-	helpers.FormatResponse(c, "success", http.StatusCreated, "User registered successfully", nil, nil)
+	helpers.FormatResponse(c, "success", http.StatusCreated, "User registered successfully", responseData, nil)
 }
 
 // validatePayload validates the incoming request payload
