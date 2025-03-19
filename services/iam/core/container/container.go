@@ -12,6 +12,7 @@ import (
 type Container struct {
 	// Services
 	MongoService *services.MongoService
+	JwtService   *services.JWTService
 
 	// Repositories
 	PermissionRepository       *repositories.PermissionRepository
@@ -36,6 +37,7 @@ type Container struct {
 func NewContainer() *Container {
 	// Initialize services
 	mongoService := services.NewMongoService()
+	jwtService := services.NewJWTService()
 
 	// Initialize repositories
 	permissionRepository := repositories.NewPermissionRepository(mongoService)
@@ -59,11 +61,12 @@ func NewContainer() *Container {
 	// Initialize controllers
 	checkHealthController := health.NewCheckHealthController()
 	registerController := users.NewRegisterController(userRepository, profileRepository, roleRepository, userRoleRepository)
-	requestTokenController := users.NewRequestTokenController(userRepository)
+	requestTokenController := users.NewRequestTokenController(userRepository, jwtService)
 
 	// Return the container
 	return &Container{
 		MongoService:               mongoService,
+		JwtService:                 jwtService,
 		PermissionRepository:       permissionRepository,
 		PolicyRepository:           policyRepository,
 		PolicyPermissionRepository: policyPermissionRepository,

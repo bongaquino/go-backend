@@ -41,6 +41,8 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *models.User) erro
 		return err
 	}
 	user.Password = hashedPassword
+
+	// Set timestamps
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
 
@@ -52,21 +54,21 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *models.User) erro
 	return nil
 }
 
-func (r *UserRepository) ReadUserByUsername(ctx context.Context, username string) (*models.User, error) {
+func (r *UserRepository) ReadUserByEmail(ctx context.Context, email string) (*models.User, error) {
 	var user models.User
-	err := r.collection.FindOne(ctx, bson.M{"username": username}).Decode(&user)
+	err := r.collection.FindOne(ctx, bson.M{"email": email}).Decode(&user)
 	if err != nil {
 		if err == mongoDriver.ErrNoDocuments {
 			return nil, nil
 		}
-		logger.Log.Error("error reading user by username", logger.Error(err))
+		logger.Log.Error("error reading user by email", logger.Error(err))
 		return nil, err
 	}
 	return &user, nil
 }
 
-func (r *UserRepository) UpdateUser(ctx context.Context, username string, update bson.M) error {
-	_, err := r.collection.UpdateOne(ctx, bson.M{"username": username}, bson.M{"$set": update})
+func (r *UserRepository) UpdateUser(ctx context.Context, email string, update bson.M) error {
+	_, err := r.collection.UpdateOne(ctx, bson.M{"email": email}, bson.M{"$set": update})
 	if err != nil {
 		logger.Log.Error("error updating user", logger.Error(err))
 		return err
@@ -74,8 +76,8 @@ func (r *UserRepository) UpdateUser(ctx context.Context, username string, update
 	return nil
 }
 
-func (r *UserRepository) DeleteUser(ctx context.Context, username string) error {
-	_, err := r.collection.DeleteOne(ctx, bson.M{"username": username})
+func (r *UserRepository) DeleteUser(ctx context.Context, email string) error {
+	_, err := r.collection.DeleteOne(ctx, bson.M{"email": email})
 	if err != nil {
 		logger.Log.Error("error deleting user", logger.Error(err))
 		return err
