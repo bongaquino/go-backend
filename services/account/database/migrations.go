@@ -31,6 +31,15 @@ func MigrateCollections(mongoService *mongo.MongoService) {
 			},
 		},
 		{
+			Name: "profiles",
+			Indexes: []mongoDriver.IndexModel{
+				{
+					Keys:    models.Profile{}.GetIndexes(),
+					Options: mongoOptions.Index().SetUnique(true).SetName("unique_user_profile"),
+				},
+			},
+		},
+		{
 			Name: "roles",
 			Indexes: []mongoDriver.IndexModel{
 				{
