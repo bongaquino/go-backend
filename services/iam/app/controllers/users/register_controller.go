@@ -13,15 +13,19 @@ import (
 
 // RegisterController handles user registration
 type RegisterController struct {
-	userRepo    *repositories.UserRepository
-	profileRepo *repositories.ProfileRepository
+	userRepo     *repositories.UserRepository
+	profileRepo  *repositories.ProfileRepository
+	roleRepo     *repositories.RoleRepository
+	userRoleRepo *repositories.UserRoleRepository
 }
 
 // NewRegisterController initializes a new RegisterController
-func NewRegisterController(userRepo *repositories.UserRepository, profileRepo *repositories.ProfileRepository) *RegisterController {
+func NewRegisterController(userRepo *repositories.UserRepository, profileRepo *repositories.ProfileRepository, roleRepo *repositories.RoleRepository, userRoleRepo *repositories.UserRoleRepository) *RegisterController {
 	return &RegisterController{
-		userRepo:    userRepo,
-		profileRepo: profileRepo,
+		userRepo:     userRepo,
+		profileRepo:  profileRepo,
+		roleRepo:     roleRepo,
+		userRoleRepo: userRoleRepo,
 	}
 }
 
@@ -77,6 +81,28 @@ func (rc *RegisterController) Handle(c *gin.Context) {
 	if err := rc.profileRepo.CreateProfile(c.Request.Context(), profile); err != nil {
 		logger.Log.Error("error creating profile", logger.Error(err))
 		helpers.FormatResponse(c, "error", http.StatusInternalServerError, "Failed to create profile", nil, nil)
+		return
+	}
+
+	// Assign the "user" role to the newly registered user
+	userRole, err := rc.roleRepo.ReadRoleByName(c.Request.Context(), "user")
+	if err != nil {
+		logger.Log.Error("error retrieving default role", logger.Error(err))
+		helpers.FormatResponse(c, "error", http.StatusInternalServerError, "Failed to assign default role", nil, nil)
+		return
+	}
+	if userRole == nil {
+		helpers.FormatResponse(c, "error", http.StatusInternalServerError, "Default role not found", nil, nil)
+		return
+	}
+
+	userRoleAssignment := &models.UserRole{
+		UserID: user.ID,
+		RoleID: userRole.ID,
+	}
+	if err := rc.userRoleRepo.CreateUserRole(c.Request.Context(), userRoleAssignment); err != nil {
+		logger.Log.Error("error assigning default role", logger.Error(err))
+		helpers.FormatResponse(c, "error", http.StatusInternalServerError, "Failed to assign default role", nil, nil)
 		return
 	}
 

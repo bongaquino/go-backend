@@ -57,7 +57,7 @@ func NewContainer() *Container {
 
 	// Initialize controllers
 	healthController := health.NewCheckHealthController()
-	registerController := users.NewRegisterController(userRepository, profileRepository)
+	registerController := users.NewRegisterController(userRepository, profileRepository, roleRepository, userRoleRepository)
 
 	// Return the container
 	return &Container{
