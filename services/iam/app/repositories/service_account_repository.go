@@ -9,6 +9,7 @@ import (
 	"koneksi/services/iam/core/logger"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -27,6 +28,9 @@ func NewServiceAccountRepository(mongoService *services.MongoService) *ServiceAc
 
 // CreateServiceAccount inserts a new service account into the database.
 func (r *ServiceAccountRepository) CreateServiceAccount(ctx context.Context, account *models.ServiceAccount) error {
+	// Generate a new ObjectID for the account
+	account.ID = primitive.NewObjectID()
+
 	account.CreatedAt = time.Now()
 	account.UpdatedAt = time.Now()
 

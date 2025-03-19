@@ -10,6 +10,7 @@ import (
 	"koneksi/services/iam/core/logger"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -26,6 +27,9 @@ func NewUserRepository(mongoService *services.MongoService) *UserRepository {
 }
 
 func (r *UserRepository) CreateUser(ctx context.Context, user *models.User) error {
+	// Generate a new ObjectID for the user
+	user.ID = primitive.NewObjectID()
+
 	// Hash the password before storing it
 	hashedPassword, err := helpers.HashPassword(user.Password)
 	if err != nil {

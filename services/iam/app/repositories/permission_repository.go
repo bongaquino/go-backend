@@ -9,6 +9,7 @@ import (
 	"koneksi/services/iam/core/logger"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -27,6 +28,10 @@ func NewPermissionRepository(mongoService *services.MongoService) *PermissionRep
 
 // CreatePermission inserts a new permission into the database.
 func (r *PermissionRepository) CreatePermission(ctx context.Context, permission *models.Permission) error {
+	// Generate a new ObjectID for the permission
+	permission.ID = primitive.NewObjectID()
+
+	// Set the creation time of the permission
 	permission.CreatedAt = time.Now()
 
 	_, err := r.collection.InsertOne(ctx, permission)

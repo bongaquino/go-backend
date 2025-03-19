@@ -8,6 +8,7 @@ import (
 	"koneksi/services/iam/core/logger"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -26,6 +27,9 @@ func NewRolePermissionRepository(mongoService *services.MongoService) *RolePermi
 
 // CreateRolePermission inserts a new role-permission relationship into the database.
 func (r *RolePermissionRepository) CreateRolePermission(ctx context.Context, rolePermission *models.RolePermission) error {
+	// Generate a new ObjectID for the rolePermission
+	rolePermission.ID = primitive.NewObjectID()
+
 	_, err := r.collection.InsertOne(ctx, rolePermission)
 	if err != nil {
 		logger.Log.Error("error creating role permission", logger.Error(err))

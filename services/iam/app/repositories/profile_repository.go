@@ -9,6 +9,7 @@ import (
 	"koneksi/services/iam/core/logger"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -27,6 +28,9 @@ func NewProfileRepository(mongoService *services.MongoService) *ProfileRepositor
 
 // CreateProfile inserts a new profile into the database.
 func (r *ProfileRepository) CreateProfile(ctx context.Context, profile *models.Profile) error {
+	// Generate a new ObjectID for the profile
+	profile.ID = primitive.NewObjectID()
+
 	profile.CreatedAt = time.Now()
 	profile.UpdatedAt = time.Now()
 

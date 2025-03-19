@@ -9,6 +9,7 @@ import (
 	"koneksi/services/iam/core/logger"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -27,6 +28,9 @@ func NewRoleRepository(mongoService *services.MongoService) *RoleRepository {
 
 // CreateRole inserts a new role into the database.
 func (r *RoleRepository) CreateRole(ctx context.Context, role *models.Role) error {
+	// Generate a new ObjectID for the role
+	role.ID = primitive.NewObjectID()
+
 	role.CreatedAt = time.Now()
 
 	_, err := r.collection.InsertOne(ctx, role)

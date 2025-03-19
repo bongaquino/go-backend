@@ -9,6 +9,7 @@ import (
 	"koneksi/services/iam/core/logger"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -27,7 +28,11 @@ func NewPolicyRepository(mongoService *services.MongoService) *PolicyRepository 
 
 // CreatePolicy inserts a new policy into the database.
 func (r *PolicyRepository) CreatePolicy(ctx context.Context, policy *models.Policy) error {
+	// Generate a new ObjectID for the policy
+	policy.ID = primitive.NewObjectID()
+
 	policy.CreatedAt = time.Now()
+	policy.UpdatedAt = time.Now()
 
 	_, err := r.collection.InsertOne(ctx, policy)
 	if err != nil {

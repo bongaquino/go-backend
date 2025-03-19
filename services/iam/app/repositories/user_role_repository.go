@@ -8,6 +8,7 @@ import (
 	"koneksi/services/iam/core/logger"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -26,6 +27,9 @@ func NewUserRoleRepository(mongoService *services.MongoService) *UserRoleReposit
 
 // CreateUserRole inserts a new user-role relationship into the database.
 func (r *UserRoleRepository) CreateUserRole(ctx context.Context, userRole *models.UserRole) error {
+	// Generate a new ObjectID for the userRole
+	userRole.ID = primitive.NewObjectID()
+
 	_, err := r.collection.InsertOne(ctx, userRole)
 	if err != nil {
 		logger.Log.Error("error creating user role", logger.Error(err))

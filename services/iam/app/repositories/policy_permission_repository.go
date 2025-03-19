@@ -8,6 +8,7 @@ import (
 	"koneksi/services/iam/core/logger"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -26,6 +27,9 @@ func NewPolicyPermissionRepository(mongoService *services.MongoService) *PolicyP
 
 // CreatePolicyPermission inserts a new policy-permission relationship into the database.
 func (r *PolicyPermissionRepository) CreatePolicyPermission(ctx context.Context, policyPermission *models.PolicyPermission) error {
+	// Generate a new ObjectID for the policyPermission
+	policyPermission.ID = primitive.NewObjectID()
+
 	_, err := r.collection.InsertOne(ctx, policyPermission)
 	if err != nil {
 		logger.Log.Error("error creating policy permission", logger.Error(err))
