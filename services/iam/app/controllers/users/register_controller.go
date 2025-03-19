@@ -47,7 +47,7 @@ func (rc *RegisterController) Handle(c *gin.Context) {
 	}
 
 	// Check if the email already exists
-	existingUser, err := rc.userRepo.ReadUserByUsername(c.Request.Context(), request.Email)
+	existingUser, err := rc.userRepo.ReadUserByEmail(c.Request.Context(), request.Email)
 	if err != nil {
 		logger.Log.Error("error checking existing user", logger.Error(err))
 		helpers.FormatResponse(c, "error", http.StatusInternalServerError, "Internal server error", nil, nil)
@@ -106,15 +106,12 @@ func (rc *RegisterController) Handle(c *gin.Context) {
 		return
 	}
 
-	// Prepare the response data
-	responseData := map[string]any{
+	// Respond with success
+	helpers.FormatResponse(c, "success", http.StatusCreated, "User registered successfully", gin.H{
 		"user":      user,
 		"profile":   profile,
 		"user_role": userRoleAssignment,
-	}
-
-	// Respond with success
-	helpers.FormatResponse(c, "success", http.StatusCreated, "User registered successfully", responseData, nil)
+	}, nil)
 }
 
 // validatePayload validates the incoming request payload
