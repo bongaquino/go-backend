@@ -16,6 +16,7 @@ type Container struct {
 	PermissionRepository       *repositories.PermissionRepository
 	PolicyRepository           *repositories.PolicyRepository
 	PolicyPermissionRepository *repositories.PolicyPermissionRepository
+	ProfileRepository          *repositories.ProfileRepository
 	UserRepository             *repositories.UserRepository
 
 	// Middleware
@@ -38,6 +39,7 @@ func NewContainer() *Container {
 	permissionRepository := repositories.NewPermissionRepository(mongoService)
 	policyRepository := repositories.NewPolicyRepository(mongoService)
 	policyPermissionRepository := repositories.NewPolicyPermissionRepository(mongoService)
+	profileRepository := repositories.NewProfileRepository(mongoService)
 	userRepository := repositories.NewUserRepository(mongoService)
 
 	// Initialize middleware
@@ -50,6 +52,7 @@ func NewContainer() *Container {
 		PermissionRepository:       permissionRepository,
 		PolicyRepository:           policyRepository,
 		PolicyPermissionRepository: policyPermissionRepository,
+		ProfileRepository:          profileRepository,
 		UserRepository:             userRepository,
 		HealthController:           healthController,
 	}
