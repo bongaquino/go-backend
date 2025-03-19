@@ -24,7 +24,7 @@ func MigrateCollections(mongoService *mongo.MongoService) {
 			Name: "users",
 			Indexes: []mongoDriver.IndexModel{
 				{
-					Keys:    map[string]interface{}{"email": 1},
+					Keys:    map[string]any{"email": 1},
 					Options: mongoOptions.Index().SetUnique(true).SetName("unique_email"),
 				},
 			},
