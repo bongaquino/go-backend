@@ -22,6 +22,8 @@ type Env struct {
 	RedisPort     int    `envconfig:"REDIS_PORT" default:"6379"`
 	RedisPassword string `envconfig:"REDIS_PASSWORD" default:""`
 	RedisPrefix   string `envconfig:"REDIS_PREFIX" default:"iam_service"`
+	JwtSecret     string `envconfig:"JWT_SECRET" default:""`
+	JwtExpiration int    `envconfig:"JWT_EXPIRATION" default:"3600"`
 	// Add more environment variables here
 }
 
