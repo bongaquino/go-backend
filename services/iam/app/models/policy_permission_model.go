@@ -1,11 +1,14 @@
 package models
 
-import "go.mongodb.org/mongo-driver/bson"
+import (
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type PolicyPermission struct {
-	ID           string `bson:"_id,omitempty"`
-	PolicyID     string `bson:"policy_id"`
-	PermissionID string `bson:"permission_id"`
+	ID           primitive.ObjectID `bson:"_id,omitempty"`
+	PolicyID     primitive.ObjectID `bson:"policy_id"`
+	PermissionID primitive.ObjectID `bson:"permission_id"`
 }
 
 func (PolicyPermission) GetIndexes() []bson.D {

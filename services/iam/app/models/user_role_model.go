@@ -1,11 +1,14 @@
 package models
 
-import "go.mongodb.org/mongo-driver/bson"
+import (
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type UserRole struct {
-	ID     string `bson:"_id,omitempty"`
-	UserID string `bson:"user_id"`
-	RoleID string `bson:"role_id"`
+	ID     primitive.ObjectID `bson:"_id,omitempty"`
+	UserID primitive.ObjectID `bson:"user_id"`
+	RoleID primitive.ObjectID `bson:"role_id"`
 }
 
 func (UserRole) GetIndexes() []bson.D {

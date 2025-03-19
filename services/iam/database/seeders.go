@@ -102,13 +102,13 @@ func seedRolePermissions(ctx context.Context, roleRepo *repositories.RoleReposit
 		}
 
 		// Check if the role-permission already exists
-		existingPermissions, err := rolePermissionRepo.ReadRolePermissions(ctx, userRole.ID)
+		existingPermissions, err := rolePermissionRepo.ReadRolePermissions(ctx, userRole.ID.Hex())
 		if err != nil {
 			return err
 		}
 		alreadyExists := false
 		for _, rp := range existingPermissions {
-			if rp.PermissionID == perm.ID {
+			if rp.PermissionID == perm.ID.Hex() {
 				alreadyExists = true
 				break
 			}
@@ -117,7 +117,7 @@ func seedRolePermissions(ctx context.Context, roleRepo *repositories.RoleReposit
 		if !alreadyExists {
 			rolePermission := models.RolePermission{
 				RoleID:       userRole.ID,
-				PermissionID: perm.ID,
+				PermissionID: perm.ID.Hex(),
 			}
 			if err := rolePermissionRepo.CreateRolePermission(ctx, &rolePermission); err != nil {
 				return err
