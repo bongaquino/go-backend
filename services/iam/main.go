@@ -5,9 +5,9 @@ import (
 	"koneksi/services/iam/start"
 )
 
-// @title Koneksi Orchestrator API
+// @title Koneksi IAM Service
 // @version 1.0
-// @description This is the API documentation for Koneksi Orchestrator.
+// @description This is the API documentation for Koneksi IAM Service.
 
 // @host localhost:8080
 // @BasePath /

@@ -1,4 +1,4 @@
-## Account Service
+## IAM Service
 
 ### **Overview**
 
