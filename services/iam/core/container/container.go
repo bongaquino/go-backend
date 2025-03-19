@@ -38,6 +38,7 @@ func NewContainer() *Container {
 	database.MigrateCollections(mongoService)
 
 	// Run database seeders
+	database.SeedCollections(mongoService)
 
 	// Initialize repositories
 	permissionRepository := repositories.NewPermissionRepository(mongoService)

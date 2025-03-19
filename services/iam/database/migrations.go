@@ -12,7 +12,7 @@ import (
 	mongoOptions "go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// MigrateCollections creates or updates collections for each model
+// MigrateCollections creates or updates collections with indexes
 func MigrateCollections(mongoService *mongo.MongoService) {
 	db := mongoService.GetDB()
 	ctx := context.Background()
@@ -21,47 +21,15 @@ func MigrateCollections(mongoService *mongo.MongoService) {
 		Name    string
 		Indexes []mongoDriver.IndexModel
 	}{
-		{
-			Name: "users",
-			Indexes: []mongoDriver.IndexModel{
-				{
-					Keys:    bson.D{{Key: "email", Value: 1}},
-					Options: mongoOptions.Index().SetUnique(true).SetName("unique_email"),
-				},
-			},
-		},
-		{
-			Name:    "profiles",
-			Indexes: generateIndexModels(models.Profile{}.GetIndexes(), "unique_user_profile"),
-		},
-		{
-			Name:    "roles",
-			Indexes: generateIndexModels(models.Role{}.GetIndexes(), "unique_roles"),
-		},
-		{
-			Name:    "permissions",
-			Indexes: generateIndexModels(models.Permission{}.GetIndexes(), "unique_permission_name"),
-		},
-		{
-			Name:    "policies",
-			Indexes: generateIndexModels(models.Policy{}.GetIndexes(), "unique_policy_name"),
-		},
-		{
-			Name:    "policy_permissions",
-			Indexes: generateIndexModels(models.PolicyPermission{}.GetIndexes(), "unique_policy_permission"),
-		},
-		{
-			Name:    "role_permissions",
-			Indexes: generateIndexModels(models.RolePermission{}.GetIndexes(), "unique_role_permission"),
-		},
-		{
-			Name:    "user_roles",
-			Indexes: generateIndexModels(models.UserRole{}.GetIndexes(), "unique_user_role"),
-		},
-		{
-			Name:    "service_accounts",
-			Indexes: generateIndexModels(models.ServiceAccount{}.GetIndexes(), "unique_client_id"),
-		},
+		{"users", []mongoDriver.IndexModel{{Keys: bson.D{{Key: "email", Value: 1}}, Options: mongoOptions.Index().SetUnique(true).SetName("unique_email")}}},
+		{"profiles", generateIndexes(models.Profile{}.GetIndexes(), "unique_user_profile")},
+		{"roles", generateIndexes(models.Role{}.GetIndexes(), "unique_roles")},
+		{"permissions", generateIndexes(models.Permission{}.GetIndexes(), "unique_permission_name")},
+		{"policies", generateIndexes(models.Policy{}.GetIndexes(), "unique_policy_name")},
+		{"policy_permissions", []mongoDriver.IndexModel{{Keys: bson.D{{Key: "policy_id", Value: 1}, {Key: "permission_id", Value: 1}}, Options: mongoOptions.Index().SetUnique(true).SetName("unique_policy_permission")}}},
+		{"role_permissions", []mongoDriver.IndexModel{{Keys: bson.D{{Key: "role_id", Value: 1}, {Key: "permission_id", Value: 1}}, Options: mongoOptions.Index().SetUnique(true).SetName("unique_role_permission")}}},
+		{"user_roles", generateIndexes(models.UserRole{}.GetIndexes(), "unique_user_role")},
+		{"service_accounts", generateIndexes(models.ServiceAccount{}.GetIndexes(), "unique_client_id")},
 	}
 
 	for _, collection := range collections {
@@ -73,40 +41,36 @@ func MigrateCollections(mongoService *mongo.MongoService) {
 	}
 }
 
-// generateIndexModels converts multiple indexes from GetIndexes() into []mongoDriver.IndexModel
-func generateIndexModels(indexes []bson.D, baseIndexName string) []mongoDriver.IndexModel {
-	var indexModels []mongoDriver.IndexModel
+// generateIndexes converts multiple indexes into []mongoDriver.IndexModel
+func generateIndexes(indexes []bson.D, baseIndexName string) []mongoDriver.IndexModel {
+	indexModels := make([]mongoDriver.IndexModel, len(indexes))
 	for i, index := range indexes {
-		indexName := fmt.Sprintf("%s_%d", baseIndexName, i+1) // Ensure unique names
-		indexModels = append(indexModels, mongoDriver.IndexModel{
+		indexModels[i] = mongoDriver.IndexModel{
 			Keys:    index,
-			Options: mongoOptions.Index().SetUnique(true).SetName(indexName),
-		})
+			Options: mongoOptions.Index().SetUnique(true).SetName(fmt.Sprintf("%s_%d", baseIndexName, i+1)),
+		}
 	}
 	return indexModels
 }
 
-// ensureCollection ensures the collection exists and applies indexes
+// ensureCollection ensures a collection exists and applies indexes
 func ensureCollection(db *mongoDriver.Database, ctx context.Context, name string, indexes []mongoDriver.IndexModel) error {
-	// Check if collection exists before trying to create it
-	collectionNames, err := db.ListCollectionNames(ctx, bson.M{"name": name})
+	exists, err := db.ListCollectionNames(ctx, bson.M{"name": name})
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to list collections: %w", err)
 	}
-	if len(collectionNames) == 0 {
-		err = db.CreateCollection(ctx, name)
-		if err != nil {
+
+	if len(exists) == 0 {
+		if err := db.CreateCollection(ctx, name); err != nil {
 			return fmt.Errorf("failed to create collection %s: %w", name, err)
 		}
 	}
 
-	// Apply indexes
-	collection := db.Collection(name)
 	if len(indexes) > 0 {
-		_, err = collection.Indexes().CreateMany(ctx, indexes)
-		if err != nil {
+		if _, err := db.Collection(name).Indexes().CreateMany(ctx, indexes); err != nil {
 			return fmt.Errorf("failed to create indexes on %s: %w", name, err)
 		}
 	}
+
 	return nil
 }

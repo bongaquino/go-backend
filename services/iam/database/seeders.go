@@ -20,18 +20,9 @@ func SeedCollections(mongoService *mongo.MongoService) {
 		Name   string
 		Seeder func(*mongoDriver.Database, context.Context) error
 	}{
-		{
-			Name:   "permissions",
-			Seeder: seedPermissions,
-		},
-		{
-			Name:   "roles",
-			Seeder: seedRoles,
-		},
-		{
-			Name:   "role_permissions",
-			Seeder: seedRolePermissions,
-		},
+		{"permissions", seedPermissions},
+		{"roles", seedRoles},
+		{"role_permissions", seedRolePermissions},
 	}
 
 	for _, seeder := range seeders {
@@ -47,11 +38,7 @@ func SeedCollections(mongoService *mongo.MongoService) {
 func seedPermissions(db *mongoDriver.Database, ctx context.Context) error {
 	collection := db.Collection("permissions")
 
-	existing, err := collection.CountDocuments(ctx, bson.M{})
-	if err != nil {
-		return err
-	}
-	if existing > 0 {
+	if exists, _ := hasExistingData(collection, ctx); exists {
 		logger.Log.Info("Skipping permissions seeding: Data already exists")
 		return nil
 	}
@@ -62,7 +49,7 @@ func seedPermissions(db *mongoDriver.Database, ctx context.Context) error {
 		models.Permission{Name: "list_files"},
 	}
 
-	_, err = collection.InsertMany(ctx, permissions)
+	_, err := collection.InsertMany(ctx, permissions)
 	return err
 }
 
@@ -70,11 +57,7 @@ func seedPermissions(db *mongoDriver.Database, ctx context.Context) error {
 func seedRoles(db *mongoDriver.Database, ctx context.Context) error {
 	collection := db.Collection("roles")
 
-	existing, err := collection.CountDocuments(ctx, bson.M{})
-	if err != nil {
-		return err
-	}
-	if existing > 0 {
+	if exists, _ := hasExistingData(collection, ctx); exists {
 		logger.Log.Info("Skipping roles seeding: Data already exists")
 		return nil
 	}
@@ -83,7 +66,7 @@ func seedRoles(db *mongoDriver.Database, ctx context.Context) error {
 		models.Role{Name: "user"},
 	}
 
-	_, err = collection.InsertMany(ctx, roles)
+	_, err := collection.InsertMany(ctx, roles)
 	return err
 }
 
@@ -95,8 +78,7 @@ func seedRolePermissions(db *mongoDriver.Database, ctx context.Context) error {
 
 	// Find the "user" role
 	var userRole models.Role
-	err := roleCollection.FindOne(ctx, bson.M{"name": "user"}).Decode(&userRole)
-	if err != nil {
+	if err := roleCollection.FindOne(ctx, bson.M{"name": "user"}).Decode(&userRole); err != nil {
 		return fmt.Errorf("failed to find user role: %w", err)
 	}
 
@@ -113,11 +95,7 @@ func seedRolePermissions(db *mongoDriver.Database, ctx context.Context) error {
 	}
 
 	// Check if data already exists
-	existing, err := rolePermissionCollection.CountDocuments(ctx, bson.M{"role_id": userRole.ID})
-	if err != nil {
-		return err
-	}
-	if existing > 0 {
+	if exists, _ := hasExistingData(rolePermissionCollection, ctx, bson.M{"role_id": userRole.ID}); exists {
 		logger.Log.Info("Skipping role_permissions seeding: Data already exists")
 		return nil
 	}
@@ -133,4 +111,18 @@ func seedRolePermissions(db *mongoDriver.Database, ctx context.Context) error {
 
 	_, err = rolePermissionCollection.InsertMany(ctx, rolePermissions)
 	return err
+}
+
+// hasExistingData checks if a collection already contains data
+func hasExistingData(collection *mongoDriver.Collection, ctx context.Context, filter ...bson.M) (bool, error) {
+	query := bson.M{}
+	if len(filter) > 0 {
+		query = filter[0]
+	}
+
+	count, err := collection.CountDocuments(ctx, query)
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
 }
