@@ -12,6 +12,7 @@ import (
 type Container struct {
 	// Services
 	MongoService *services.MongoService
+	RedisService *services.RedisService
 	JwtService   *services.JWTService
 
 	// Repositories
@@ -25,8 +26,6 @@ type Container struct {
 	UserRepository             *repositories.UserRepository
 	UserRoleRepository         *repositories.UserRoleRepository
 
-	// Middleware
-
 	// Controllers
 	CheckHealthController  *health.CheckHealthController
 	RegisterController     *users.RegisterController
@@ -38,7 +37,8 @@ type Container struct {
 func NewContainer() *Container {
 	// Initialize services
 	mongoService := services.NewMongoService()
-	jwtService := services.NewJWTService()
+	redisService := services.NewRedisService()
+	jwtService := services.NewJWTService(redisService)
 
 	// Initialize repositories
 	permissionRepository := repositories.NewPermissionRepository(mongoService)
@@ -57,8 +57,6 @@ func NewContainer() *Container {
 	// Run database seeders
 	database.SeedCollections(permissionRepository, roleRepository, rolePermissionRepository)
 
-	// Initialize middleware
-
 	// Initialize controllers
 	checkHealthController := health.NewCheckHealthController()
 	registerController := users.NewRegisterController(userRepository, profileRepository, roleRepository, userRoleRepository)
@@ -68,6 +66,7 @@ func NewContainer() *Container {
 	// Return the container
 	return &Container{
 		MongoService:               mongoService,
+		RedisService:               redisService,
 		JwtService:                 jwtService,
 		PermissionRepository:       permissionRepository,
 		PolicyRepository:           policyRepository,
