@@ -64,7 +64,7 @@ func (rc *RequestTokenController) Handle(c *gin.Context) {
 }
 
 // validatePayload validates the incoming request payload
-func (rc *RequestTokenController) validatePayload(c *gin.Context, request interface{}) error {
+func (rc *RequestTokenController) validatePayload(c *gin.Context, request any) error {
 	if err := c.ShouldBindJSON(request); err != nil {
 		helpers.FormatResponse(c, "error", http.StatusBadRequest, "Invalid input", nil, nil)
 		return err

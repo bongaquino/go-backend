@@ -89,7 +89,7 @@ func (j *JWTService) GenerateTokens(userID string, email string) (accessToken st
 // ValidateToken parses and validates a JWT token
 func (j *JWTService) ValidateToken(tokenString string) (*Claims, error) {
 	// Parse token with claims
-	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (any, error) {
 		return []byte(j.secretKey), nil
 	})
 
