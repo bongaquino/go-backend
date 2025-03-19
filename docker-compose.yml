@@ -42,7 +42,6 @@ services:
     networks:
       - network
 
-
   # Redis Commander (Web UI for Redis)
   redis-commander:
     image: rediscommander/redis-commander:latest
@@ -52,22 +51,6 @@ services:
       REDIS_HOSTS: "local:redis:6379"
     ports:
       - "8083:8081"
-    networks:
-      - network
-
-  # RabbitMQ
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: rabbitmq
-    restart: unless-stopped
-    environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    volumes:
-      - rabbitmq-data:/var/lib/rabbitmq
     networks:
       - network
 
@@ -161,25 +144,6 @@ services:
     #     gelf-address: "udp://logstash:12201"
     #     tag: "orchestrator"
 
-  # Backup Service
-  backup-service:
-    image: koneksi/services/backup:latest
-    build:
-      context: services/backup
-      dockerfile: Dockerfile
-    container_name: backup-service
-    restart: unless-stopped
-    env_file:
-      - services/backup/.env
-    volumes:
-      - ./services/backup:/app
-    depends_on:
-      - mongo
-    ports:
-      - "3001:3001"
-    networks:
-      - network
-
   # Dashboard Service
   dashboard-service:
     image: koneksi/services/dashboard:latest
@@ -195,7 +159,7 @@ services:
     depends_on:
       - mongo
     ports:
-      - "3002:3002"
+      - "3001:3001"
     networks:
       - network
 
@@ -203,7 +167,6 @@ volumes:
   mongo-data:
   redis-data:
   elastic-data:
-  rabbitmq-data:
 
 networks:
   network:
