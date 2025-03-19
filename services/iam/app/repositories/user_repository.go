@@ -33,9 +33,6 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *models.User) erro
 		return err
 	}
 	user.Password = hashedPassword
-
-	// Set default values
-	user.IsVerified = false
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
 
