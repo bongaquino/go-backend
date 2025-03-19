@@ -1,7 +1,7 @@
 package start
 
 import (
-	ioc "koneksi/services/account/core/container"
+	ioc "koneksi/services/iam/core/container"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"

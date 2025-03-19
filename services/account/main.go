@@ -1,8 +1,8 @@
 package main
 
 import (
-	_ "koneksi/services/account/docs"
-	"koneksi/services/account/start"
+	_ "koneksi/services/iam/docs"
+	"koneksi/services/iam/start"
 )
 
 // @title Koneksi Orchestrator API

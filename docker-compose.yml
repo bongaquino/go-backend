@@ -120,18 +120,18 @@ services:
     networks:
       - network
 
-  # Account Service
-  account-service:
-    image: koneksi/services/account:latest
+  # IAM Service
+  iam-service:
+    image: koneksi/services/iam:latest
     build:
-      context: services/account
+      context: services/iam
       dockerfile: Dockerfile
-    container_name: account-service
+    container_name: iam-service
     restart: unless-stopped
     env_file:
-      - services/account/.env
+      - services/iam/.env
     volumes:
-      - ./services/account:/app
+      - ./services/iam:/app
     depends_on:
       - mongo
     ports:

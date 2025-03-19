@@ -1,11 +1,11 @@
 {
-  "name": "account-service",
-  "api_id": "account-service",
+  "name": "iam-service",
+  "api_id": "iam-service",
   "org_id": "default",
   "use_keyless": true,
   "proxy": {
-    "listen_path": "/accounts",
-    "target_url": "http://account-service:3000",
+    "listen_path": "/iam",
+    "target_url": "http://iam-service:3000",
     "strip_listen_path": true
   },
   "version_data": {

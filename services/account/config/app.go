@@ -1,6 +1,6 @@
 package config
 
-import "koneksi/services/account/core/env"
+import "koneksi/services/iam/core/env"
 
 // AppConfig holds the application configuration
 type AppConfig struct {

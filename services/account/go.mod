@@ -1,4 +1,4 @@
-module koneksi/services/account
+module koneksi/services/iam
 
 go 1.22.3
 
