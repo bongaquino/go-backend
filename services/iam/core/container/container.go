@@ -27,8 +27,9 @@ type Container struct {
 	// Middleware
 
 	// Controllers
-	CheckHealthController *health.CheckHealthController
-	RegisterController    *users.RegisterController
+	CheckHealthController  *health.CheckHealthController
+	RegisterController     *users.RegisterController
+	RequestTokenController *users.RequestTokenController
 }
 
 // NewContainer initializes a new IoC container
@@ -56,8 +57,9 @@ func NewContainer() *Container {
 	// Initialize middleware
 
 	// Initialize controllers
-	healthController := health.NewCheckHealthController()
+	checkHealthController := health.NewCheckHealthController()
 	registerController := users.NewRegisterController(userRepository, profileRepository, roleRepository, userRoleRepository)
+	requestTokenController := users.NewRequestTokenController(userRepository)
 
 	// Return the container
 	return &Container{
@@ -71,7 +73,8 @@ func NewContainer() *Container {
 		ServiceAccountRepository:   serviceAccountRepository,
 		UserRepository:             userRepository,
 		UserRoleRepository:         userRoleRepository,
-		CheckHealthController:      healthController,
+		CheckHealthController:      checkHealthController,
 		RegisterController:         registerController,
+		RequestTokenController:     requestTokenController,
 	}
 }

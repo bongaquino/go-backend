@@ -18,4 +18,7 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 
 	// Register
 	engine.POST("/register", container.RegisterController.Handle)
+
+	// Request token
+	engine.POST("/request-token", container.RequestTokenController.Handle)
 }
