@@ -7,11 +7,12 @@ import (
 )
 
 type User struct {
-	ID        string    `bson:"_id,omitempty"`
-	Email     string    `bson:"email"`
-	Password  string    `bson:"password"`
-	CreatedAt time.Time `bson:"created_at"`
-	UpdatedAt time.Time `bson:"updated_at"`
+	ID         string    `bson:"_id,omitempty"`
+	Email      string    `bson:"email"`
+	Password   string    `bson:"password"`
+	IsVerified bool      `bson:"is_verified"`
+	CreatedAt  time.Time `bson:"created_at"`
+	UpdatedAt  time.Time `bson:"updated_at"`
 }
 
 func (User) GetIndexes() []bson.D {

@@ -41,9 +41,8 @@ func (rc *RegisterController) Handle(c *gin.Context) {
 		ConfirmPassword string  `json:"confirm_password" binding:"required,eqfield=Password"`
 	}
 
-	// Bind and validate the request body
-	if err := c.ShouldBindJSON(&request); err != nil {
-		helpers.FormatResponse(c, "error", http.StatusBadRequest, "Invalid input", nil, nil)
+	// Validate the payload
+	if err := rc.validatePayload(c, &request); err != nil {
 		return
 	}
 
@@ -61,8 +60,9 @@ func (rc *RegisterController) Handle(c *gin.Context) {
 
 	// Create the user
 	user := &models.User{
-		Email:    request.Email,
-		Password: request.Password,
+		Email:      request.Email,
+		Password:   request.Password,
+		IsVerified: true,
 	}
 	if err := rc.userRepo.CreateUser(c.Request.Context(), user); err != nil {
 		logger.Log.Error("error creating user", logger.Error(err))
@@ -108,4 +108,13 @@ func (rc *RegisterController) Handle(c *gin.Context) {
 
 	// Respond with success
 	helpers.FormatResponse(c, "success", http.StatusCreated, "User registered successfully", nil, nil)
+}
+
+// validatePayload validates the incoming request payload
+func (rc *RegisterController) validatePayload(c *gin.Context, request interface{}) error {
+	if err := c.ShouldBindJSON(request); err != nil {
+		helpers.FormatResponse(c, "error", http.StatusBadRequest, "Invalid input", nil, nil)
+		return err
+	}
+	return nil
 }

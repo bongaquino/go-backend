@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"time"
 
 	"koneksi/services/iam/app/helpers"
 	"koneksi/services/iam/app/models"
@@ -32,6 +33,11 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *models.User) erro
 		return err
 	}
 	user.Password = hashedPassword
+
+	// Set default values
+	user.IsVerified = false
+	user.CreatedAt = time.Now()
+	user.UpdatedAt = time.Now()
 
 	_, err = r.collection.InsertOne(ctx, user)
 	if err != nil {
