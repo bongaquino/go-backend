@@ -31,6 +31,7 @@ type Container struct {
 	RegisterController     *users.RegisterController
 	RequestTokenController *users.RequestTokenController
 	RefreshTokenController *users.RefreshTokenController
+	RevokeTokenController  *users.RevokeTokenController
 }
 
 // NewContainer initializes a new IoC container
@@ -62,6 +63,7 @@ func NewContainer() *Container {
 	registerController := users.NewRegisterController(userRepository, profileRepository, roleRepository, userRoleRepository)
 	requestTokenController := users.NewRequestTokenController(userRepository, jwtService)
 	refreshTokenController := users.NewRefreshTokenController(userRepository, jwtService)
+	revokeTokenController := users.NewRevokeTokenController(userRepository, jwtService)
 
 	// Return the container
 	return &Container{
@@ -81,5 +83,6 @@ func NewContainer() *Container {
 		RegisterController:         registerController,
 		RequestTokenController:     requestTokenController,
 		RefreshTokenController:     refreshTokenController,
+		RevokeTokenController:      revokeTokenController,
 	}
 }
