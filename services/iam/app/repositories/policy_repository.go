@@ -31,6 +31,7 @@ func (r *PolicyRepository) CreatePolicy(ctx context.Context, policy *models.Poli
 	// Generate a new ObjectID for the policy
 	policy.ID = primitive.NewObjectID()
 
+	// Set timestamps
 	policy.CreatedAt = time.Now()
 	policy.UpdatedAt = time.Now()
 

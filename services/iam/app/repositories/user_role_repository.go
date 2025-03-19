@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"time"
 
 	"koneksi/services/iam/app/models"
 	"koneksi/services/iam/app/services"
@@ -29,6 +30,10 @@ func NewUserRoleRepository(mongoService *services.MongoService) *UserRoleReposit
 func (r *UserRoleRepository) CreateUserRole(ctx context.Context, userRole *models.UserRole) error {
 	// Generate a new ObjectID for the userRole
 	userRole.ID = primitive.NewObjectID()
+
+	// Set timestamps
+	userRole.CreatedAt = time.Now()
+	userRole.UpdatedAt = time.Now()
 
 	_, err := r.collection.InsertOne(ctx, userRole)
 	if err != nil {

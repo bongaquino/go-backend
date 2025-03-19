@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"time"
 
 	"koneksi/services/iam/app/models"
 	"koneksi/services/iam/app/services"
@@ -29,6 +30,10 @@ func NewPolicyPermissionRepository(mongoService *services.MongoService) *PolicyP
 func (r *PolicyPermissionRepository) CreatePolicyPermission(ctx context.Context, policyPermission *models.PolicyPermission) error {
 	// Generate a new ObjectID for the policyPermission
 	policyPermission.ID = primitive.NewObjectID()
+
+	// Set timestamps
+	policyPermission.CreatedAt = time.Now()
+	policyPermission.UpdatedAt = time.Now()
 
 	_, err := r.collection.InsertOne(ctx, policyPermission)
 	if err != nil {

@@ -31,6 +31,7 @@ func (r *ProfileRepository) CreateProfile(ctx context.Context, profile *models.P
 	// Generate a new ObjectID for the profile
 	profile.ID = primitive.NewObjectID()
 
+	// Set timestamps
 	profile.CreatedAt = time.Now()
 	profile.UpdatedAt = time.Now()
 

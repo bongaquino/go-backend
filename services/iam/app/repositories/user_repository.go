@@ -30,6 +30,10 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *models.User) erro
 	// Generate a new ObjectID for the user
 	user.ID = primitive.NewObjectID()
 
+	// Set timestamps
+	user.CreatedAt = time.Now()
+	user.UpdatedAt = time.Now()
+
 	// Hash the password before storing it
 	hashedPassword, err := helpers.HashPassword(user.Password)
 	if err != nil {

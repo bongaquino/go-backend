@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"time"
 
 	"koneksi/services/iam/app/models"
 	"koneksi/services/iam/app/services"
@@ -29,6 +30,10 @@ func NewRolePermissionRepository(mongoService *services.MongoService) *RolePermi
 func (r *RolePermissionRepository) CreateRolePermission(ctx context.Context, rolePermission *models.RolePermission) error {
 	// Generate a new ObjectID for the rolePermission
 	rolePermission.ID = primitive.NewObjectID()
+
+	// Set timestamps
+	rolePermission.CreatedAt = time.Now()
+	rolePermission.UpdatedAt = time.Now()
 
 	_, err := r.collection.InsertOne(ctx, rolePermission)
 	if err != nil {

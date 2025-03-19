@@ -31,8 +31,9 @@ func (r *PermissionRepository) CreatePermission(ctx context.Context, permission 
 	// Generate a new ObjectID for the permission
 	permission.ID = primitive.NewObjectID()
 
-	// Set the creation time of the permission
+	// Set timestamps
 	permission.CreatedAt = time.Now()
+	permission.UpdatedAt = time.Now()
 
 	_, err := r.collection.InsertOne(ctx, permission)
 	if err != nil {

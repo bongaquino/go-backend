@@ -31,7 +31,9 @@ func (r *RoleRepository) CreateRole(ctx context.Context, role *models.Role) erro
 	// Generate a new ObjectID for the role
 	role.ID = primitive.NewObjectID()
 
+	// Set timestamps
 	role.CreatedAt = time.Now()
+	role.UpdatedAt = time.Now()
 
 	_, err := r.collection.InsertOne(ctx, role)
 	if err != nil {

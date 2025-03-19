@@ -31,6 +31,7 @@ func (r *ServiceAccountRepository) CreateServiceAccount(ctx context.Context, acc
 	// Generate a new ObjectID for the account
 	account.ID = primitive.NewObjectID()
 
+	// Set timestamps
 	account.CreatedAt = time.Now()
 	account.UpdatedAt = time.Now()
 
