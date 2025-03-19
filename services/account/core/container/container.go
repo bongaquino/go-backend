@@ -2,7 +2,7 @@ package container
 
 import (
 	"koneksi/services/account/app/controllers/health"
-	"koneksi/services/account/app/repositories/user"
+	"koneksi/services/account/app/repositories"
 	"koneksi/services/account/app/services/mongo"
 	"koneksi/services/account/database"
 )
@@ -13,7 +13,7 @@ type Container struct {
 	MongoService *mongo.MongoService
 
 	// Repositories
-	UserRepository *user.UserRepository
+	UserRepository *repositories.UserRepository
 
 	// Middleware
 
@@ -32,7 +32,7 @@ func NewContainer() *Container {
 	// Run database seeders
 
 	// Initialize repositories
-	userRepository := user.NewUserRepository(mongoService)
+	userRepository := repositories.NewUserRepository(mongoService)
 
 	// Initialize middleware
 
