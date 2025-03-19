@@ -12,8 +12,9 @@ import (
 
 // JWTService handles JWT-related operations
 type JWTService struct {
-	secretKey     string
-	tokenDuration time.Duration
+	secretKey       string
+	tokenDuration   time.Duration
+	refreshDuration time.Duration
 }
 
 // NewJWTService initializes a new JWTService
@@ -25,8 +26,9 @@ func NewJWTService() *JWTService {
 	}
 
 	return &JWTService{
-		secretKey:     jwtConfig.JwtSecret,
-		tokenDuration: time.Duration(jwtConfig.JwtExpiration) * time.Minute,
+		secretKey:       jwtConfig.JwtSecret,
+		tokenDuration:   time.Duration(jwtConfig.JwtTokenExpiration) * time.Minute,   // Access token expiration
+		refreshDuration: time.Duration(jwtConfig.JwtRefreshExpiration) * time.Minute, // Refresh token expiration
 	}
 }
 
@@ -37,9 +39,10 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-// GenerateToken creates a new JWT token for a user
-func (j *JWTService) GenerateToken(userID string, email string) (string, error) {
-	claims := Claims{
+// GenerateTokens creates an access and refresh token for a user
+func (j *JWTService) GenerateTokens(userID string, email string) (accessToken string, refreshToken string, err error) {
+	// Generate access token (short-lived)
+	accessClaims := Claims{
 		UserID: userID,
 		Email:  email,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -48,9 +51,27 @@ func (j *JWTService) GenerateToken(userID string, email string) (string, error) 
 		},
 	}
 
-	// Create and sign the token
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(j.secretKey))
+	accessToken, err = jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims).SignedString([]byte(j.secretKey))
+	if err != nil {
+		return "", "", err
+	}
+
+	// Generate refresh token (long-lived)
+	refreshClaims := Claims{
+		UserID: userID,
+		Email:  email,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(j.refreshDuration)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+		},
+	}
+
+	refreshToken, err = jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims).SignedString([]byte(j.secretKey))
+	if err != nil {
+		return "", "", err
+	}
+
+	return accessToken, refreshToken, nil
 }
 
 // ValidateToken parses and validates a JWT token

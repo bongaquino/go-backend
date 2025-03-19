@@ -4,8 +4,9 @@ import "koneksi/services/iam/core/env"
 
 // JwtConfig holds the Jwt configuration
 type JwtConfig struct {
-	JwtSecret     string
-	JwtExpiration int
+	JwtSecret            string
+	JwtTokenExpiration   int
+	JwtRefreshExpiration int
 }
 
 func LoadJwtConfig() *JwtConfig {
@@ -14,7 +15,8 @@ func LoadJwtConfig() *JwtConfig {
 
 	// Create the configuration from environment variables
 	return &JwtConfig{
-		JwtSecret:     envVars.JwtSecret,
-		JwtExpiration: envVars.JwtExpiration,
+		JwtSecret:            envVars.JwtSecret,
+		JwtTokenExpiration:   envVars.JwtTokenExpiration,
+		JwtRefreshExpiration: envVars.JwtRefreshExpiration,
 	}
 }
