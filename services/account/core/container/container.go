@@ -29,6 +29,8 @@ func NewContainer() *Container {
 	// Run database migrations
 	database.MigrateCollections(mongoService)
 
+	// Run database seeders
+
 	// Initialize repositories
 	userRepository := user.NewUserRepository(mongoService)
 
