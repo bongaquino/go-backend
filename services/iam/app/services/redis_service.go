@@ -13,7 +13,7 @@ import (
 
 type RedisService struct {
 	client *redis.Client
-	prefix string // Add prefix field
+	prefix string
 }
 
 // NewRedisService initializes a new RedisService
@@ -36,19 +36,32 @@ func NewRedisService() *RedisService {
 
 	return &RedisService{
 		client: client,
-		prefix: redisConfig.RedisPrefix, // Set prefix
+		prefix: redisConfig.RedisPrefix,
 	}
 }
 
-// GetRedis retrieves the Redis client instance
-func (r *RedisService) GetRedis() *redis.Client {
-	if r.client == nil {
-		logger.Log.Fatal("redis not initialized")
+// prefixedKey adds the global prefix to a key if a prefix is set
+func (r *RedisService) prefixedKey(key string) string {
+	if r.prefix != "" {
+		return r.prefix + ":" + key
 	}
-	return r.client
+	return key
 }
 
-// AddPrefix adds the global prefix to a key
-func (r *RedisService) AddPrefix(key string) string {
-	return r.prefix + ":" + key
+// Set sets a key-value pair in Redis with the given expiration
+func (r *RedisService) Set(ctx context.Context, key string, value any, expiration time.Duration) error {
+	prefixedKey := r.prefixedKey(key)
+	return r.client.Set(ctx, prefixedKey, value, expiration).Err()
+}
+
+// Get retrieves the value of a key from Redis
+func (r *RedisService) Get(ctx context.Context, key string) (string, error) {
+	prefixedKey := r.prefixedKey(key)
+	return r.client.Get(ctx, prefixedKey).Result()
+}
+
+// Del deletes a key from Redis
+func (r *RedisService) Del(ctx context.Context, key string) error {
+	prefixedKey := r.prefixedKey(key)
+	return r.client.Del(ctx, prefixedKey).Err()
 }
