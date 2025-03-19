@@ -15,4 +15,7 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 
 	// Check health
 	engine.GET("/check-health", container.CheckHealthController.Handle)
+
+	// Register
+	engine.POST("/register", container.RegisterController.Handle)
 }

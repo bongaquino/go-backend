@@ -2,6 +2,7 @@ package container
 
 import (
 	"koneksi/services/iam/app/controllers/health"
+	"koneksi/services/iam/app/controllers/users"
 	"koneksi/services/iam/app/repositories"
 	"koneksi/services/iam/app/services"
 	"koneksi/services/iam/database"
@@ -27,6 +28,7 @@ type Container struct {
 
 	// Controllers
 	CheckHealthController *health.CheckHealthController
+	RegisterController    *users.RegisterController
 }
 
 // NewContainer initializes a new IoC container
@@ -55,7 +57,9 @@ func NewContainer() *Container {
 
 	// Initialize controllers
 	healthController := health.NewCheckHealthController()
+	registerController := users.NewRegisterController(userRepository, profileRepository)
 
+	// Return the container
 	return &Container{
 		MongoService:               mongoService,
 		PermissionRepository:       permissionRepository,
@@ -68,5 +72,6 @@ func NewContainer() *Container {
 		UserRepository:             userRepository,
 		UserRoleRepository:         userRoleRepository,
 		CheckHealthController:      healthController,
+		RegisterController:         registerController,
 	}
 }
