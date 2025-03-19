@@ -9,12 +9,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// HealthController handles health-related endpoints
-type HealthController struct{}
+// CheckHealthController handles health-related endpoints
+type CheckHealthController struct{}
 
-// NewHealthController initializes a new HealthController
-func NewHealthController() *HealthController {
-	return &HealthController{}
+// NewCheckHealthController initializes a new CheckHealthController
+func NewCheckHealthController() *CheckHealthController {
+	return &CheckHealthController{}
 }
 
 // Check processes a health check request
@@ -25,7 +25,7 @@ func NewHealthController() *HealthController {
 // @Produce  json
 // @Success 200 {object} map[string]interface{}
 // @Router / [get]
-func (hc *HealthController) Check(c *gin.Context) {
+func (hc *CheckHealthController) Handle(c *gin.Context) {
 	appConfig := config.LoadAppConfig()
 
 	// Respond with success
