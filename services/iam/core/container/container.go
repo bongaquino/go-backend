@@ -34,12 +34,6 @@ func NewContainer() *Container {
 	// Initialize services
 	mongoService := mongo.NewMongoService()
 
-	// Run database migrations
-	database.MigrateCollections(mongoService)
-
-	// Run database seeders
-	database.SeedCollections(mongoService)
-
 	// Initialize repositories
 	permissionRepository := repositories.NewPermissionRepository(mongoService)
 	policyRepository := repositories.NewPolicyRepository(mongoService)
@@ -50,6 +44,12 @@ func NewContainer() *Container {
 	serviceAccountRepository := repositories.NewServiceAccountRepository(mongoService)
 	userRepository := repositories.NewUserRepository(mongoService)
 	userRoleRepository := repositories.NewUserRoleRepository(mongoService)
+
+	// Run database migrations
+	database.MigrateCollections(mongoService)
+
+	// Run database seeders
+	database.SeedCollections(permissionRepository, roleRepository, rolePermissionRepository)
 
 	// Initialize middleware
 

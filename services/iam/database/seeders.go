@@ -4,29 +4,27 @@ import (
 	"context"
 	"fmt"
 	"koneksi/services/iam/app/models"
-	"koneksi/services/iam/app/services/mongo"
+	"koneksi/services/iam/app/repositories"
 	"koneksi/services/iam/core/logger"
-
-	"go.mongodb.org/mongo-driver/bson"
-	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 )
 
 // SeedCollections seeds initial data into MongoDB collections
-func SeedCollections(mongoService *mongo.MongoService) {
-	db := mongoService.GetDB()
+func SeedCollections(permissionRepo *repositories.PermissionRepository, roleRepo *repositories.RoleRepository, rolePermissionRepo *repositories.RolePermissionRepository) {
 	ctx := context.Background()
 
 	seeders := []struct {
 		Name   string
-		Seeder func(*mongoDriver.Database, context.Context) error
+		Seeder func(context.Context) error
 	}{
-		{"permissions", seedPermissions},
-		{"roles", seedRoles},
-		{"role_permissions", seedRolePermissions},
+		{"permissions", func(ctx context.Context) error { return seedPermissions(ctx, permissionRepo) }},
+		{"roles", func(ctx context.Context) error { return seedRoles(ctx, roleRepo) }},
+		{"role_permissions", func(ctx context.Context) error {
+			return seedRolePermissions(ctx, roleRepo, permissionRepo, rolePermissionRepo)
+		}},
 	}
 
 	for _, seeder := range seeders {
-		if err := seeder.Seeder(db, ctx); err != nil {
+		if err := seeder.Seeder(ctx); err != nil {
 			logger.Log.Error(fmt.Sprintf("Failed to seed collection: %s", seeder.Name), logger.Error(err))
 		} else {
 			logger.Log.Info(fmt.Sprintf("Seeded collection: %s", seeder.Name))
@@ -34,95 +32,99 @@ func SeedCollections(mongoService *mongo.MongoService) {
 	}
 }
 
-// seedPermissions inserts initial permissions
-func seedPermissions(db *mongoDriver.Database, ctx context.Context) error {
-	collection := db.Collection("permissions")
-
-	if exists, _ := hasExistingData(collection, ctx); exists {
-		logger.Log.Info("Skipping permissions seeding: Data already exists")
-		return nil
+// seedPermissions inserts initial permissions using the repository
+func seedPermissions(ctx context.Context, permissionRepo *repositories.PermissionRepository) error {
+	permissions := []models.Permission{
+		{Name: "upload_files"},
+		{Name: "download_files"},
+		{Name: "list_files"},
 	}
 
-	permissions := []any{
-		models.Permission{Name: "upload_files"},
-		models.Permission{Name: "download_files"},
-		models.Permission{Name: "list_files"},
+	for _, perm := range permissions {
+		existing, err := permissionRepo.ReadPermissionByName(ctx, perm.Name)
+		if err != nil {
+			return err
+		}
+		if existing == nil {
+			if err := permissionRepo.CreatePermission(ctx, &perm); err != nil {
+				return err
+			}
+		} else {
+			logger.Log.Info(fmt.Sprintf("Skipping permission: %s (already exists)", perm.Name))
+		}
 	}
-
-	_, err := collection.InsertMany(ctx, permissions)
-	return err
+	return nil
 }
 
-// seedRoles inserts initial roles
-func seedRoles(db *mongoDriver.Database, ctx context.Context) error {
-	collection := db.Collection("roles")
-
-	if exists, _ := hasExistingData(collection, ctx); exists {
-		logger.Log.Info("Skipping roles seeding: Data already exists")
-		return nil
+// seedRoles inserts initial roles using the repository
+func seedRoles(ctx context.Context, roleRepo *repositories.RoleRepository) error {
+	roles := []models.Role{
+		{Name: "user"},
 	}
 
-	roles := []any{
-		models.Role{Name: "user"},
+	for _, role := range roles {
+		existing, err := roleRepo.ReadRoleByName(ctx, role.Name)
+		if err != nil {
+			return err
+		}
+		if existing == nil {
+			if err := roleRepo.CreateRole(ctx, &role); err != nil {
+				return err
+			}
+		} else {
+			logger.Log.Info(fmt.Sprintf("Skipping role: %s (already exists)", role.Name))
+		}
 	}
-
-	_, err := collection.InsertMany(ctx, roles)
-	return err
+	return nil
 }
 
-// seedRolePermissions assigns all permissions to the "user" role
-func seedRolePermissions(db *mongoDriver.Database, ctx context.Context) error {
-	roleCollection := db.Collection("roles")
-	permissionCollection := db.Collection("permissions")
-	rolePermissionCollection := db.Collection("role_permissions")
-
+// seedRolePermissions assigns all permissions to the "user" role using repositories
+func seedRolePermissions(ctx context.Context, roleRepo *repositories.RoleRepository, permissionRepo *repositories.PermissionRepository, rolePermissionRepo *repositories.RolePermissionRepository) error {
 	// Find the "user" role
-	var userRole models.Role
-	if err := roleCollection.FindOne(ctx, bson.M{"name": "user"}).Decode(&userRole); err != nil {
-		return fmt.Errorf("failed to find user role: %w", err)
+	userRole, err := roleRepo.ReadRoleByName(ctx, "user")
+	if err != nil {
+		return err
+	}
+	if userRole == nil {
+		return fmt.Errorf("user role not found")
 	}
 
 	// Get all permissions
-	cursor, err := permissionCollection.Find(ctx, bson.M{})
-	if err != nil {
-		return fmt.Errorf("failed to retrieve permissions: %w", err)
-	}
-	defer cursor.Close(ctx)
+	permissions := []string{"upload_files", "download_files", "list_files"}
+	for _, permName := range permissions {
+		perm, err := permissionRepo.ReadPermissionByName(ctx, permName)
+		if err != nil {
+			return err
+		}
+		if perm == nil {
+			logger.Log.Warn(fmt.Sprintf("Skipping role permission seeding: Permission %s not found", permName))
+			continue
+		}
 
-	var permissions []models.Permission
-	if err = cursor.All(ctx, &permissions); err != nil {
-		return fmt.Errorf("failed to decode permissions: %w", err)
-	}
+		// Check if the role-permission already exists
+		existingPermissions, err := rolePermissionRepo.ReadRolePermissions(ctx, userRole.ID)
+		if err != nil {
+			return err
+		}
+		alreadyExists := false
+		for _, rp := range existingPermissions {
+			if rp.PermissionID == perm.ID {
+				alreadyExists = true
+				break
+			}
+		}
 
-	// Check if data already exists
-	if exists, _ := hasExistingData(rolePermissionCollection, ctx, bson.M{"role_id": userRole.ID}); exists {
-		logger.Log.Info("Skipping role_permissions seeding: Data already exists")
-		return nil
+		if !alreadyExists {
+			rolePermission := models.RolePermission{
+				RoleID:       userRole.ID,
+				PermissionID: perm.ID,
+			}
+			if err := rolePermissionRepo.CreateRolePermission(ctx, &rolePermission); err != nil {
+				return err
+			}
+		} else {
+			logger.Log.Info(fmt.Sprintf("Skipping role permission: %s -> %s (already exists)", userRole.Name, perm.Name))
+		}
 	}
-
-	// Create role-permission entries
-	var rolePermissions []any
-	for _, perm := range permissions {
-		rolePermissions = append(rolePermissions, models.RolePermission{
-			RoleID:       userRole.ID,
-			PermissionID: perm.ID,
-		})
-	}
-
-	_, err = rolePermissionCollection.InsertMany(ctx, rolePermissions)
-	return err
-}
-
-// hasExistingData checks if a collection already contains data
-func hasExistingData(collection *mongoDriver.Collection, ctx context.Context, filter ...bson.M) (bool, error) {
-	query := bson.M{}
-	if len(filter) > 0 {
-		query = filter[0]
-	}
-
-	count, err := collection.CountDocuments(ctx, query)
-	if err != nil {
-		return false, err
-	}
-	return count > 0, nil
+	return nil
 }
