@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"koneksi/services/iam/app/models"
-	"koneksi/services/iam/app/services/mongo"
+	"koneksi/services/iam/app/services"
 	"koneksi/services/iam/core/logger"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -17,7 +17,7 @@ type RolePermissionRepository struct {
 }
 
 // NewRolePermissionRepository initializes a new RolePermissionRepository.
-func NewRolePermissionRepository(mongoService *mongo.MongoService) *RolePermissionRepository {
+func NewRolePermissionRepository(mongoService *services.MongoService) *RolePermissionRepository {
 	db := mongoService.GetDB()
 	return &RolePermissionRepository{
 		collection: db.Collection("role_permissions"),

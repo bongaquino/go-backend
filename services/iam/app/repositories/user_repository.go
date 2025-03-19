@@ -5,7 +5,7 @@ import (
 
 	"koneksi/services/iam/app/helpers"
 	"koneksi/services/iam/app/models"
-	"koneksi/services/iam/app/services/mongo"
+	"koneksi/services/iam/app/services"
 	"koneksi/services/iam/core/logger"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -17,7 +17,7 @@ type UserRepository struct {
 }
 
 // NewUserRepository initializes a new UserRepository
-func NewUserRepository(mongoService *mongo.MongoService) *UserRepository {
+func NewUserRepository(mongoService *services.MongoService) *UserRepository {
 	db := mongoService.GetDB()
 	return &UserRepository{
 		collection: db.Collection("users"),

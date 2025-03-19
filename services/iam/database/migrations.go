@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"koneksi/services/iam/app/models"
-	"koneksi/services/iam/app/services/mongo"
+	"koneksi/services/iam/app/services"
 	"koneksi/services/iam/core/logger"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -13,7 +13,7 @@ import (
 )
 
 // MigrateCollections creates or updates collections with indexes
-func MigrateCollections(mongoService *mongo.MongoService) {
+func MigrateCollections(mongoService *services.MongoService) {
 	db := mongoService.GetDB()
 	ctx := context.Background()
 

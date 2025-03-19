@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"koneksi/services/iam/app/models"
-	"koneksi/services/iam/app/services/mongo"
+	"koneksi/services/iam/app/services"
 	"koneksi/services/iam/core/logger"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -18,7 +18,7 @@ type ServiceAccountRepository struct {
 }
 
 // NewServiceAccountRepository initializes a new ServiceAccountRepository.
-func NewServiceAccountRepository(mongoService *mongo.MongoService) *ServiceAccountRepository {
+func NewServiceAccountRepository(mongoService *services.MongoService) *ServiceAccountRepository {
 	db := mongoService.GetDB()
 	return &ServiceAccountRepository{
 		collection: db.Collection("service_accounts"),

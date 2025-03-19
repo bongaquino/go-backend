@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"koneksi/services/iam/app/models"
-	"koneksi/services/iam/app/services/mongo"
+	"koneksi/services/iam/app/services"
 	"koneksi/services/iam/core/logger"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -17,7 +17,7 @@ type PolicyPermissionRepository struct {
 }
 
 // NewPolicyPermissionRepository initializes a new PolicyPermissionRepository.
-func NewPolicyPermissionRepository(mongoService *mongo.MongoService) *PolicyPermissionRepository {
+func NewPolicyPermissionRepository(mongoService *services.MongoService) *PolicyPermissionRepository {
 	db := mongoService.GetDB()
 	return &PolicyPermissionRepository{
 		collection: db.Collection("policy_permissions"),

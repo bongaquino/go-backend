@@ -3,14 +3,14 @@ package container
 import (
 	"koneksi/services/iam/app/controllers/health"
 	"koneksi/services/iam/app/repositories"
-	"koneksi/services/iam/app/services/mongo"
+	"koneksi/services/iam/app/services"
 	"koneksi/services/iam/database"
 )
 
 // Container holds the dependencies for the application
 type Container struct {
 	// Services
-	MongoService *mongo.MongoService
+	MongoService *services.MongoService
 
 	// Repositories
 	PermissionRepository       *repositories.PermissionRepository
@@ -32,7 +32,7 @@ type Container struct {
 // NewContainer initializes a new IoC container
 func NewContainer() *Container {
 	// Initialize services
-	mongoService := mongo.NewMongoService()
+	mongoService := services.NewMongoService()
 
 	// Initialize repositories
 	permissionRepository := repositories.NewPermissionRepository(mongoService)

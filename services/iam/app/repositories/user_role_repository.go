@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"koneksi/services/iam/app/models"
-	"koneksi/services/iam/app/services/mongo"
+	"koneksi/services/iam/app/services"
 	"koneksi/services/iam/core/logger"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -17,7 +17,7 @@ type UserRoleRepository struct {
 }
 
 // NewUserRoleRepository initializes a new UserRoleRepository.
-func NewUserRoleRepository(mongoService *mongo.MongoService) *UserRoleRepository {
+func NewUserRoleRepository(mongoService *services.MongoService) *UserRoleRepository {
 	db := mongoService.GetDB()
 	return &UserRoleRepository{
 		collection: db.Collection("user_roles"),
