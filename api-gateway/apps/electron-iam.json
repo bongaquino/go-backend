@@ -18,7 +18,7 @@
           "custom_middleware": {
             "pre": [
               {
-                "path": "/users/**",
+                "path": "/users/*",
                 "method": "ALL",
                 "name": "authentication"
               }
