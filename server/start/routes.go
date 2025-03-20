@@ -26,7 +26,7 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 		tokenGroup.POST("/revoke", container.RevokeTokenController.Handle)
 	}
 
-	// Protected route
+	// Protected route (TESTING PURPOSES)
 	protected := engine.Group("/protected")
 	protected.Use(container.AuthnMiddleware.HandleAuth, container.VerifiedMiddleware.HandleVerified)
 	{
