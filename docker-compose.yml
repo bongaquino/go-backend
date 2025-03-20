@@ -99,16 +99,16 @@ services:
     networks:
       - network
 
-  # API Gateway
-  api-gateway:
+  # Gateway
+  gateway:
     image: tykio/tyk-gateway:latest
-    container_name: api-gateway
+    container_name: gateway
     ports:
       - "8080:8080"
     volumes:
-      - ./api-gateway/apps:/opt/tyk-gateway/apps
-      - ./api-gateway/templates:/opt/tyk-gateway/templates
-      - ./api-gateway/tyk.conf:/opt/tyk-gateway/tyk.conf
+      - ./gateway/apps:/opt/tyk-gateway/apps
+      - ./gateway/templates:/opt/tyk-gateway/templates
+      - ./gateway/tyk.conf:/opt/tyk-gateway/tyk.conf
     environment:
       TYK_GW_SECRET: "352d20ee67be67f6340b4c0605b044b7"
       TYK_GW_STORAGE_HOST: "redis"
@@ -120,7 +120,7 @@ services:
     networks:
       - network
 
-  # IAM Service
+  # Server
   server:
     image: koneksi/server:latest
     build:
