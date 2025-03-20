@@ -28,12 +28,11 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 
 	// Protected route
 	protected := engine.Group("/protected")
-	protected.Use(container.AuthnMiddleware.HandleAuth)
+	protected.Use(container.AuthnMiddleware.HandleAuth, container.VerifiedMiddleware.HandleVerified)
 	{
 		protected.GET("/test", func(c *gin.Context) {
 			userID := c.GetString("userID")
-			email := c.GetString("email")
-			c.JSON(200, gin.H{"message": "Access granted", "userID": userID, "email": email})
+			c.JSON(200, gin.H{"message": "Access granted", "userID": userID})
 		})
 	}
 }

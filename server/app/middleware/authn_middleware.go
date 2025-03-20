@@ -41,9 +41,8 @@ func NewAuthnMiddleware(jwtService *services.JWTService) *AuthnMiddleware {
 				return
 			}
 
-			// Set the user ID and email in the context
+			// Set the user ID in the context
 			c.Set("userID", claims.Sub)
-			c.Set("email", claims.Email)
 
 			// Continue to the next middleware
 			c.Next()

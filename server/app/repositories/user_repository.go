@@ -67,6 +67,19 @@ func (r *UserRepository) ReadUserByEmail(ctx context.Context, email string) (*mo
 	return &user, nil
 }
 
+func (r *UserRepository) ReadUserByID(ctx context.Context, id primitive.ObjectID) (*models.User, error) {
+	var user models.User
+	err := r.collection.FindOne(ctx, bson.M{"_id": id}).Decode(&user)
+	if err != nil {
+		if err == mongoDriver.ErrNoDocuments {
+			return nil, nil
+		}
+		logger.Log.Error("error reading user by ID", logger.Error(err))
+		return nil, err
+	}
+	return &user, nil
+}
+
 func (r *UserRepository) UpdateUser(ctx context.Context, email string, update bson.M) error {
 	_, err := r.collection.UpdateOne(ctx, bson.M{"email": email}, bson.M{"$set": update})
 	if err != nil {
