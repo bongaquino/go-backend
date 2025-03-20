@@ -18,11 +18,9 @@
           "custom_middleware": {
             "pre": [
               {
-                "path": "/electron/iam/users*",
+                "path": "/users/**",
                 "method": "ALL",
-                "name": "authentication",
-                "require_session": false,
-                "raw_body_only": false
+                "name": "authentication"
               }
             ]
           }
