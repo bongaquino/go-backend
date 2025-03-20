@@ -2,7 +2,7 @@
   "name": "koneksi-ipfs",
   "api_id": "koneksi-ipfs",
   "org_id": "default",
-  "use_keyless": false,
+  "use_keyless": true,
   "proxy": {
     "listen_path": "/ipfs",
     "target_url": "http://server:3000",
