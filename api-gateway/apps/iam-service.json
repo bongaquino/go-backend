@@ -2,7 +2,7 @@
   "name": "iam-service",
   "api_id": "iam-service",
   "org_id": "default",
-  "use_keyless": true,
+  "use_keyless": false,
   "proxy": {
     "listen_path": "/iam",
     "target_url": "http://iam-service:3000",
