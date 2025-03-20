@@ -30,6 +30,7 @@ type Container struct {
 
 	// Middleware
 	AuthnMiddleware    *middleware.AuthnMiddleware
+	AuthzMiddleware    *middleware.AuthzMiddleware
 	VerifiedMiddleware *middleware.VerifiedMiddleware
 
 	// Controllers
@@ -66,6 +67,7 @@ func NewContainer() *Container {
 
 	// Initialize middleware
 	authnMiddleware := middleware.NewAuthnMiddleware(jwtService)
+	authzMiddleware := middleware.NewAuthzMiddleware(userRoleRepository, roleRepository)
 	verifiedMiddleware := middleware.NewVerifiedMiddleware(userRepository)
 
 	// Initialize controllers
@@ -90,6 +92,7 @@ func NewContainer() *Container {
 		UserRepository:             userRepository,
 		UserRoleRepository:         userRoleRepository,
 		AuthnMiddleware:            authnMiddleware,
+		AuthzMiddleware:            authzMiddleware,
 		VerifiedMiddleware:         verifiedMiddleware,
 		CheckHealthController:      checkHealthController,
 		RegisterController:         registerController,

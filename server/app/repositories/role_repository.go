@@ -57,6 +57,26 @@ func (r *RoleRepository) ReadRoleByName(ctx context.Context, name string) (*mode
 	return &role, nil
 }
 
+// ReadRoleByID retrieves a role by ID.
+func (r *RoleRepository) ReadRoleByID(ctx context.Context, roleID string) (*models.Role, error) {
+	var role models.Role
+	objectID, err := primitive.ObjectIDFromHex(roleID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = r.collection.FindOne(ctx, bson.M{"_id": objectID}).Decode(&role)
+	if err != nil {
+		if err == mongoDriver.ErrNoDocuments {
+			return nil, nil
+		}
+		logger.Log.Error("error reading role by ID", logger.Error(err))
+		return nil, err
+	}
+
+	return &role, nil
+}
+
 // UpdateRole updates an existing role.
 func (r *RoleRepository) UpdateRole(ctx context.Context, name string, update bson.M) error {
 	_, err := r.collection.UpdateOne(ctx, bson.M{"name": name}, bson.M{"$set": update})
