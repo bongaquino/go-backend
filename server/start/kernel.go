@@ -31,6 +31,9 @@ func InitializeKernel() {
 	// Setup CORS
 	SetupCORS(engine)
 
+	// Register middleware
+	RegisterMiddleware(engine, container)
+
 	// Register routes
 	RegisterRoutes(engine, container)
 
