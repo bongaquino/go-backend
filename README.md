@@ -18,7 +18,7 @@ The following microservices and dependencies are available in this local develop
 | **Logstash**        | Data processing pipeline                 | `12201/udp`                             |
 | **Kibana**          | Visualization for Elasticsearch          | `5601`                                  |
 | **Tyk API Gateway** | API Gateway for managing requests        | `8080`                                  |
-| **IAM Service**     | Handles user authentication & accounts   | `3001`                                  |
+| **Koneksi Server**  | Core backend server                      | `3000`                                  |
 
 ### **📌 Prerequisites**
 Ensure you have the following installed:
@@ -89,17 +89,17 @@ docker compose logs -f api-gateway
 ## ⚙ **Configuration**
 
 ### **🔹 Environment Variables**
-Each microservice has its own `.env` file. The default locations are:
+The main server has its own `.env` file. The location is:
 
-- **IAM Service**: `services/iam/.env`
+- **Koneksi Server**: `server/.env`
 
-Make sure you update these files with the correct values before running the services.
+Make sure you update these file with the correct values before running the services.
 
 ### **🔹 Network Configuration**
 All services are attached to the `network` defined in `docker-compose.yml`, allowing them to communicate using **service names**.
 
 Example:
-- **IAM Service can connect to MongoDB** using:  
+- **Server can connect to MongoDB** using:  
   ```
   mongodb://root:password@mongo:27017
   ```
