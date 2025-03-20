@@ -15,5 +15,14 @@
         "name": "default"
       }
     }
+  },
+  "custom_middleware": {
+    "pre": [
+      {
+        "name": "authentication",
+        "path": "/opt/tyk-gateway/middleware/authentication.js",
+        "raw_body_only": false
+      }
+    ]
   }
 }
