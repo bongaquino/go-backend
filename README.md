@@ -83,7 +83,7 @@ docker compose logs -f <service_name>
 ```
 Example:
 ```sh
-docker compose logs -f api-gateway
+docker compose logs -f server
 ```
 
 ## ⚙ **Configuration**
@@ -93,7 +93,7 @@ The main server has its own `.env` file. The location is:
 
 - **Koneksi Server**: `server/.env`
 
-Make sure you update these file with the correct values before running the services.
+Make sure you update the file with the correct values before running the services.
 
 ### **🔹 Network Configuration**
 All services are attached to the `network` defined in `docker-compose.yml`, allowing them to communicate using **service names**.
@@ -106,7 +106,7 @@ Example:
 
 ## 🛠 **Adding a New Microservice**
 To add a new service:
-1. Create a directory under `services/` (e.g., `services/new-service`).
+1. Create a directory (e.g., `services/new-service`).
 2. Add a `Dockerfile` and configuration files.
 3. Update `docker-compose.yml` with:
    ```yaml
