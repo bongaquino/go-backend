@@ -1,6 +1,7 @@
 package start
 
 import (
+	"koneksi/server/app/middleware"
 	ioc "koneksi/server/core/container"
 
 	"github.com/gin-gonic/gin"
@@ -24,5 +25,16 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 		tokenGroup.POST("/request", container.RequestTokenController.Handle)
 		tokenGroup.POST("/refresh", container.RefreshTokenController.Handle)
 		tokenGroup.POST("/revoke", container.RevokeTokenController.Handle)
+	}
+
+	// Protected route
+	protected := engine.Group("/protected")
+	protected.Use(middleware.AuthMiddleware(container.JwtService))
+	{
+		protected.GET("/read", func(c *gin.Context) {
+			userID := c.GetString("userID")
+			email := c.GetString("email")
+			c.JSON(200, gin.H{"message": "Access granted", "userID": userID, "email": email})
+		})
 	}
 }

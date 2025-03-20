@@ -4,6 +4,7 @@ import (
 	"koneksi/server/app/controllers/health"
 	"koneksi/server/app/controllers/tokens"
 	"koneksi/server/app/controllers/users"
+	"koneksi/server/app/middleware"
 	"koneksi/server/app/repositories"
 	"koneksi/server/app/services"
 	"koneksi/server/database"
@@ -26,6 +27,9 @@ type Container struct {
 	ServiceAccountRepository   *repositories.ServiceAccountRepository
 	UserRepository             *repositories.UserRepository
 	UserRoleRepository         *repositories.UserRoleRepository
+
+	// Middleware
+	AuthMiddleware *middleware.AuthMiddleware
 
 	// Controllers
 	CheckHealthController  *health.CheckHealthController
@@ -60,6 +64,7 @@ func NewContainer() *Container {
 	database.SeedCollections(permissionRepository, roleRepository, rolePermissionRepository)
 
 	// Initialize middleware
+	authMiddleware := middleware.NewAuthMiddleware(jwtService)
 
 	// Initialize controllers
 	checkHealthController := health.NewCheckHealthController()
@@ -82,6 +87,7 @@ func NewContainer() *Container {
 		ServiceAccountRepository:   serviceAccountRepository,
 		UserRepository:             userRepository,
 		UserRoleRepository:         userRoleRepository,
+		AuthMiddleware:             authMiddleware,
 		CheckHealthController:      checkHealthController,
 		RegisterController:         registerController,
 		RequestTokenController:     requestTokenController,
