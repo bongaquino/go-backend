@@ -1,0 +1,19 @@
+{
+  "name": "electron-tokens",
+  "api_id": "electron-tokens",
+  "org_id": "default",
+  "use_keyless": true,
+  "proxy": {
+    "listen_path": "/electron/tokens",
+    "target_url": "http://iam-service:3001/tokens",
+    "strip_listen_path": true
+  },
+  "version_data": {
+    "not_versioned": true,
+    "versions": {
+      "default": {
+        "name": "default"
+      }
+    }
+  }
+}

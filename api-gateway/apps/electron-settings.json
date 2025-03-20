@@ -1,0 +1,28 @@
+{
+  "name": "electron-settings",
+  "api_id": "electron-settings",
+  "org_id": "default",
+  "use_keyless": true,
+  "proxy": {
+    "listen_path": "/electron/settings",
+    "target_url": "http://iam-service:3001/settings",
+    "strip_listen_path": true
+  },
+  "version_data": {
+    "not_versioned": true,
+    "versions": {
+      "default": {
+        "name": "default"
+      }
+    }
+  },
+  "custom_middleware": {
+    "pre": [
+      {
+        "name": "authentication",
+        "path": "/opt/tyk-gateway/middleware/authentication.js",
+        "raw_body_only": false
+      }
+    ]
+  }
+}
