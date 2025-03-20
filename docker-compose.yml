@@ -137,6 +137,8 @@ services:
       - mongo
     networks:
       - network
+    ports:
+      - "3000:3000"
     # logging:
     #   driver: "gelf"
     #   options:

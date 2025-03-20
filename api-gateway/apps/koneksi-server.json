@@ -1,11 +1,11 @@
 {
-  "name": "electron-tokens",
-  "api_id": "electron-tokens",
+  "name": "koneksi-server",
+  "api_id": "koneksi-server",
   "org_id": "default",
   "use_keyless": true,
   "proxy": {
-    "listen_path": "/electron/tokens",
-    "target_url": "http://iam-service:3001/tokens",
+    "listen_path": "/api",
+    "target_url": "http://iam-service:3000",
     "strip_listen_path": true
   },
   "version_data": {
