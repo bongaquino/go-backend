@@ -1,0 +1,43 @@
+package start
+
+import (
+	"fmt"
+
+	ioc "koneksi/services/iam/core/container"
+	"koneksi/services/iam/core/env"
+	"koneksi/services/iam/core/logger"
+
+	"github.com/gin-gonic/gin"
+)
+
+// InitializeKernel sets up the Gin engine and starts the server
+func InitializeKernel() {
+	// Load application environment variables
+	env := env.LoadEnv()
+
+	// Set Gin mode
+	if env.Mode == "release" {
+		gin.SetMode(gin.ReleaseMode)
+	} else {
+		gin.SetMode(gin.DebugMode)
+	}
+
+	// Initialize the Gin engine
+	engine := gin.Default()
+
+	// Initialize IoC container
+	container := ioc.NewContainer()
+
+	// Setup CORS
+	SetupCORS(engine)
+
+	// Register routes
+	RegisterRoutes(engine, container)
+
+	// Start the server on the specified port
+	address := fmt.Sprintf(":%d", env.Port)
+
+	if err := engine.Run(address); err != nil {
+		logger.Log.Fatal("failed to start server", logger.Error(err))
+	}
+}

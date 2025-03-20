@@ -17,7 +17,14 @@ func NewCheckHealthController() *CheckHealthController {
 	return &CheckHealthController{}
 }
 
-// Handles the health check endpoint
+// Check processes a health check request
+// @Summary Health check
+// @Description Get the health status of the server
+// @Tags health
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} map[string]interface{}
+// @Router / [get]
 func (hc *CheckHealthController) Handle(c *gin.Context) {
 	appConfig := config.LoadAppConfig()
 

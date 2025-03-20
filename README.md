@@ -18,7 +18,8 @@ The following microservices and dependencies are available in this local develop
 | **Logstash**        | Data processing pipeline                 | `12201/udp`                             |
 | **Kibana**          | Visualization for Elasticsearch          | `5601`                                  |
 | **Tyk API Gateway** | API Gateway for managing requests        | `8080`                                  |
-| **IAM Service** | Handles user authentication & accounts   | `3000`                                  |
+| **Health Service**  | Handles health checking of services      | `3000`                                  |
+| **IAM Service**     | Handles user authentication & accounts   | `3001`                                  |
 
 ### **📌 Prerequisites**
 Ensure you have the following installed:

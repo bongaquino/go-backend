@@ -11,7 +11,7 @@ import (
 type Env struct {
 	AppName              string `envconfig:"APP_NAME" default:"Koneksi"`
 	AppVersion           string `envconfig:"APP_VERSION" default:"1.0.0"`
-	Port                 int    `envconfig:"PORT" default:"3000"`
+	Port                 int    `envconfig:"PORT" default:"8080"`
 	Mode                 string `envconfig:"MODE" default:"debug"`
 	MongoHost            string `envconfig:"MONGO_HOST" default:"mongo"`
 	MongoPort            int    `envconfig:"MONGO_PORT" default:"27017"`
