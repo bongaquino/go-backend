@@ -20,7 +20,7 @@ func NewAuthMiddleware(jwtService *services.JWTService) *AuthMiddleware {
 			// Get the Authorization header
 			authHeader := c.GetHeader("Authorization")
 			if authHeader == "" {
-				helpers.FormatResponse(c, "error", http.StatusUnauthorized, "authorization header required", nil, nil)
+				helpers.FormatResponse(c, "error", http.StatusUnauthorized, "Authorization header required", nil, nil)
 				c.Abort()
 				return
 			}
@@ -28,7 +28,7 @@ func NewAuthMiddleware(jwtService *services.JWTService) *AuthMiddleware {
 			// Extract the token from the Authorization header
 			tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 			if tokenString == authHeader {
-				helpers.FormatResponse(c, "error", http.StatusUnauthorized, "invalid authorization header", nil, nil)
+				helpers.FormatResponse(c, "error", http.StatusUnauthorized, "Invalid authorization header", nil, nil)
 				c.Abort()
 				return
 			}
@@ -36,7 +36,7 @@ func NewAuthMiddleware(jwtService *services.JWTService) *AuthMiddleware {
 			// Validate the token
 			claims, err := jwtService.ValidateToken(tokenString)
 			if err != nil {
-				helpers.FormatResponse(c, "error", http.StatusUnauthorized, "invalid or expired token", nil, nil)
+				helpers.FormatResponse(c, "error", http.StatusUnauthorized, "Invalid or expired access token", nil, nil)
 				c.Abort()
 				return
 			}
