@@ -59,6 +59,8 @@ func NewContainer() *Container {
 	// Run database seeders
 	database.SeedCollections(permissionRepository, roleRepository, rolePermissionRepository)
 
+	// Initialize middleware
+
 	// Initialize controllers
 	checkHealthController := health.NewCheckHealthController()
 	registerController := users.NewRegisterController(userRepository, profileRepository, roleRepository, userRoleRepository)
