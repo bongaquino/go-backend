@@ -72,7 +72,9 @@ func (m *AuthzMiddleware) getUserRoles(ctx context.Context, userID string) ([]st
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(userRoles)
+
+	// TODO: Debug the fetched user roles
+	fmt.Printf("Roles for userID %s: %+v\n", userID, userRoles)
 
 	// Initialize a slice to store role names
 	var roles []string
