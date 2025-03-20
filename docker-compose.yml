@@ -134,8 +134,6 @@ services:
       - ./services/iam:/app
     depends_on:
       - mongo
-    ports:
-      - "3001:3001"
     networks:
       - network
     # logging:
