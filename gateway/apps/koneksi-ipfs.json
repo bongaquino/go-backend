@@ -2,17 +2,7 @@
   "name": "koneksi-ipfs",
   "api_id": "koneksi-ipfs",
   "org_id": "default",
-  "use_keyless": false,
-  "auth": {
-    "auth_header_name": "Authorization",
-    "jwt_signing_method": "HS256",
-    "jwt_source": "fJtc6V1BuycUOSRwF1yzRvwzwaFS3IfDmekyu2oR8gV0kIgJCSOSvA0gev_2bFbJuUOMub5_mey2dCv4zxPAow",
-    "jwt_identity_base_field": "sub",
-    "jwt_policy_field_name": "policy",
-    "jwt_scope_claim_name": "scope",
-    "jwt_default_policies": ["default"],
-    "jwt_source_is_base64": false
-  },
+  "use_keyless": true,
   "proxy": {
     "listen_path": "/ipfs",
     "target_url": "http://server:3000",
@@ -22,9 +12,18 @@
     "not_versioned": true,
     "versions": {
       "default": {
-        "name": "default",
-        "use_extended_paths": true
+        "name": "default"
       }
     }
+  },
+  "auth": {
+    "auth_header_name": "Authorization",
+    "jwt_signing_method": "HS256",
+    "jwt_source": "fJtc6V1BuycUOSRwF1yzRvwzwaFS3IfDmekyu2oR8gV0kIgJCSOSvA0gev_2bFbJuUOMub5_mey2dCv4zxPAow",
+    "jwt_identity_base_field": "sub",
+    "jwt_policy_field_name": "policy",
+    "jwt_scope_claim_name": "scope",
+    "jwt_default_policies": ["default"],
+    "jwt_source_is_base64": false
   }
 }
