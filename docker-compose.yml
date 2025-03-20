@@ -108,8 +108,6 @@ services:
     volumes:
       - ./api-gateway/apps:/opt/tyk-gateway/apps
       - ./api-gateway/middleware:/opt/tyk-gateway/middleware
-      - ./api-gateway/scripts:/opt/tyk-gateway/scripts
-      - ./api-gateway/templates:/opt/tyk-gateway/templates
       - ./api-gateway/tyk.conf:/opt/tyk-gateway/tyk.conf
     environment:
       TYK_GW_SECRET: "352d20ee67be67f6340b4c0605b044b7"
