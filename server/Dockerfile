@@ -17,7 +17,7 @@ RUN go mod download
 COPY . .
 
 # Expose the port the application runs on
-EXPOSE 3001
+EXPOSE 3000
 
 # Command to run the application
 CMD ["air", "-c", ".air.toml"]

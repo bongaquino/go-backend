@@ -3,9 +3,9 @@ package tokens
 import (
 	"net/http"
 
-	"koneksi/services/iam/app/helpers"
-	"koneksi/services/iam/app/repositories"
-	"koneksi/services/iam/app/services"
+	"koneksi/server/app/helpers"
+	"koneksi/server/app/repositories"
+	"koneksi/server/app/services"
 
 	"github.com/gin-gonic/gin"
 )

@@ -1,12 +1,12 @@
 package container
 
 import (
-	"koneksi/services/iam/app/controllers/health"
-	"koneksi/services/iam/app/controllers/tokens"
-	"koneksi/services/iam/app/controllers/users"
-	"koneksi/services/iam/app/repositories"
-	"koneksi/services/iam/app/services"
-	"koneksi/services/iam/database"
+	"koneksi/server/app/controllers/health"
+	"koneksi/server/app/controllers/tokens"
+	"koneksi/server/app/controllers/users"
+	"koneksi/server/app/repositories"
+	"koneksi/server/app/services"
+	"koneksi/server/database"
 )
 
 // Container holds the dependencies for the application

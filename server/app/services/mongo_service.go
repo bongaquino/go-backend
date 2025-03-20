@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"koneksi/services/iam/config"
-	"koneksi/services/iam/core/logger"
+	"koneksi/server/config"
+	"koneksi/server/core/logger"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"

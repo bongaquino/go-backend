@@ -1,7 +1,7 @@
 package start
 
 import (
-	ioc "koneksi/services/iam/core/container"
+	ioc "koneksi/server/core/container"
 
 	"github.com/gin-gonic/gin"
 )

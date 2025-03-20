@@ -3,9 +3,9 @@ package database
 import (
 	"context"
 	"fmt"
-	"koneksi/services/iam/app/models"
-	"koneksi/services/iam/app/services"
-	"koneksi/services/iam/core/logger"
+	"koneksi/server/app/models"
+	"koneksi/server/app/services"
+	"koneksi/server/core/logger"
 
 	"go.mongodb.org/mongo-driver/bson"
 	mongoDriver "go.mongodb.org/mongo-driver/mongo"

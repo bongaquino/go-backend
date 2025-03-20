@@ -3,10 +3,10 @@ package users
 import (
 	"net/http"
 
-	"koneksi/services/iam/app/helpers"
-	"koneksi/services/iam/app/models"
-	"koneksi/services/iam/app/repositories"
-	"koneksi/services/iam/core/logger"
+	"koneksi/server/app/helpers"
+	"koneksi/server/app/models"
+	"koneksi/server/app/repositories"
+	"koneksi/server/core/logger"
 
 	"github.com/gin-gonic/gin"
 )

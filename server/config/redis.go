@@ -1,6 +1,6 @@
 package config
 
-import "koneksi/services/iam/core/env"
+import "koneksi/server/core/env"
 
 // RedisConfig holds the Redis configuration
 type RedisConfig struct {

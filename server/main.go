@@ -1,7 +1,7 @@
 package main
 
 import (
-	"koneksi/services/iam/start"
+	"koneksi/server/start"
 )
 
 func main() {

@@ -107,7 +107,6 @@ services:
       - "8080:8080"
     volumes:
       - ./api-gateway/apps:/opt/tyk-gateway/apps
-      - ./api-gateway/middleware:/opt/tyk-gateway/middleware
       - ./api-gateway/templates:/opt/tyk-gateway/templates
       - ./api-gateway/tyk.conf:/opt/tyk-gateway/tyk.conf
     environment:
@@ -122,17 +121,17 @@ services:
       - network
 
   # IAM Service
-  iam-service:
-    image: koneksi/services/iam:latest
+  server:
+    image: koneksi/server:latest
     build:
-      context: services/iam
+      context: server
       dockerfile: Dockerfile
-    container_name: iam-service
+    container_name: server
     restart: unless-stopped
     env_file:
-      - services/iam/.env
+      - server/.env
     volumes:
-      - ./services/iam:/app
+      - ./server:/app
     depends_on:
       - mongo
     networks:

@@ -3,9 +3,9 @@ package database
 import (
 	"context"
 	"fmt"
-	"koneksi/services/iam/app/models"
-	"koneksi/services/iam/app/repositories"
-	"koneksi/services/iam/core/logger"
+	"koneksi/server/app/models"
+	"koneksi/server/app/repositories"
+	"koneksi/server/core/logger"
 )
 
 // SeedCollections seeds initial data into MongoDB collections
