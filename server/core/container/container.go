@@ -29,7 +29,7 @@ type Container struct {
 	UserRoleRepository         *repositories.UserRoleRepository
 
 	// Middleware
-	AuthMiddleware *middleware.AuthMiddleware
+	AuthnMiddleware *middleware.AuthnMiddleware
 
 	// Controllers
 	CheckHealthController  *health.CheckHealthController
@@ -64,7 +64,7 @@ func NewContainer() *Container {
 	database.SeedCollections(permissionRepository, roleRepository, rolePermissionRepository)
 
 	// Initialize middleware
-	authMiddleware := middleware.NewAuthMiddleware(jwtService)
+	AuthnMiddleware := middleware.NewAuthnMiddleware(jwtService)
 
 	// Initialize controllers
 	checkHealthController := health.NewCheckHealthController()
@@ -87,7 +87,7 @@ func NewContainer() *Container {
 		ServiceAccountRepository:   serviceAccountRepository,
 		UserRepository:             userRepository,
 		UserRoleRepository:         userRoleRepository,
-		AuthMiddleware:             authMiddleware,
+		AuthnMiddleware:            AuthnMiddleware,
 		CheckHealthController:      checkHealthController,
 		RegisterController:         registerController,
 		RequestTokenController:     requestTokenController,

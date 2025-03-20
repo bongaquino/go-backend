@@ -28,7 +28,7 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 
 	// Protected route
 	protected := engine.Group("/protected")
-	protected.Use(container.AuthMiddleware.HandleAuth)
+	protected.Use(container.AuthnMiddleware.HandleAuth)
 	{
 		protected.GET("/test", func(c *gin.Context) {
 			userID := c.GetString("userID")

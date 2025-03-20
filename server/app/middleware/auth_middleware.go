@@ -10,12 +10,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type AuthMiddleware struct {
+type AuthnMiddleware struct {
 	HandleAuth gin.HandlerFunc
 }
 
-func NewAuthMiddleware(jwtService *services.JWTService) *AuthMiddleware {
-	return &AuthMiddleware{
+func NewAuthnMiddleware(jwtService *services.JWTService) *AuthnMiddleware {
+	return &AuthnMiddleware{
 		HandleAuth: func(c *gin.Context) {
 			// Get the Authorization header
 			authHeader := c.GetHeader("Authorization")
