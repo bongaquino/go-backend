@@ -37,19 +37,21 @@ func NewJWTService(redisService *RedisService) *JWTService {
 
 // Claims structure for JWT
 type Claims struct {
-	UserID    string `json:"user_id"`
-	Email     string `json:"email"`
-	TokenType string `json:"token_type"`
+	Sub    string   `json:"sub"`
+	Email  string   `json:"email"`
+	Scope  string   `json:"scope"`
+	Policy []string `json:"policy"`
 	jwt.RegisteredClaims
 }
 
 // GenerateTokens creates an access and refresh token for a user
-func (j *JWTService) GenerateTokens(userID string, email string) (accessToken string, refreshToken string, err error) {
+func (j *JWTService) GenerateTokens(userID, email string) (accessToken, refreshToken string, err error) {
 	// Generate access token
 	accessClaims := Claims{
-		UserID:    userID,
-		Email:     email,
-		TokenType: "access",
+		Sub:    userID,
+		Email:  email,
+		Scope:  "access",
+		Policy: []string{"default"},
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(j.tokenDuration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -62,9 +64,10 @@ func (j *JWTService) GenerateTokens(userID string, email string) (accessToken st
 
 	// Generate refresh token
 	refreshClaims := Claims{
-		UserID:    userID,
-		Email:     email,
-		TokenType: "refresh",
+		Sub:    userID,
+		Email:  email,
+		Scope:  "refresh",
+		Policy: []string{"default"},
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(j.refreshDuration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -75,11 +78,11 @@ func (j *JWTService) GenerateTokens(userID string, email string) (accessToken st
 		return "", "", err
 	}
 
-	// Store the new refresh token in Redis (overwrite the old one)
+	// Store refresh token in Redis
 	ctx := context.Background()
 	err = j.redisService.Set(ctx, "refresh_token:"+userID, refreshToken, j.refreshDuration)
 	if err != nil {
-		logger.Log.Error("Failed to store new refresh token in Redis", logger.Error(err))
+		logger.Log.Error("Failed to store refresh token in Redis", logger.Error(err))
 		return "", "", err
 	}
 
@@ -88,44 +91,36 @@ func (j *JWTService) GenerateTokens(userID string, email string) (accessToken st
 
 // ValidateToken parses and validates a JWT token
 func (j *JWTService) ValidateToken(tokenString string) (*Claims, error) {
-	// Parse token with claims
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (any, error) {
 		return []byte(j.secretKey), nil
 	})
-
 	if err != nil {
 		return nil, err
 	}
 
-	// Validate claims
 	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
 		return claims, nil
 	}
-
 	return nil, errors.New("invalid token")
 }
 
 // ValidateRefreshToken checks if the refresh token is valid and exists in Redis
 func (j *JWTService) ValidateRefreshToken(tokenString string) (*Claims, error) {
-	// Validate JWT signature & structure
 	claims, err := j.ValidateToken(tokenString)
 	if err != nil {
 		return nil, err
 	}
 
-	// Ensure token type is "refresh"
-	if claims.TokenType != "refresh" {
+	if claims.Scope != "refresh" {
 		return nil, errors.New("invalid token type, expected refresh token")
 	}
 
-	// Check if the refresh token exists in Redis
 	ctx := context.Background()
-	storedToken, err := j.redisService.Get(ctx, "refresh_token:"+claims.UserID)
+	storedToken, err := j.redisService.Get(ctx, "refresh_token:"+claims.Sub)
 	if err != nil {
 		return nil, errors.New("refresh token not found or expired")
 	}
 
-	// Ensure the token matches the stored token
 	if storedToken != tokenString {
 		return nil, errors.New("refresh token mismatch")
 	}
@@ -133,7 +128,7 @@ func (j *JWTService) ValidateRefreshToken(tokenString string) (*Claims, error) {
 	return claims, nil
 }
 
-// RevokeRefreshToken removes a refresh token from Redis (logout)
+// RevokeRefreshToken removes a refresh token from Redis
 func (j *JWTService) RevokeRefreshToken(userID string) error {
 	ctx := context.Background()
 	return j.redisService.Del(ctx, "refresh_token:"+userID)
