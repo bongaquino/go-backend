@@ -9,6 +9,7 @@ import (
 // RegisterRoutes sets up the application's routes
 func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 	// Check Health Route
+	engine.GET("/", container.CheckHealthController.Handle)
 	engine.GET("/check-health", container.CheckHealthController.Handle)
 
 	// User Routes
