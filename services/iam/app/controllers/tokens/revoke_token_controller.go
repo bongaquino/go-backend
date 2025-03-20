@@ -43,7 +43,7 @@ func (rc *RevokeTokenController) Handle(c *gin.Context) {
 	}
 
 	// Check if user exists
-	user, err := rc.userRepo.ReadUserByEmail(c.Request.Context(), claims.Email)
+	user, err := rc.userRepo.ReadUserByEmail(c.Request.Context(), *claims.Email)
 	if err != nil || user == nil {
 		helpers.FormatResponse(c, "error", http.StatusUnauthorized, "User no longer exists", nil, nil)
 		return

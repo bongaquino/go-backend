@@ -37,20 +37,15 @@ func NewJWTService(redisService *RedisService) *JWTService {
 
 // Claims structure for JWT
 type Claims struct {
-	Sub      string `json:"sub"`
-	Email    string `json:"email"`
-	ClientId string `json:"client_id"`
-	Scope    string `json:"scope"`
+	Sub      string  `json:"sub"`
+	Email    *string `json:"email,omitempty"`
+	ClientId *string `json:"client_id,omitempty"`
+	Scope    string  `json:"scope"`
 	jwt.RegisteredClaims
 }
 
 // GenerateTokens creates an access and refresh token for a user
-func (j *JWTService) GenerateTokens(userID, email, clientID string) (accessToken, refreshToken string, err error) {
-	// Ensure only one of email or clientID is provided
-	if (email == "" && clientID == "") || (email != "" && clientID != "") {
-		return "", "", errors.New("either email or clientID must be provided, but not both")
-	}
-
+func (j *JWTService) GenerateTokens(userID string, email, clientID *string) (accessToken, refreshToken string, err error) {
 	// Generate access token
 	accessClaims := Claims{
 		Sub:      userID,

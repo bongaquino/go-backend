@@ -43,6 +43,8 @@ func (rc *RequestTokenController) Handle(c *gin.Context) {
 		return
 	}
 
+	// Get user rolw
+
 	// Verify password using the helper function
 	if !helpers.CheckPasswordHash(request.Password, user.Password) {
 		helpers.FormatResponse(c, "error", http.StatusUnauthorized, "Invalid credentials", nil, nil)
@@ -50,7 +52,7 @@ func (rc *RequestTokenController) Handle(c *gin.Context) {
 	}
 
 	// Generate both access & refresh tokens
-	accessToken, refreshToken, err := rc.jwtService.GenerateTokens(user.ID.Hex(), user.Email)
+	accessToken, refreshToken, err := rc.jwtService.GenerateTokens(user.ID.Hex(), &user.Email, nil)
 	if err != nil {
 		helpers.FormatResponse(c, "error", http.StatusInternalServerError, "Could not generate tokens", nil, nil)
 		return

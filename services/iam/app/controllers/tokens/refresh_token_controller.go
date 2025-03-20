@@ -43,14 +43,14 @@ func (rc *RefreshTokenController) Handle(c *gin.Context) {
 	}
 
 	// Check if user still exists
-	user, err := rc.userRepo.ReadUserByEmail(c.Request.Context(), claims.Email)
+	user, err := rc.userRepo.ReadUserByEmail(c.Request.Context(), *claims.Email)
 	if err != nil || user == nil {
 		helpers.FormatResponse(c, "error", http.StatusUnauthorized, "User no longer exists", nil, nil)
 		return
 	}
 
 	// Generate new access & refresh tokens (updates Redis)
-	accessToken, refreshToken, err := rc.jwtService.GenerateTokens(user.ID.Hex(), user.Email)
+	accessToken, refreshToken, err := rc.jwtService.GenerateTokens(user.ID.Hex(), &user.Email, nil)
 	if err != nil {
 		helpers.FormatResponse(c, "error", http.StatusInternalServerError, "Could not generate new tokens", nil, nil)
 		return
