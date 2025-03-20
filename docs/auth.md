@@ -1,4 +1,4 @@
-## IAM Service
+## Authentication and Authorization
 
 ### **Overview**
 
