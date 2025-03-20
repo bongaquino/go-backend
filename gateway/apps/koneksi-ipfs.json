@@ -2,7 +2,7 @@
   "name": "koneksi-ipfs",
   "api_id": "koneksi-ipfs",
   "org_id": "default",
-  "use_keyless": true,
+  "use_keyless": false,
   "proxy": {
     "listen_path": "/ipfs",
     "target_url": "http://server:3000",
@@ -21,9 +21,7 @@
     "jwt_signing_method": "HS256",
     "jwt_source": "fJtc6V1BuycUOSRwF1yzRvwzwaFS3IfDmekyu2oR8gV0kIgJCSOSvA0gev_2bFbJuUOMub5_mey2dCv4zxPAow",
     "jwt_identity_base_field": "sub",
-    "jwt_policy_field_name": "policy",
-    "jwt_scope_claim_name": "scope",
-    "jwt_default_policies": ["default"],
+    "jwt_policy_field_name": "scope",
     "jwt_source_is_base64": false
   }
 }
