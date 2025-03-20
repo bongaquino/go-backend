@@ -11,12 +11,12 @@ import (
 )
 
 type AuthnMiddleware struct {
-	HandleAuth gin.HandlerFunc
+	HandleAuthn gin.HandlerFunc
 }
 
 func NewAuthnMiddleware(jwtService *services.JWTService) *AuthnMiddleware {
 	return &AuthnMiddleware{
-		HandleAuth: func(c *gin.Context) {
+		HandleAuthn: func(c *gin.Context) {
 			// Get the Authorization header
 			authHeader := c.GetHeader("Authorization")
 			if authHeader == "" {
