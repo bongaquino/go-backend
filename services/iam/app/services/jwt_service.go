@@ -37,21 +37,26 @@ func NewJWTService(redisService *RedisService) *JWTService {
 
 // Claims structure for JWT
 type Claims struct {
-	Sub    string   `json:"sub"`
-	Email  string   `json:"email"`
-	Scope  string   `json:"scope"`
-	Policy []string `json:"policy"`
+	Sub      string `json:"sub"`
+	Email    string `json:"email"`
+	ClientId string `json:"client_id"`
+	Scope    string `json:"scope"`
 	jwt.RegisteredClaims
 }
 
 // GenerateTokens creates an access and refresh token for a user
-func (j *JWTService) GenerateTokens(userID, email string) (accessToken, refreshToken string, err error) {
+func (j *JWTService) GenerateTokens(userID, email, clientID string) (accessToken, refreshToken string, err error) {
+	// Ensure only one of email or clientID is provided
+	if (email == "" && clientID == "") || (email != "" && clientID != "") {
+		return "", "", errors.New("either email or clientID must be provided, but not both")
+	}
+
 	// Generate access token
 	accessClaims := Claims{
-		Sub:    userID,
-		Email:  email,
-		Scope:  "access",
-		Policy: []string{"default"},
+		Sub:      userID,
+		Email:    email,
+		ClientId: clientID,
+		Scope:    "access",
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(j.tokenDuration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -64,10 +69,10 @@ func (j *JWTService) GenerateTokens(userID, email string) (accessToken, refreshT
 
 	// Generate refresh token
 	refreshClaims := Claims{
-		Sub:    userID,
-		Email:  email,
-		Scope:  "refresh",
-		Policy: []string{"default"},
+		Sub:      userID,
+		Email:    email,
+		ClientId: clientID,
+		Scope:    "refresh",
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(j.refreshDuration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
