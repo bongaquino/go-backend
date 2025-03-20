@@ -3,8 +3,6 @@ var authentication = new TykJS.TykMiddleware.NewMiddleware({});
 
 // Middleware function to log JWT from Authorization header and pass the request
 authentication.NewProcessRequest(function(request, session, spec) {
-    console.log("Authentication middleware executed");
-
     // Extract the Authorization header from the request
     var authHeader = request.Headers["Authorization"];
 
