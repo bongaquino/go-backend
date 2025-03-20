@@ -13,12 +13,10 @@ import (
 	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 )
 
-// RoleRepository handles database operations for the Role model.
 type RoleRepository struct {
 	collection *mongoDriver.Collection
 }
 
-// NewRoleRepository initializes a new RoleRepository.
 func NewRoleRepository(mongoService *services.MongoService) *RoleRepository {
 	db := mongoService.GetDB()
 	return &RoleRepository{
@@ -26,12 +24,9 @@ func NewRoleRepository(mongoService *services.MongoService) *RoleRepository {
 	}
 }
 
-// CreateRole inserts a new role into the database.
 func (r *RoleRepository) CreateRole(ctx context.Context, role *models.Role) error {
-	// Generate a new ObjectID for the role
 	role.ID = primitive.NewObjectID()
 
-	// Set timestamps
 	role.CreatedAt = time.Now()
 	role.UpdatedAt = time.Now()
 
@@ -43,7 +38,6 @@ func (r *RoleRepository) CreateRole(ctx context.Context, role *models.Role) erro
 	return nil
 }
 
-// ReadRoleByName retrieves a role by name.
 func (r *RoleRepository) ReadRoleByName(ctx context.Context, name string) (*models.Role, error) {
 	var role models.Role
 	err := r.collection.FindOne(ctx, bson.M{"name": name}).Decode(&role)
@@ -57,7 +51,6 @@ func (r *RoleRepository) ReadRoleByName(ctx context.Context, name string) (*mode
 	return &role, nil
 }
 
-// ReadRoleByID retrieves a role by ID.
 func (r *RoleRepository) ReadRoleByID(ctx context.Context, roleID string) (*models.Role, error) {
 	var role models.Role
 	objectID, err := primitive.ObjectIDFromHex(roleID)
@@ -77,7 +70,6 @@ func (r *RoleRepository) ReadRoleByID(ctx context.Context, roleID string) (*mode
 	return &role, nil
 }
 
-// UpdateRole updates an existing role.
 func (r *RoleRepository) UpdateRole(ctx context.Context, name string, update bson.M) error {
 	_, err := r.collection.UpdateOne(ctx, bson.M{"name": name}, bson.M{"$set": update})
 	if err != nil {
@@ -87,7 +79,6 @@ func (r *RoleRepository) UpdateRole(ctx context.Context, name string, update bso
 	return nil
 }
 
-// DeleteRole removes a role from the database.
 func (r *RoleRepository) DeleteRole(ctx context.Context, name string) error {
 	_, err := r.collection.DeleteOne(ctx, bson.M{"name": name})
 	if err != nil {

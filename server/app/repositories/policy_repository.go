@@ -13,12 +13,10 @@ import (
 	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 )
 
-// PolicyRepository handles database operations for the Policy model.
 type PolicyRepository struct {
 	collection *mongoDriver.Collection
 }
 
-// NewPolicyRepository initializes a new PolicyRepository.
 func NewPolicyRepository(mongoService *services.MongoService) *PolicyRepository {
 	db := mongoService.GetDB()
 	return &PolicyRepository{
@@ -26,12 +24,9 @@ func NewPolicyRepository(mongoService *services.MongoService) *PolicyRepository 
 	}
 }
 
-// CreatePolicy inserts a new policy into the database.
 func (r *PolicyRepository) CreatePolicy(ctx context.Context, policy *models.Policy) error {
-	// Generate a new ObjectID for the policy
 	policy.ID = primitive.NewObjectID()
 
-	// Set timestamps
 	policy.CreatedAt = time.Now()
 	policy.UpdatedAt = time.Now()
 
@@ -43,7 +38,6 @@ func (r *PolicyRepository) CreatePolicy(ctx context.Context, policy *models.Poli
 	return nil
 }
 
-// ReadPolicyByName retrieves a policy by name.
 func (r *PolicyRepository) ReadPolicyByName(ctx context.Context, name string) (*models.Policy, error) {
 	var policy models.Policy
 	err := r.collection.FindOne(ctx, bson.M{"name": name}).Decode(&policy)
@@ -57,7 +51,6 @@ func (r *PolicyRepository) ReadPolicyByName(ctx context.Context, name string) (*
 	return &policy, nil
 }
 
-// UpdatePolicy updates an existing policy.
 func (r *PolicyRepository) UpdatePolicy(ctx context.Context, name string, update bson.M) error {
 	_, err := r.collection.UpdateOne(ctx, bson.M{"name": name}, bson.M{"$set": update})
 	if err != nil {
@@ -67,7 +60,6 @@ func (r *PolicyRepository) UpdatePolicy(ctx context.Context, name string, update
 	return nil
 }
 
-// DeletePolicy removes a policy from the database.
 func (r *PolicyRepository) DeletePolicy(ctx context.Context, name string) error {
 	_, err := r.collection.DeleteOne(ctx, bson.M{"name": name})
 	if err != nil {

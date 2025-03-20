@@ -18,7 +18,6 @@ type UserRepository struct {
 	collection *mongoDriver.Collection
 }
 
-// NewUserRepository initializes a new UserRepository
 func NewUserRepository(mongoService *services.MongoService) *UserRepository {
 	db := mongoService.GetDB()
 	return &UserRepository{
@@ -27,14 +26,11 @@ func NewUserRepository(mongoService *services.MongoService) *UserRepository {
 }
 
 func (r *UserRepository) CreateUser(ctx context.Context, user *models.User) error {
-	// Generate a new ObjectID for the user
 	user.ID = primitive.NewObjectID()
 
-	// Set timestamps
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
 
-	// Hash the password before storing it
 	hashedPassword, err := helpers.HashPassword(user.Password)
 	if err != nil {
 		logger.Log.Error("error hashing password", logger.Error(err))
@@ -42,7 +38,6 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *models.User) erro
 	}
 	user.Password = hashedPassword
 
-	// Set timestamps
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
 

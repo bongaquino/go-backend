@@ -13,12 +13,10 @@ import (
 	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 )
 
-// PolicyPermissionRepository handles database operations for the PolicyPermission model.
 type PolicyPermissionRepository struct {
 	collection *mongoDriver.Collection
 }
 
-// NewPolicyPermissionRepository initializes a new PolicyPermissionRepository.
 func NewPolicyPermissionRepository(mongoService *services.MongoService) *PolicyPermissionRepository {
 	db := mongoService.GetDB()
 	return &PolicyPermissionRepository{
@@ -26,12 +24,9 @@ func NewPolicyPermissionRepository(mongoService *services.MongoService) *PolicyP
 	}
 }
 
-// CreatePolicyPermission inserts a new policy-permission relationship into the database.
 func (r *PolicyPermissionRepository) CreatePolicyPermission(ctx context.Context, policyPermission *models.PolicyPermission) error {
-	// Generate a new ObjectID for the policyPermission
 	policyPermission.ID = primitive.NewObjectID()
 
-	// Set timestamps
 	policyPermission.CreatedAt = time.Now()
 	policyPermission.UpdatedAt = time.Now()
 
@@ -43,7 +38,6 @@ func (r *PolicyPermissionRepository) CreatePolicyPermission(ctx context.Context,
 	return nil
 }
 
-// ReadPolicyPermissions retrieves all permissions associated with a policy.
 func (r *PolicyPermissionRepository) ReadPolicyPermissions(ctx context.Context, policyID string) ([]models.PolicyPermission, error) {
 	var results []models.PolicyPermission
 
@@ -62,7 +56,6 @@ func (r *PolicyPermissionRepository) ReadPolicyPermissions(ctx context.Context, 
 	return results, nil
 }
 
-// ReadPermissionPolicies retrieves all policies associated with a permission.
 func (r *PolicyPermissionRepository) ReadPermissionPolicies(ctx context.Context, permissionID string) ([]models.PolicyPermission, error) {
 	var results []models.PolicyPermission
 
@@ -81,7 +74,6 @@ func (r *PolicyPermissionRepository) ReadPermissionPolicies(ctx context.Context,
 	return results, nil
 }
 
-// DeletePolicyPermission removes a specific policy-permission relationship.
 func (r *PolicyPermissionRepository) DeletePolicyPermission(ctx context.Context, policyID, permissionID string) error {
 	_, err := r.collection.DeleteOne(ctx, bson.M{"policy_id": policyID, "permission_id": permissionID})
 	if err != nil {

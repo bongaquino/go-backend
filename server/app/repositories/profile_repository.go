@@ -13,12 +13,10 @@ import (
 	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 )
 
-// ProfileRepository handles database operations for the Profile model.
 type ProfileRepository struct {
 	collection *mongoDriver.Collection
 }
 
-// NewProfileRepository initializes a new ProfileRepository.
 func NewProfileRepository(mongoService *services.MongoService) *ProfileRepository {
 	db := mongoService.GetDB()
 	return &ProfileRepository{
@@ -26,12 +24,9 @@ func NewProfileRepository(mongoService *services.MongoService) *ProfileRepositor
 	}
 }
 
-// CreateProfile inserts a new profile into the database.
 func (r *ProfileRepository) CreateProfile(ctx context.Context, profile *models.Profile) error {
-	// Generate a new ObjectID for the profile
 	profile.ID = primitive.NewObjectID()
 
-	// Set timestamps
 	profile.CreatedAt = time.Now()
 	profile.UpdatedAt = time.Now()
 
@@ -43,7 +38,6 @@ func (r *ProfileRepository) CreateProfile(ctx context.Context, profile *models.P
 	return nil
 }
 
-// ReadProfileByUserID retrieves a profile by user ID.
 func (r *ProfileRepository) ReadProfileByUserID(ctx context.Context, userID string) (*models.Profile, error) {
 	var profile models.Profile
 	err := r.collection.FindOne(ctx, bson.M{"user_id": userID}).Decode(&profile)
@@ -57,7 +51,6 @@ func (r *ProfileRepository) ReadProfileByUserID(ctx context.Context, userID stri
 	return &profile, nil
 }
 
-// UpdateProfile updates an existing profile.
 func (r *ProfileRepository) UpdateProfile(ctx context.Context, userID string, update bson.M) error {
 	update["updated_at"] = time.Now()
 
@@ -69,7 +62,6 @@ func (r *ProfileRepository) UpdateProfile(ctx context.Context, userID string, up
 	return nil
 }
 
-// DeleteProfile removes a profile from the database.
 func (r *ProfileRepository) DeleteProfile(ctx context.Context, userID string) error {
 	_, err := r.collection.DeleteOne(ctx, bson.M{"user_id": userID})
 	if err != nil {

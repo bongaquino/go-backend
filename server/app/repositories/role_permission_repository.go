@@ -13,12 +13,10 @@ import (
 	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 )
 
-// RolePermissionRepository handles database operations for the RolePermission model.
 type RolePermissionRepository struct {
 	collection *mongoDriver.Collection
 }
 
-// NewRolePermissionRepository initializes a new RolePermissionRepository.
 func NewRolePermissionRepository(mongoService *services.MongoService) *RolePermissionRepository {
 	db := mongoService.GetDB()
 	return &RolePermissionRepository{
@@ -26,12 +24,9 @@ func NewRolePermissionRepository(mongoService *services.MongoService) *RolePermi
 	}
 }
 
-// CreateRolePermission inserts a new role-permission relationship into the database.
 func (r *RolePermissionRepository) CreateRolePermission(ctx context.Context, rolePermission *models.RolePermission) error {
-	// Generate a new ObjectID for the rolePermission
 	rolePermission.ID = primitive.NewObjectID()
 
-	// Set timestamps
 	rolePermission.CreatedAt = time.Now()
 	rolePermission.UpdatedAt = time.Now()
 
@@ -43,7 +38,6 @@ func (r *RolePermissionRepository) CreateRolePermission(ctx context.Context, rol
 	return nil
 }
 
-// ReadRolePermissions retrieves all permissions associated with a role.
 func (r *RolePermissionRepository) ReadRolePermissions(ctx context.Context, roleID string) ([]models.RolePermission, error) {
 	var results []models.RolePermission
 
@@ -62,7 +56,6 @@ func (r *RolePermissionRepository) ReadRolePermissions(ctx context.Context, role
 	return results, nil
 }
 
-// ReadPermissionRoles retrieves all roles associated with a permission.
 func (r *RolePermissionRepository) ReadPermissionRoles(ctx context.Context, permissionID string) ([]models.RolePermission, error) {
 	var results []models.RolePermission
 
@@ -81,7 +74,6 @@ func (r *RolePermissionRepository) ReadPermissionRoles(ctx context.Context, perm
 	return results, nil
 }
 
-// DeleteRolePermission removes a specific role-permission relationship.
 func (r *RolePermissionRepository) DeleteRolePermission(ctx context.Context, roleID, permissionID string) error {
 	_, err := r.collection.DeleteOne(ctx, bson.M{"role_id": roleID, "permission_id": permissionID})
 	if err != nil {

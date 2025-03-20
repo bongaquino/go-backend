@@ -13,12 +13,10 @@ import (
 	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 )
 
-// PermissionRepository handles database operations for the Permission model.
 type PermissionRepository struct {
 	collection *mongoDriver.Collection
 }
 
-// NewPermissionRepository initializes a new PermissionRepository.
 func NewPermissionRepository(mongoService *services.MongoService) *PermissionRepository {
 	db := mongoService.GetDB()
 	return &PermissionRepository{
@@ -26,12 +24,9 @@ func NewPermissionRepository(mongoService *services.MongoService) *PermissionRep
 	}
 }
 
-// CreatePermission inserts a new permission into the database.
 func (r *PermissionRepository) CreatePermission(ctx context.Context, permission *models.Permission) error {
-	// Generate a new ObjectID for the permission
 	permission.ID = primitive.NewObjectID()
 
-	// Set timestamps
 	permission.CreatedAt = time.Now()
 	permission.UpdatedAt = time.Now()
 
@@ -43,7 +38,6 @@ func (r *PermissionRepository) CreatePermission(ctx context.Context, permission 
 	return nil
 }
 
-// ReadPermissionByName retrieves a permission by name.
 func (r *PermissionRepository) ReadPermissionByName(ctx context.Context, name string) (*models.Permission, error) {
 	var permission models.Permission
 	err := r.collection.FindOne(ctx, bson.M{"name": name}).Decode(&permission)
@@ -57,7 +51,6 @@ func (r *PermissionRepository) ReadPermissionByName(ctx context.Context, name st
 	return &permission, nil
 }
 
-// UpdatePermission updates an existing permission.
 func (r *PermissionRepository) UpdatePermission(ctx context.Context, name string, update bson.M) error {
 	_, err := r.collection.UpdateOne(ctx, bson.M{"name": name}, bson.M{"$set": update})
 	if err != nil {
@@ -67,7 +60,6 @@ func (r *PermissionRepository) UpdatePermission(ctx context.Context, name string
 	return nil
 }
 
-// DeletePermission removes a permission from the database.
 func (r *PermissionRepository) DeletePermission(ctx context.Context, name string) error {
 	_, err := r.collection.DeleteOne(ctx, bson.M{"name": name})
 	if err != nil {
