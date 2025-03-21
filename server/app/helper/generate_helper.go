@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
+	"koneksi/server/config"
 
 	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/totp"
@@ -31,8 +32,10 @@ func generateRandomString(length int) (string, error) {
 
 // GenerateOTPSecret generates a TOTP secret for the user
 func GenerateOTPSecret(userID string) (string, error) {
+	appConfig := config.LoadAppConfig()
+
 	secret, err := totp.Generate(totp.GenerateOpts{
-		Issuer:      "KoneksiApp",
+		Issuer:      appConfig.AppName,
 		AccountName: userID,
 	})
 	if err != nil {
