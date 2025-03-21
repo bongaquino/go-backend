@@ -59,5 +59,5 @@ func (voc *EnableMFAController) Handle(c *gin.Context) {
 	}
 
 	// Respond with success
-	helper.FormatResponse(c, "success", http.StatusOK, "OTP verified successfully", nil, nil)
+	helper.FormatResponse(c, "success", http.StatusOK, "MFA enabled successfully", nil, nil)
 }
