@@ -25,9 +25,9 @@ func NewResetPasswordController(userService *service.UserService) *ResetPassword
 func (rpc *ResetPasswordController) Handle(c *gin.Context) {
 	var request struct {
 		Email              string `json:"email" binding:"required,email"`
-		ResetCode          string `json:"resetCode" binding:"required"`
-		NewPassword        string `json:"newPassword" binding:"required,min=8"`
-		ConfirmNewPassword string `json:"confirmNewPassword" binding:"required,min=8"`
+		ResetCode          string `json:"reset_code" binding:"required"`
+		NewPassword        string `json:"new_password" binding:"required,min=8"`
+		ConfirmNewPassword string `json:"confirm_new_password" binding:"required,eqfield=NewPassword"`
 	}
 
 	// Validate the request payload
