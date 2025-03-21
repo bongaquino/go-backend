@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"strings"
 )
 
 // GenerateClientID generates a cryptographically safe client ID.
@@ -34,5 +35,5 @@ func GenerateResetCode(length int) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to generate reset code: %w", err)
 	}
-	return hex.EncodeToString(bytes), nil
+	return strings.ToUpper(hex.EncodeToString(bytes)), nil
 }
