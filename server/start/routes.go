@@ -26,13 +26,10 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 		tokenGroup.POST("/revoke", container.RevokeTokenController.Handle)
 	}
 
-	// Test route
-	protected := engine.Group("/protected")
-	// protected.Use(container.AuthnMiddleware.HandleAuthn, container.AuthzMiddleware.HandleAuthz([]string{"user"}), container.VerifiedMiddleware.HandleVerified)
-	protected.Use(container.AuthnMiddleware.HandleAuthn, container.VerifiedMiddleware.HandleVerified)
+	// Settings Routes
+	settingsGroup := engine.Group("/settings")
+	settingsGroup.Use(container.AuthnMiddleware.HandleAuthn, container.VerifiedMiddleware.HandleVerified)
 	{
-		protected.GET("/test", func(c *gin.Context) {
-			c.JSON(200, gin.H{"message": "Access granted"})
-		})
+		settingsGroup.POST("/change-password", container.ChangePasswordController.Handle)
 	}
 }

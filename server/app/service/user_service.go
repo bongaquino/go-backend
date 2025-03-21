@@ -4,9 +4,13 @@ import (
 	"context"
 	"errors"
 	"koneksi/server/app/dto"
+	"koneksi/server/app/helper"
 	"koneksi/server/app/model"
 	"koneksi/server/app/repository"
 	"koneksi/server/core/logger"
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type UserService struct {
@@ -25,6 +29,7 @@ func NewUserService(userRepo *repository.UserRepository, profileRepo *repository
 	}
 }
 
+// RegisterUser registers a new user
 func (us *UserService) RegisterUser(ctx context.Context, request *dto.RegisterUser) (*model.User, *model.Profile, *model.UserRole, error) {
 	existingUser, err := us.userRepo.ReadUserByEmail(ctx, request.Email)
 	if err != nil {
@@ -76,4 +81,48 @@ func (us *UserService) RegisterUser(ctx context.Context, request *dto.RegisterUs
 	}
 
 	return user, profile, userRoleAssignment, nil
+}
+
+// ChangePassword changes the user's password
+func (us *UserService) ChangePassword(ctx context.Context, userID string, request *dto.ChangePasswordDTO) error {
+	// Convert userID to primitive.ObjectID
+	objectID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		logger.Log.Error("invalid user ID format", logger.Error(err))
+		return errors.New("invalid user ID format")
+	}
+
+	// Fetch the user from the repository
+	user, err := us.userRepo.ReadUserByID(ctx, objectID)
+	if err != nil {
+		logger.Log.Error("error fetching user by ID", logger.Error(err))
+		return errors.New("failed to retrieve user")
+	}
+	if user == nil {
+		return errors.New("user not found")
+	}
+
+	// Verify the old password
+	if !helper.CheckPasswordHash(request.OldPassword, user.Password) {
+		return errors.New("old password is incorrect")
+	}
+
+	// Hash the new password
+	hashedPassword, err := helper.HashPassword(request.NewPassword)
+	if err != nil {
+		logger.Log.Error("error hashing new password", logger.Error(err))
+		return errors.New("failed to hash new password")
+	}
+
+	// Update the user's password in the repository
+	update := map[string]any{
+		"password":  hashedPassword,
+		"updatedAt": time.Now(),
+	}
+	if err := us.userRepo.UpdateUser(ctx, user.Email, update); err != nil {
+		logger.Log.Error("error updating user password", logger.Error(err))
+		return errors.New("failed to update password")
+	}
+
+	return nil
 }

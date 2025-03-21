@@ -2,6 +2,7 @@ package container
 
 import (
 	"koneksi/server/app/controller/health"
+	"koneksi/server/app/controller/settings"
 	"koneksi/server/app/controller/tokens"
 	"koneksi/server/app/controller/users"
 	"koneksi/server/app/middleware"
@@ -39,11 +40,12 @@ type Container struct {
 	VerifiedMiddleware *middleware.VerifiedMiddleware
 
 	// Controllers
-	CheckHealthController  *health.CheckHealthController
-	RegisterController     *users.RegisterController
-	RequestTokenController *tokens.RequestTokenController
-	RefreshTokenController *tokens.RefreshTokenController
-	RevokeTokenController  *tokens.RevokeTokenController
+	CheckHealthController    *health.CheckHealthController
+	RegisterController       *users.RegisterController
+	RequestTokenController   *tokens.RequestTokenController
+	RefreshTokenController   *tokens.RefreshTokenController
+	RevokeTokenController    *tokens.RevokeTokenController
+	ChangePasswordController *settings.ChangePasswordController
 }
 
 // NewContainer initializes a new IoC container
@@ -85,6 +87,7 @@ func NewContainer() *Container {
 	requestTokenController := tokens.NewRequestTokenController(tokenService)
 	refreshTokenController := tokens.NewRefreshTokenController(tokenService)
 	revokeTokenController := tokens.NewRevokeTokenController(tokenService)
+	changePasswordController := settings.NewChangePasswordController(userService)
 
 	// Return the container
 	return &Container{
@@ -110,5 +113,6 @@ func NewContainer() *Container {
 		RequestTokenController:     requestTokenController,
 		RefreshTokenController:     refreshTokenController,
 		RevokeTokenController:      revokeTokenController,
+		ChangePasswordController:   changePasswordController,
 	}
 }
