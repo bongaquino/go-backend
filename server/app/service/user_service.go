@@ -25,7 +25,7 @@ func NewUserService(userRepo *repository.UserRepository, profileRepo *repository
 	}
 }
 
-func (us *UserService) RegisterUser(ctx context.Context, request *dto.UserRegister) (*model.User, *model.Profile, *model.UserRole, error) {
+func (us *UserService) RegisterUser(ctx context.Context, request *dto.NewUser) (*model.User, *model.Profile, *model.UserRole, error) {
 	existingUser, err := us.userRepo.ReadUserByEmail(ctx, request.Email)
 	if err != nil {
 		logger.Log.Error("error checking existing user", logger.Error(err))

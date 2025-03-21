@@ -21,7 +21,7 @@ func NewRegisterController(userService *service.UserService) *RegisterController
 }
 
 func (rc *RegisterController) Handle(c *gin.Context) {
-	var request dto.UserRegister
+	var request dto.NewUser
 
 	if err := rc.validatePayload(c, &request); err != nil {
 		return

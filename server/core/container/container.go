@@ -15,10 +15,10 @@ import (
 type Container struct {
 	// Providers
 	mongoProvider *provider.MongoProvider
-	RedisService  *provider.RedisProvider
-	JwtService    *provider.JwtProvider
+	RedisProvider *provider.RedisProvider
+	JwtProvider   *provider.JwtProvider
 
-	// repository
+	// Repository
 	PermissionRepository       *repository.PermissionRepository
 	PolicyRepository           *repository.PolicyRepository
 	PolicyPermissionRepository *repository.PolicyPermissionRepository
@@ -29,8 +29,9 @@ type Container struct {
 	UserRepository             *repository.UserRepository
 	UserRoleRepository         *repository.UserRoleRepository
 
-	// service
-	UserService *service.UserService
+	// Service
+	UserService  *service.UserService
+	TokenService *service.TokenService
 
 	// Middleware
 	AuthnMiddleware    *middleware.AuthnMiddleware
@@ -65,6 +66,7 @@ func NewContainer() *Container {
 
 	// Initialize service
 	userService := service.NewUserService(userRepository, profileRepository, roleRepository, userRoleRepository)
+	tokenService := service.NewTokenService(userRepository, JwtProvider)
 
 	// Run database migrations
 	database.MigrateCollections(mongoProvider)
@@ -80,15 +82,15 @@ func NewContainer() *Container {
 	// Initialize controllers
 	checkHealthController := health.NewCheckHealthController()
 	registerController := users.NewRegisterController(userService)
-	requestTokenController := tokens.NewRequestTokenController(userRepository, JwtProvider)
+	requestTokenController := tokens.NewRequestTokenController(tokenService)
 	refreshTokenController := tokens.NewRefreshTokenController(userRepository, JwtProvider)
 	revokeTokenController := tokens.NewRevokeTokenController(userRepository, JwtProvider)
 
 	// Return the container
 	return &Container{
 		mongoProvider:              mongoProvider,
-		RedisService:               redisProvider,
-		JwtService:                 JwtProvider,
+		RedisProvider:              redisProvider,
+		JwtProvider:                JwtProvider,
 		PermissionRepository:       permissionRepository,
 		PolicyRepository:           policyRepository,
 		PolicyPermissionRepository: policyPermissionRepository,
@@ -99,6 +101,7 @@ func NewContainer() *Container {
 		UserRepository:             userRepository,
 		UserRoleRepository:         userRoleRepository,
 		UserService:                userService,
+		TokenService:               tokenService,
 		AuthnMiddleware:            authnMiddleware,
 		AuthzMiddleware:            authzMiddleware,
 		VerifiedMiddleware:         verifiedMiddleware,

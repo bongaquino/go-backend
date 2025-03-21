@@ -1,6 +1,6 @@
 package dto
 
-type UserRegister struct {
+type NewUser struct {
 	FirstName       string  `json:"first_name" binding:"required"`
 	MiddleName      *string `json:"middle_name"`
 	LastName        string  `json:"last_name" binding:"required"`

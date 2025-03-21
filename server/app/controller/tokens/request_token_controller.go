@@ -4,23 +4,20 @@ import (
 	"net/http"
 
 	"koneksi/server/app/helper"
-	"koneksi/server/app/provider"
-	"koneksi/server/app/repository"
+	"koneksi/server/app/service"
 
 	"github.com/gin-gonic/gin"
 )
 
 // RequestTokenController handles user authentication and token generation
 type RequestTokenController struct {
-	userRepo   *repository.UserRepository
-	jwtService *provider.JwtProvider
+	tokenService *service.TokenService
 }
 
 // NewRequestTokenController initializes a new RequestTokenController
-func NewRequestTokenController(userRepo *repository.UserRepository, jwtService *provider.JwtProvider) *RequestTokenController {
+func NewRequestTokenController(tokenService *service.TokenService) *RequestTokenController {
 	return &RequestTokenController{
-		userRepo:   userRepo,
-		jwtService: jwtService,
+		tokenService: tokenService,
 	}
 }
 
@@ -36,25 +33,10 @@ func (rc *RequestTokenController) Handle(c *gin.Context) {
 		return
 	}
 
-	// Check if user exists
-	user, err := rc.userRepo.ReadUserByEmail(c.Request.Context(), request.Email)
-	if err != nil || user == nil {
-		helper.FormatResponse(c, "error", http.StatusUnauthorized, "invalid credentials", nil, nil)
-		return
-	}
-
-	// Get user rolw
-
-	// Verify password using the helper function
-	if !helper.CheckPasswordHash(request.Password, user.Password) {
-		helper.FormatResponse(c, "error", http.StatusUnauthorized, "invalid credentials", nil, nil)
-		return
-	}
-
-	// Generate both access & refresh tokens
-	accessToken, refreshToken, err := rc.jwtService.GenerateTokens(user.ID.Hex(), &user.Email, nil)
+	// Authenticate user and generate tokens
+	accessToken, refreshToken, err := rc.tokenService.AuthenticateUser(c.Request.Context(), request.Email, request.Password)
 	if err != nil {
-		helper.FormatResponse(c, "error", http.StatusInternalServerError, "could not generate tokens", nil, nil)
+		helper.FormatResponse(c, "error", http.StatusUnauthorized, err.Error(), nil, nil)
 		return
 	}
 
