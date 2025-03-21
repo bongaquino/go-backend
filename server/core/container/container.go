@@ -83,7 +83,7 @@ func NewContainer() *Container {
 	checkHealthController := health.NewCheckHealthController()
 	registerController := users.NewRegisterController(userService)
 	requestTokenController := tokens.NewRequestTokenController(tokenService)
-	refreshTokenController := tokens.NewRefreshTokenController(userRepository, JwtProvider)
+	refreshTokenController := tokens.NewRefreshTokenController(tokenService)
 	revokeTokenController := tokens.NewRevokeTokenController(userRepository, JwtProvider)
 
 	// Return the container

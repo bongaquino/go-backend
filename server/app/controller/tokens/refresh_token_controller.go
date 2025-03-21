@@ -4,23 +4,20 @@ import (
 	"net/http"
 
 	"koneksi/server/app/helper"
-	"koneksi/server/app/provider"
-	"koneksi/server/app/repository"
+	"koneksi/server/app/service"
 
 	"github.com/gin-gonic/gin"
 )
 
 // RefreshTokenController handles the JWT refresh process
 type RefreshTokenController struct {
-	userRepo   *repository.UserRepository
-	jwtService *provider.JwtProvider
+	tokenService *service.TokenService
 }
 
 // NewRefreshTokenController initializes a new RefreshTokenController
-func NewRefreshTokenController(userRepo *repository.UserRepository, jwtService *provider.JwtProvider) *RefreshTokenController {
+func NewRefreshTokenController(tokenService *service.TokenService) *RefreshTokenController {
 	return &RefreshTokenController{
-		userRepo:   userRepo,
-		jwtService: jwtService,
+		tokenService: tokenService,
 	}
 }
 
@@ -35,24 +32,10 @@ func (rc *RefreshTokenController) Handle(c *gin.Context) {
 		return
 	}
 
-	// Validate refresh token
-	claims, err := rc.jwtService.ValidateRefreshToken(request.RefreshToken)
+	// Refresh tokens using the TokenService
+	accessToken, refreshToken, err := rc.tokenService.RefreshTokens(c.Request.Context(), request.RefreshToken)
 	if err != nil {
-		helper.FormatResponse(c, "error", http.StatusUnauthorized, "invalid or expired refresh token", nil, nil)
-		return
-	}
-
-	// Check if user still exists
-	user, err := rc.userRepo.ReadUserByEmail(c.Request.Context(), *claims.Email)
-	if err != nil || user == nil {
-		helper.FormatResponse(c, "error", http.StatusUnauthorized, "user no longer exists", nil, nil)
-		return
-	}
-
-	// Generate new access & refresh tokens (updates Redis)
-	accessToken, refreshToken, err := rc.jwtService.GenerateTokens(user.ID.Hex(), &user.Email, nil)
-	if err != nil {
-		helper.FormatResponse(c, "error", http.StatusInternalServerError, "could not generate new tokens", nil, nil)
+		helper.FormatResponse(c, "error", http.StatusUnauthorized, err.Error(), nil, nil)
 		return
 	}
 
