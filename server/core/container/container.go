@@ -47,6 +47,7 @@ type Container struct {
 	CheckHealthController    *health.CheckHealthController
 	RegisterController       *users.RegisterController
 	ForgotPasswordController *users.ForgotPasswordController
+	ResetPasswordController  *users.ResetPasswordController
 	RequestTokenController   *tokens.RequestTokenController
 	RefreshTokenController   *tokens.RefreshTokenController
 	RevokeTokenController    *tokens.RevokeTokenController
@@ -97,6 +98,7 @@ func NewContainer() *Container {
 	checkHealthController := health.NewCheckHealthController()
 	registerController := users.NewRegisterController(userService)
 	forgotPasswordController := users.NewForgotPasswordController(userService, emailService)
+	resetPasswordController := users.NewResetPasswordController(userService)
 	requestTokenController := tokens.NewRequestTokenController(tokenService)
 	refreshTokenController := tokens.NewRefreshTokenController(tokenService)
 	revokeTokenController := tokens.NewRevokeTokenController(tokenService)
@@ -128,6 +130,7 @@ func NewContainer() *Container {
 		CheckHealthController:      checkHealthController,
 		RegisterController:         registerController,
 		ForgotPasswordController:   forgotPasswordController,
+		ResetPasswordController:    resetPasswordController,
 		RequestTokenController:     requestTokenController,
 		RefreshTokenController:     refreshTokenController,
 		RevokeTokenController:      revokeTokenController,

@@ -17,7 +17,7 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 	{
 		userGroup.POST("/register", container.RegisterController.Handle)
 		userGroup.POST("/forgot-password", container.ForgotPasswordController.Handle)
-		// userGroup.POST("/reset-password", container.ResetPasswordController.Handle)
+		userGroup.POST("/reset-password", container.ResetPasswordController.Handle)
 	}
 
 	// Token Routes

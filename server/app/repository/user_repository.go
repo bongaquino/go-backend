@@ -98,6 +98,15 @@ func (r *UserRepository) UpdateUser(ctx context.Context, id string, update bson.
 	return nil
 }
 
+func (r *UserRepository) UpdateUserByEmail(ctx context.Context, email string, update bson.M) error {
+	_, err := r.collection.UpdateOne(ctx, bson.M{"email": email}, bson.M{"$set": update})
+	if err != nil {
+		logger.Log.Error("error updating user", logger.Error(err))
+		return err
+	}
+	return nil
+}
+
 func (r *UserRepository) DeleteUser(ctx context.Context, email string) error {
 	_, err := r.collection.DeleteOne(ctx, bson.M{"email": email})
 	if err != nil {

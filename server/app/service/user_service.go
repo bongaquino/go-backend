@@ -154,3 +154,27 @@ func (us *UserService) GeneratePasswordResetCode(ctx context.Context, email stri
 
 	return resetCode, nil
 }
+
+func (us *UserService) ResetPassword(ctx context.Context, email, resetCode, newPassword string) error {
+	// Verify the reset code
+	isValid, err := us.verifyResetCode(email, resetCode)
+	if err != nil || !isValid {
+		return fmt.Errorf("invalid or expired reset code")
+	}
+
+	// Hash the new password
+	hashedPassword, err := helper.Hash(newPassword)
+	if err != nil {
+		return fmt.Errorf("failed to hash password: %w", err)
+	}
+
+	// Update the user's password in the database
+	err = us.userRepo.UpdateUserByEmail(ctx, email, map[string]any{
+		"password": hashedPassword,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to update password: %w", err)
+	}
+
+	return nil
+}
