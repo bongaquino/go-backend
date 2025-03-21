@@ -123,3 +123,20 @@ func (r *UserRepository) UpdateOTPSecret(ctx context.Context, userID, otpSecret 
 	}
 	return nil
 }
+
+func (r *UserRepository) UpdateIsMFAEnabled(ctx context.Context, userID string, isEnabled bool) error {
+	// Convert userID to ObjectID
+	objectID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		logger.Log.Error("invalid userID format", logger.Error(err))
+		return err
+	}
+
+	// Update the user's MFA status in the database
+	_, err = r.collection.UpdateOne(ctx, bson.M{"_id": objectID}, bson.M{"$set": bson.M{"is_mfa_enabled": isEnabled}})
+	if err != nil {
+		logger.Log.Error("error updating MFA status", logger.Error(err))
+		return err
+	}
+	return nil
+}

@@ -36,8 +36,7 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 		mfaGroup := settingsGroup.Group("/mfa")
 		{
 			mfaGroup.POST("/generate-otp", container.GenerateOTPController.Handle)
-			mfaGroup.POST("/verify-otp", container.VerifyOTPController.Handle)
-			// mfaGroup.POST("/enable", container.EnableMFAController.Handle)
+			mfaGroup.POST("/enable", container.EnableController.Handle)
 			// mfaGroup.POST("/disable", container.DisableMFAController.Handle)
 		}
 	}

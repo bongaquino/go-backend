@@ -57,3 +57,13 @@ func (ms *MFAService) VerifyOTP(ctx context.Context, userID, otp string) (bool, 
 	isValid := helper.VerifyOTP(user.OtpSecret, otp)
 	return isValid, nil
 }
+
+func (ms *MFAService) EnableMFA(ctx context.Context, userID string) error {
+	// Update the user's MFA status in the database
+	err := ms.userRepo.UpdateIsMFAEnabled(ctx, userID, true)
+	if err != nil {
+		return fmt.Errorf("failed to enable MFA: %w", err)
+	}
+
+	return nil
+}

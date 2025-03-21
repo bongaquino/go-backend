@@ -9,20 +9,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// VerifyOTPController handles OTP verification for MFA
-type VerifyOTPController struct {
+// EnableController handles OTP verification for MFA
+type EnableController struct {
 	mfaService *service.MFAService
 }
 
-// NewVerifyOTPController initializes a new VerifyOTPController
-func NewVerifyOTPController(mfaService *service.MFAService) *VerifyOTPController {
-	return &VerifyOTPController{
+// NewEnableController initializes a new EnableController
+func NewEnableController(mfaService *service.MFAService) *EnableController {
+	return &EnableController{
 		mfaService: mfaService,
 	}
 }
 
 // Handle verifies the OTP provided by the user
-func (voc *VerifyOTPController) Handle(c *gin.Context) {
+func (voc *EnableController) Handle(c *gin.Context) {
 	// Extract user ID from the context
 	userID, exists := c.Get("userID")
 	if !exists {
@@ -48,6 +48,13 @@ func (voc *VerifyOTPController) Handle(c *gin.Context) {
 
 	if !isValid {
 		helper.FormatResponse(c, "error", http.StatusUnauthorized, "invalid OTP", nil, nil)
+		return
+	}
+
+	// Enable MFA for the user
+	err = voc.mfaService.EnableMFA(c.Request.Context(), userID.(string))
+	if err != nil {
+		helper.FormatResponse(c, "error", http.StatusInternalServerError, err.Error(), nil, nil)
 		return
 	}
 

@@ -8,13 +8,14 @@ import (
 )
 
 type User struct {
-	ID         primitive.ObjectID `bson:"_id,omitempty"`
-	Email      string             `bson:"email"`
-	Password   string             `bson:"password"`
-	IsVerified bool               `bson:"is_verified"`
-	OtpSecret  string             `bson:"otp_secret"`
-	CreatedAt  time.Time          `bson:"created_at"`
-	UpdatedAt  time.Time          `bson:"updated_at"`
+	ID           primitive.ObjectID `bson:"_id,omitempty"`
+	Email        string             `bson:"email"`
+	Password     string             `bson:"password"`
+	OtpSecret    string             `bson:"otp_secret"`
+	IsVerified   bool               `bson:"is_verified"`
+	IsMFAEnabled bool               `bson:"is_mfa_enabled"`
+	CreatedAt    time.Time          `bson:"created_at"`
+	UpdatedAt    time.Time          `bson:"updated_at"`
 }
 
 func (User) GetIndexes() []bson.D {
