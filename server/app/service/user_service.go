@@ -139,6 +139,15 @@ func (us *UserService) GeneratePasswordResetCode(ctx context.Context, email stri
 		return "", fmt.Errorf("user not found")
 	}
 
+	// Construct the Redis key
+	key := fmt.Sprintf("password_reset:%s", email)
+
+	// Check if a reset code already exists in Redis
+	existingCode, err := us.redisProvider.Get(ctx, key)
+	if err == nil && existingCode != "" {
+		return "", fmt.Errorf("password reset already pending")
+	}
+
 	// Generate a random reset code using the helper
 	resetCode, err := helper.GenerateResetCode(6) // 6 bytes (~12 hex characters)
 	if err != nil {
@@ -146,7 +155,6 @@ func (us *UserService) GeneratePasswordResetCode(ctx context.Context, email stri
 	}
 
 	// Store the reset code in Redis with a 15-minute expiration
-	key := fmt.Sprintf("password_reset:%s", email)
 	err = us.redisProvider.Set(ctx, key, resetCode, 15*time.Minute)
 	if err != nil {
 		return "", fmt.Errorf("failed to store reset code in Redis: %w", err)
