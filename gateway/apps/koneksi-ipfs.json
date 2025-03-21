@@ -5,7 +5,7 @@
   "use_keyless": true,
   "proxy": {
     "listen_path": "/ipfs",
-    "target_url": "http://server:3000",
+    "target_url": "https://delta-edge.ardata.tech",
     "strip_listen_path": true
   },
   "version_data": {
