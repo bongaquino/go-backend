@@ -3,7 +3,6 @@ package tokens
 import (
 	"net/http"
 
-	"koneksi/server/app/dto"
 	"koneksi/server/app/helper"
 	"koneksi/server/app/service"
 
@@ -24,7 +23,10 @@ func NewRequestTokenController(tokenService *service.TokenService) *RequestToken
 
 // Handle processes the login request and returns an access & refresh token
 func (rc *RequestTokenController) Handle(c *gin.Context) {
-	var request dto.LoginRequest
+	var request struct {
+		Email    string `json:"email" binding:"required,email"`
+		Password string `json:"password" binding:"required,min=8"`
+	}
 
 	// Validate the payload
 	if err := rc.validatePayload(c, &request); err != nil {
