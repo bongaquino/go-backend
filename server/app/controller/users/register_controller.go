@@ -34,7 +34,9 @@ func (rc *RegisterController) Handle(c *gin.Context) {
 	}
 
 	helper.FormatResponse(c, "success", http.StatusCreated, "user registered successfully", gin.H{
-		"user":      user,
+		"user": gin.H{
+			"email": user.Email,
+		},
 		"profile":   profile,
 		"user_role": userRole,
 	}, nil)
