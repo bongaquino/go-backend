@@ -9,20 +9,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// EnableController handles OTP verification for MFA
-type EnableController struct {
+// EnableMFAController handles OTP verification for MFA
+type EnableMFAController struct {
 	mfaService *service.MFAService
 }
 
-// NewEnableController initializes a new EnableController
-func NewEnableController(mfaService *service.MFAService) *EnableController {
-	return &EnableController{
+// NewEnableMFAController initializes a new EnableMFAController
+func NewEnableMFAController(mfaService *service.MFAService) *EnableMFAController {
+	return &EnableMFAController{
 		mfaService: mfaService,
 	}
 }
 
 // Handle verifies the OTP provided by the user
-func (voc *EnableController) Handle(c *gin.Context) {
+func (voc *EnableMFAController) Handle(c *gin.Context) {
 	// Extract user ID from the context
 	userID, exists := c.Get("userID")
 	if !exists {

@@ -49,7 +49,7 @@ type Container struct {
 	RevokeTokenController    *tokens.RevokeTokenController
 	ChangePasswordController *settings.ChangePasswordController
 	GenerateOTPController    *mfa.GenerateOTPController
-	EnableController         *mfa.EnableController
+	EnableMFAController      *mfa.EnableMFAController
 }
 
 // NewContainer initializes a new IoC container
@@ -94,7 +94,7 @@ func NewContainer() *Container {
 	revokeTokenController := tokens.NewRevokeTokenController(tokenService)
 	changePasswordController := settings.NewChangePasswordController(userService)
 	generateOTPController := mfa.NewGenerateOTPController(mfaService)
-	enableController := mfa.NewEnableController(mfaService)
+	enableMFAController := mfa.NewEnableMFAController(mfaService)
 
 	// Return the container
 	return &Container{
@@ -123,6 +123,6 @@ func NewContainer() *Container {
 		RevokeTokenController:      revokeTokenController,
 		ChangePasswordController:   changePasswordController,
 		GenerateOTPController:      generateOTPController,
-		EnableController:           enableController,
+		EnableMFAController:        enableMFAController,
 	}
 }
