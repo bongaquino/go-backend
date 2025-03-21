@@ -102,6 +102,11 @@ func (us *UserService) ChangePassword(ctx context.Context, userID string, reques
 		return errors.New("user not found")
 	}
 
+	// Verify if the old password is the same as the new password
+	if request.OldPassword == request.NewPassword {
+		return errors.New("new password must be different from the old password")
+	}
+
 	// Verify the old password
 	if !helper.CheckPasswordHash(request.OldPassword, user.Password) {
 		return errors.New("old password is incorrect")
