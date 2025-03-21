@@ -4,17 +4,18 @@ import (
 	"net/http"
 
 	"koneksi/server/app/helpers"
+	"koneksi/server/app/services"
 
 	"github.com/gin-gonic/gin"
 )
 
 // RegisterController handles user registration
 type RegisterController struct {
-	userService *providers.UserService
+	userService *services.UserService
 }
 
 // NewRegisterController initializes a new RegisterController
-func NewRegisterController(userService *providers.UserService) *RegisterController {
+func NewRegisterController(userService *services.UserService) *RegisterController {
 	return &RegisterController{
 		userService: userService,
 	}

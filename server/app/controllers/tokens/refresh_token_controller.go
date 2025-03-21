@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"koneksi/server/app/helpers"
+	"koneksi/server/app/providers"
 	"koneksi/server/app/repositories"
 
 	"github.com/gin-gonic/gin"
@@ -12,11 +13,11 @@ import (
 // RefreshTokenController handles the JWT refresh process
 type RefreshTokenController struct {
 	userRepo   *repositories.UserRepository
-	jwtService *providers.JWTService
+	jwtService *providers.JwtProvider
 }
 
 // NewRefreshTokenController initializes a new RefreshTokenController
-func NewRefreshTokenController(userRepo *repositories.UserRepository, jwtService *providers.JWTService) *RefreshTokenController {
+func NewRefreshTokenController(userRepo *repositories.UserRepository, jwtService *providers.JwtProvider) *RefreshTokenController {
 	return &RefreshTokenController{
 		userRepo:   userRepo,
 		jwtService: jwtService,

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"koneksi/server/app/helpers"
+	"koneksi/server/app/providers"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,7 +14,7 @@ type AuthnMiddleware struct {
 	HandleAuthn gin.HandlerFunc
 }
 
-func NewAuthnMiddleware(jwtService *providers.JWTService) *AuthnMiddleware {
+func NewAuthnMiddleware(jwtService *providers.JwtProvider) *AuthnMiddleware {
 	return &AuthnMiddleware{
 		HandleAuthn: func(c *gin.Context) {
 			// Get the Authorization header

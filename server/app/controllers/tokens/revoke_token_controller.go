@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"koneksi/server/app/helpers"
+	"koneksi/server/app/providers"
 	"koneksi/server/app/repositories"
 
 	"github.com/gin-gonic/gin"
@@ -12,11 +13,11 @@ import (
 // RevokeTokenController handles revoking refresh tokens
 type RevokeTokenController struct {
 	userRepo   *repositories.UserRepository
-	jwtService *providers.JWTService
+	jwtService *providers.JwtProvider
 }
 
 // NewRevokeTokenController initializes a new RevokeTokenController
-func NewRevokeTokenController(userRepo *repositories.UserRepository, jwtService *providers.JWTService) *RevokeTokenController {
+func NewRevokeTokenController(userRepo *repositories.UserRepository, jwtService *providers.JwtProvider) *RevokeTokenController {
 	return &RevokeTokenController{
 		userRepo:   userRepo,
 		jwtService: jwtService,
