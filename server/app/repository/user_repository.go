@@ -62,9 +62,16 @@ func (r *UserRepository) ReadUserByEmail(ctx context.Context, email string) (*mo
 	return &user, nil
 }
 
-func (r *UserRepository) ReadUserByID(ctx context.Context, id primitive.ObjectID) (*model.User, error) {
+func (r *UserRepository) ReadUserByID(ctx context.Context, id string) (*model.User, error) {
+	// Convert id to ObjectID
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		logger.Log.Error("invalid ID format", logger.Error(err))
+		return nil, err
+	}
+
 	var user model.User
-	err := r.collection.FindOne(ctx, bson.M{"_id": id}).Decode(&user)
+	err = r.collection.FindOne(ctx, bson.M{"_id": objectID}).Decode(&user)
 	if err != nil {
 		if err == mongoDriver.ErrNoDocuments {
 			return nil, nil

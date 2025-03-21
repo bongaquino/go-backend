@@ -7,7 +7,6 @@ import (
 	"koneksi/server/app/repository"
 
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type VerifiedMiddleware struct {
@@ -33,16 +32,8 @@ func NewVerifiedMiddleware(userRepo *repository.UserRepository) *VerifiedMiddlew
 				return
 			}
 
-			// Convert userID to primitive.ObjectID
-			objectID, err := primitive.ObjectIDFromHex(userID)
-			if err != nil {
-				helper.FormatResponse(c, "error", http.StatusInternalServerError, "invalid user ID format", nil, nil)
-				c.Abort()
-				return
-			}
-
 			// Check if the user is verified using UserRepository
-			user, err := userRepo.ReadUserByID(c.Request.Context(), objectID)
+			user, err := userRepo.ReadUserByID(c.Request.Context(), userID)
 			if err != nil {
 				helper.FormatResponse(c, "error", http.StatusInternalServerError, "failed to retrieve user", nil, nil)
 				c.Abort()

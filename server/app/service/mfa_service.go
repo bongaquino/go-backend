@@ -42,3 +42,18 @@ func (ms *MFAService) GenerateOTP(ctx context.Context, userID string) (string, s
 
 	return otpSecret, qrCode, nil
 }
+
+func (ms *MFAService) VerifyOTP(ctx context.Context, userID, otp string) (bool, error) {
+	// Retrieve the user from the database
+	user, err := ms.userRepo.ReadUserByID(ctx, userID)
+	if err != nil {
+		return false, fmt.Errorf("failed to retrieve user: %w", err)
+	}
+	if user == nil {
+		return false, fmt.Errorf("user not found")
+	}
+
+	// Verify the OTP using the stored secret
+	isValid := helper.VerifyOTP(user.OtpSecret, otp)
+	return isValid, nil
+}

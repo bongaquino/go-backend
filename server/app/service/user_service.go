@@ -9,8 +9,6 @@ import (
 	"koneksi/server/app/repository"
 	"koneksi/server/core/logger"
 	"time"
-
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type UserService struct {
@@ -85,15 +83,8 @@ func (us *UserService) RegisterUser(ctx context.Context, request *dto.RegisterUs
 
 // ChangePassword changes the user's password
 func (us *UserService) ChangePassword(ctx context.Context, userID string, request *dto.ChangePasswordDTO) error {
-	// Convert userID to primitive.ObjectID
-	objectID, err := primitive.ObjectIDFromHex(userID)
-	if err != nil {
-		logger.Log.Error("invalid user ID format", logger.Error(err))
-		return errors.New("invalid user ID format")
-	}
-
 	// Fetch the user from the repository
-	user, err := us.userRepo.ReadUserByID(ctx, objectID)
+	user, err := us.userRepo.ReadUserByID(ctx, userID)
 	if err != nil {
 		logger.Log.Error("error fetching user by ID", logger.Error(err))
 		return errors.New("failed to retrieve user")
