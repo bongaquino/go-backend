@@ -5,32 +5,32 @@ import (
 	"koneksi/server/app/controllers/tokens"
 	"koneksi/server/app/controllers/users"
 	"koneksi/server/app/middleware"
-	"koneksi/server/app/providers"
-	"koneksi/server/app/repositories"
-	"koneksi/server/app/services"
+	"koneksi/server/app/provider"
+	"koneksi/server/app/repository"
+	"koneksi/server/app/service"
 	"koneksi/server/database"
 )
 
 // Container holds the dependencies for the application
 type Container struct {
 	// Providers
-	mongoProvider *providers.MongoProvider
-	RedisService  *providers.RedisProvider
-	JwtService    *providers.JwtProvider
+	mongoProvider *provider.MongoProvider
+	RedisService  *provider.RedisProvider
+	JwtService    *provider.JwtProvider
 
-	// Repositories
-	PermissionRepository       *repositories.PermissionRepository
-	PolicyRepository           *repositories.PolicyRepository
-	PolicyPermissionRepository *repositories.PolicyPermissionRepository
-	ProfileRepository          *repositories.ProfileRepository
-	RoleRepository             *repositories.RoleRepository
-	RolePermissionRepository   *repositories.RolePermissionRepository
-	ServiceAccountRepository   *repositories.ServiceAccountRepository
-	UserRepository             *repositories.UserRepository
-	UserRoleRepository         *repositories.UserRoleRepository
+	// repository
+	PermissionRepository       *repository.PermissionRepository
+	PolicyRepository           *repository.PolicyRepository
+	PolicyPermissionRepository *repository.PolicyPermissionRepository
+	ProfileRepository          *repository.ProfileRepository
+	RoleRepository             *repository.RoleRepository
+	RolePermissionRepository   *repository.RolePermissionRepository
+	ServiceAccountRepository   *repository.ServiceAccountRepository
+	UserRepository             *repository.UserRepository
+	UserRoleRepository         *repository.UserRoleRepository
 
-	// Services
-	UserService *services.UserService
+	// service
+	UserService *service.UserService
 
 	// Middleware
 	AuthnMiddleware    *middleware.AuthnMiddleware
@@ -47,24 +47,24 @@ type Container struct {
 
 // NewContainer initializes a new IoC container
 func NewContainer() *Container {
-	// Initialize providers
-	mongoProvider := providers.NewMongoProvider()
-	redisProvider := providers.NewRedisProvider()
-	JwtProvider := providers.NewJwtProvider(redisProvider)
+	// Initialize provider
+	mongoProvider := provider.NewMongoProvider()
+	redisProvider := provider.NewRedisProvider()
+	JwtProvider := provider.NewJwtProvider(redisProvider)
 
-	// Initialize repositories
-	permissionRepository := repositories.NewPermissionRepository(mongoProvider)
-	policyRepository := repositories.NewPolicyRepository(mongoProvider)
-	policyPermissionRepository := repositories.NewPolicyPermissionRepository(mongoProvider)
-	profileRepository := repositories.NewProfileRepository(mongoProvider)
-	roleRepository := repositories.NewRoleRepository(mongoProvider)
-	rolePermissionRepository := repositories.NewRolePermissionRepository(mongoProvider)
-	serviceAccountRepository := repositories.NewServiceAccountRepository(mongoProvider)
-	userRepository := repositories.NewUserRepository(mongoProvider)
-	userRoleRepository := repositories.NewUserRoleRepository(mongoProvider)
+	// Initialize repository
+	permissionRepository := repository.NewPermissionRepository(mongoProvider)
+	policyRepository := repository.NewPolicyRepository(mongoProvider)
+	policyPermissionRepository := repository.NewPolicyPermissionRepository(mongoProvider)
+	profileRepository := repository.NewProfileRepository(mongoProvider)
+	roleRepository := repository.NewRoleRepository(mongoProvider)
+	rolePermissionRepository := repository.NewRolePermissionRepository(mongoProvider)
+	serviceAccountRepository := repository.NewServiceAccountRepository(mongoProvider)
+	userRepository := repository.NewUserRepository(mongoProvider)
+	userRoleRepository := repository.NewUserRoleRepository(mongoProvider)
 
-	// Initialize services
-	userService := services.NewUserService(userRepository, profileRepository, roleRepository, userRoleRepository)
+	// Initialize service
+	userService := service.NewUserService(userRepository, profileRepository, roleRepository, userRoleRepository)
 
 	// Run database migrations
 	database.MigrateCollections(mongoProvider)
