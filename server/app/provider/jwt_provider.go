@@ -11,27 +11,27 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-// JwtProvider handles JWT-related operations
-type JwtProvider struct {
+// JWTProvider handles JWT-related operations
+type JWTProvider struct {
 	redisProvider   *RedisProvider
 	secretKey       string
 	tokenDuration   time.Duration
 	refreshDuration time.Duration
 }
 
-// NewJwtProvider initializes a new JwtProvider with Redis dependency
-func NewJwtProvider(redisProvider *RedisProvider) *JwtProvider {
-	jwtConfig := config.LoadJwtConfig()
+// NewJWTProvider initializes a new JWTProvider with Redis dependency
+func NewJWTProvider(redisProvider *RedisProvider) *JWTProvider {
+	jwtConfig := config.LoadJWTConfig()
 
-	if jwtConfig.JwtSecret == "" {
+	if jwtConfig.JWTSecret == "" {
 		logger.Log.Fatal("JWT secret key is missing in environment variables")
 	}
 
-	return &JwtProvider{
+	return &JWTProvider{
 		redisProvider:   redisProvider,
-		secretKey:       jwtConfig.JwtSecret,
-		tokenDuration:   time.Duration(jwtConfig.JwtTokenExpiration) * time.Second,
-		refreshDuration: time.Duration(jwtConfig.JwtRefreshExpiration) * time.Second,
+		secretKey:       jwtConfig.JWTSecret,
+		tokenDuration:   time.Duration(jwtConfig.JWTTokenExpiration) * time.Second,
+		refreshDuration: time.Duration(jwtConfig.JWTRefreshExpiration) * time.Second,
 	}
 }
 
@@ -45,7 +45,7 @@ type Claims struct {
 }
 
 // GenerateTokens creates an access and refresh token for a user
-func (j *JwtProvider) GenerateTokens(userID string, email, clientID *string) (accessToken, refreshToken string, err error) {
+func (j *JWTProvider) GenerateTokens(userID string, email, clientID *string) (accessToken, refreshToken string, err error) {
 	// Generate access token
 	accessClaims := Claims{
 		Sub:      userID,
@@ -90,7 +90,7 @@ func (j *JwtProvider) GenerateTokens(userID string, email, clientID *string) (ac
 }
 
 // ValidateToken parses and validates a JWT token
-func (j *JwtProvider) ValidateToken(tokenString string) (*Claims, error) {
+func (j *JWTProvider) ValidateToken(tokenString string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (any, error) {
 		return []byte(j.secretKey), nil
 	})
@@ -105,7 +105,7 @@ func (j *JwtProvider) ValidateToken(tokenString string) (*Claims, error) {
 }
 
 // ValidateRefreshToken checks if the refresh token is valid and exists in Redis
-func (j *JwtProvider) ValidateRefreshToken(tokenString string) (*Claims, error) {
+func (j *JWTProvider) ValidateRefreshToken(tokenString string) (*Claims, error) {
 	claims, err := j.ValidateToken(tokenString)
 	if err != nil {
 		return nil, err
@@ -129,7 +129,7 @@ func (j *JwtProvider) ValidateRefreshToken(tokenString string) (*Claims, error) 
 }
 
 // RevokeRefreshToken removes a refresh token from Redis
-func (j *JwtProvider) RevokeRefreshToken(userID string) error {
+func (j *JWTProvider) RevokeRefreshToken(userID string) error {
 	ctx := context.Background()
 	return j.redisProvider.Del(ctx, "refresh_token:"+userID)
 }

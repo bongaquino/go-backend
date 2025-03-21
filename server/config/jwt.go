@@ -2,21 +2,21 @@ package config
 
 import "koneksi/server/core/env"
 
-// JwtConfig holds the Jwt configuration
-type JwtConfig struct {
-	JwtSecret            string
-	JwtTokenExpiration   int
-	JwtRefreshExpiration int
+// JWTConfig holds the JWT configuration
+type JWTConfig struct {
+	JWTSecret            string
+	JWTTokenExpiration   int
+	JWTRefreshExpiration int
 }
 
-func LoadJwtConfig() *JwtConfig {
+func LoadJWTConfig() *JWTConfig {
 	// Load environment variables
 	envVars := env.LoadEnv()
 
 	// Create the configuration from environment variables
-	return &JwtConfig{
-		JwtSecret:            envVars.JwtSecret,
-		JwtTokenExpiration:   envVars.JwtTokenExpiration,
-		JwtRefreshExpiration: envVars.JwtRefreshExpiration,
+	return &JWTConfig{
+		JWTSecret:            envVars.JWTSecret,
+		JWTTokenExpiration:   envVars.JWTTokenExpiration,
+		JWTRefreshExpiration: envVars.JWTRefreshExpiration,
 	}
 }

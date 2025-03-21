@@ -93,7 +93,7 @@ func (r *UserRepository) DeleteUser(ctx context.Context, email string) error {
 	return nil
 }
 
-func (r *UserRepository) SaveOTPSecret(ctx context.Context, userID, otpSecret string) error {
+func (r *UserRepository) UpdateOTPSecret(ctx context.Context, userID, otpSecret string) error {
 	hashedSecret, err := helper.Hash(otpSecret)
 	if err != nil {
 		logger.Log.Error("error hashing OTP secret", logger.Error(err))

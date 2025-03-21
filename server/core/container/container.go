@@ -18,7 +18,7 @@ type Container struct {
 	// Providers
 	mongoProvider *provider.MongoProvider
 	RedisProvider *provider.RedisProvider
-	JwtProvider   *provider.JwtProvider
+	JWTProvider   *provider.JWTProvider
 
 	// Repository
 	PermissionRepository       *repository.PermissionRepository
@@ -56,7 +56,7 @@ func NewContainer() *Container {
 	// Initialize provider
 	mongoProvider := provider.NewMongoProvider()
 	redisProvider := provider.NewRedisProvider()
-	JwtProvider := provider.NewJwtProvider(redisProvider)
+	JWTProvider := provider.NewJWTProvider(redisProvider)
 
 	// Initialize repository
 	permissionRepository := repository.NewPermissionRepository(mongoProvider)
@@ -71,7 +71,7 @@ func NewContainer() *Container {
 
 	// Initialize service
 	userService := service.NewUserService(userRepository, profileRepository, roleRepository, userRoleRepository)
-	tokenService := service.NewTokenService(userRepository, JwtProvider)
+	tokenService := service.NewTokenService(userRepository, JWTProvider)
 	mfaService := service.NewMFAService(userRepository)
 
 	// Run database migrations
@@ -81,7 +81,7 @@ func NewContainer() *Container {
 	database.SeedCollections(permissionRepository, roleRepository, rolePermissionRepository)
 
 	// Initialize middleware
-	authnMiddleware := middleware.NewAuthnMiddleware(JwtProvider)
+	authnMiddleware := middleware.NewAuthnMiddleware(JWTProvider)
 	authzMiddleware := middleware.NewAuthzMiddleware(userRoleRepository, roleRepository)
 	verifiedMiddleware := middleware.NewVerifiedMiddleware(userRepository)
 
@@ -98,7 +98,7 @@ func NewContainer() *Container {
 	return &Container{
 		mongoProvider:              mongoProvider,
 		RedisProvider:              redisProvider,
-		JwtProvider:                JwtProvider,
+		JWTProvider:                JWTProvider,
 		PermissionRepository:       permissionRepository,
 		PolicyRepository:           policyRepository,
 		PolicyPermissionRepository: policyPermissionRepository,

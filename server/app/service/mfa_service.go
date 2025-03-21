@@ -35,7 +35,7 @@ func (ms *MFAService) GenerateOTP(ctx context.Context, userID string) (string, s
 	}
 
 	// Save hashed OTP secret to the user's record in the database
-	err = ms.userRepo.SaveOTPSecret(ctx, userID, otpSecret)
+	err = ms.userRepo.UpdateOTPSecret(ctx, userID, otpSecret)
 	if err != nil {
 		return "", "", fmt.Errorf("failed to save OTP secret: %w", err)
 	}

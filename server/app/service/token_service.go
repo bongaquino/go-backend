@@ -10,10 +10,10 @@ import (
 
 type TokenService struct {
 	userRepo   *repository.UserRepository
-	jwtService *provider.JwtProvider
+	jwtService *provider.JWTProvider
 }
 
-func NewTokenService(userRepo *repository.UserRepository, jwtService *provider.JwtProvider) *TokenService {
+func NewTokenService(userRepo *repository.UserRepository, jwtService *provider.JWTProvider) *TokenService {
 	return &TokenService{
 		userRepo:   userRepo,
 		jwtService: jwtService,

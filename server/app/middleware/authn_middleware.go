@@ -14,7 +14,7 @@ type AuthnMiddleware struct {
 	HandleAuthn gin.HandlerFunc
 }
 
-func NewAuthnMiddleware(jwtService *provider.JwtProvider) *AuthnMiddleware {
+func NewAuthnMiddleware(jwtService *provider.JWTProvider) *AuthnMiddleware {
 	return &AuthnMiddleware{
 		HandleAuthn: func(c *gin.Context) {
 			// Get the Authorization header
