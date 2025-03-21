@@ -1,9 +1,9 @@
 package container
 
 import (
-	"koneksi/server/app/controllers/health"
-	"koneksi/server/app/controllers/tokens"
-	"koneksi/server/app/controllers/users"
+	"koneksi/server/app/controller/health"
+	"koneksi/server/app/controller/tokens"
+	"koneksi/server/app/controller/users"
 	"koneksi/server/app/middleware"
 	"koneksi/server/app/provider"
 	"koneksi/server/app/repository"
