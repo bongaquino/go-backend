@@ -24,7 +24,10 @@ func GenerateOTPSecret(userID string) (string, error) {
 
 // GenerateQRCode generates a QR code URL for the TOTP secret
 func GenerateQRCode(userID, secret string) (string, error) {
-	key, err := otp.NewKeyFromURL(fmt.Sprintf("otpauth://totp/KoneksiApp:%s?secret=%s&issuer=KoneksiApp", userID, secret))
+	appConfig := config.LoadAppConfig()
+	appName := appConfig.AppName
+
+	key, err := otp.NewKeyFromURL(fmt.Sprintf("otpauth://totp/%s:%s?secret=%s&issuer=%s", appName, userID, secret, appName))
 	if err != nil {
 		return "", fmt.Errorf("failed to generate QR code: %w", err)
 	}
