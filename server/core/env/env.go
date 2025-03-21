@@ -21,7 +21,7 @@ type Env struct {
 	RedisHost            string `envconfig:"REDIS_HOST" default:"redis"`
 	RedisPort            int    `envconfig:"REDIS_PORT" default:"6379"`
 	RedisPassword        string `envconfig:"REDIS_PASSWORD" default:""`
-	RedisPrefix          string `envconfig:"REDIS_PREFIX" default:"iam_service"`
+	RedisPrefix          string `envconfig:"REDIS_PREFIX" default:"koneksi"`
 	JWTSecret            string `envconfig:"JWT_SECRET" default:""`
 	JWTTokenExpiration   int    `envconfig:"JWT_TOKEN_EXPIRATION" default:"3600"`
 	JWTRefreshExpiration int    `envconfig:"JWT_REFRESH_EXPIRATION" default:"86400"`
