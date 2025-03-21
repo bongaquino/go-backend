@@ -27,7 +27,7 @@ func (rc *RegisterController) Handle(c *gin.Context) {
 		return
 	}
 
-	user, profile, userRole, err := rc.userService.RegisterUser(c.Request.Context(), &request)
+	user, profile, userRole, roleName, err := rc.userService.RegisterUser(c.Request.Context(), &request)
 	if err != nil {
 		helper.FormatResponse(c, "error", http.StatusInternalServerError, err.Error(), nil, nil)
 		return
@@ -37,8 +37,11 @@ func (rc *RegisterController) Handle(c *gin.Context) {
 		"user": gin.H{
 			"email": user.Email,
 		},
-		"profile":   profile,
-		"user_role": userRole,
+		"profile": profile,
+		"user_role": gin.H{
+			"role_id":   userRole.RoleID,
+			"role_name": roleName,
+		},
 	}, nil)
 }
 

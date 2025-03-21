@@ -37,14 +37,14 @@ func NewUserService(userRepo *repository.UserRepository,
 }
 
 // RegisterUser registers a new user
-func (us *UserService) RegisterUser(ctx context.Context, request *dto.RegisterUser) (*model.User, *model.Profile, *model.UserRole, error) {
+func (us *UserService) RegisterUser(ctx context.Context, request *dto.RegisterUser) (*model.User, *model.Profile, *model.UserRole, string, error) {
 	existingUser, err := us.userRepo.ReadUserByEmail(ctx, request.Email)
 	if err != nil {
 		logger.Log.Error("error checking existing user", logger.Error(err))
-		return nil, nil, nil, errors.New("internal server error")
+		return nil, nil, nil, "", errors.New("internal server error")
 	}
 	if existingUser != nil {
-		return nil, nil, nil, errors.New("email already exists")
+		return nil, nil, nil, "", errors.New("email already exists")
 	}
 
 	user := &model.User{
@@ -54,7 +54,7 @@ func (us *UserService) RegisterUser(ctx context.Context, request *dto.RegisterUs
 	}
 	if err := us.userRepo.CreateUser(ctx, user); err != nil {
 		logger.Log.Error("error creating user", logger.Error(err))
-		return nil, nil, nil, errors.New("failed to create user")
+		return nil, nil, nil, "", errors.New("failed to create user")
 	}
 
 	profile := &model.Profile{
@@ -66,16 +66,16 @@ func (us *UserService) RegisterUser(ctx context.Context, request *dto.RegisterUs
 	}
 	if err := us.profileRepo.CreateProfile(ctx, profile); err != nil {
 		logger.Log.Error("error creating profile", logger.Error(err))
-		return nil, nil, nil, errors.New("failed to create profile")
+		return nil, nil, nil, "", errors.New("failed to create profile")
 	}
 
 	userRole, err := us.roleRepo.ReadRoleByName(ctx, "user")
 	if err != nil {
 		logger.Log.Error("error retrieving default role", logger.Error(err))
-		return nil, nil, nil, errors.New("failed to assign default role")
+		return nil, nil, nil, "", errors.New("failed to assign default role")
 	}
 	if userRole == nil {
-		return nil, nil, nil, errors.New("default role not found")
+		return nil, nil, nil, "", errors.New("default role not found")
 	}
 
 	userRoleAssignment := &model.UserRole{
@@ -84,10 +84,10 @@ func (us *UserService) RegisterUser(ctx context.Context, request *dto.RegisterUs
 	}
 	if err := us.userRoleRepo.CreateUserRole(ctx, userRoleAssignment); err != nil {
 		logger.Log.Error("error assigning default role", logger.Error(err))
-		return nil, nil, nil, errors.New("failed to assign default role")
+		return nil, nil, nil, "", errors.New("failed to assign default role")
 	}
 
-	return user, profile, userRoleAssignment, nil
+	return user, profile, userRoleAssignment, userRole.Name, nil
 }
 
 // ChangePassword changes the user's password
