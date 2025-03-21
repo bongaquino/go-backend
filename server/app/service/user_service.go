@@ -156,10 +156,24 @@ func (us *UserService) GeneratePasswordResetCode(ctx context.Context, email stri
 }
 
 func (us *UserService) ResetPassword(ctx context.Context, email, resetCode, newPassword string) error {
-	// Verify the reset code
-	isValid, err := us.verifyResetCode(email, resetCode)
-	if err != nil || !isValid {
-		return fmt.Errorf("invalid or expired reset code")
+	// Construct the Redis key
+	key := fmt.Sprintf("password_reset:%s", email)
+
+	// Retrieve the stored reset code from Redis
+	storedCode, err := us.redisProvider.Get(ctx, key)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve reset code: %w", err)
+	}
+
+	// Compare the stored code with the provided code
+	if storedCode != resetCode {
+		return fmt.Errorf("invalid reset code")
+	}
+
+	// Delete the reset code from Redis to prevent reuse
+	err = us.redisProvider.Del(ctx, key)
+	if err != nil {
+		return fmt.Errorf("failed to delete reset code: %w", err)
 	}
 
 	// Hash the new password
