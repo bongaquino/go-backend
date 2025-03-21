@@ -151,13 +151,13 @@ func (us *UserService) GeneratePasswordResetCode(ctx context.Context, email stri
 	// Generate a random reset code using the helper
 	resetCode, err := helper.GenerateResetCode(6) // 6 bytes (~12 hex characters)
 	if err != nil {
-		return "", fmt.Errorf("failed to generate reset code: %w", err)
+		return "", fmt.Errorf("failed to generate reset code")
 	}
 
 	// Store the reset code in Redis with a 15-minute expiration
 	err = us.redisProvider.Set(ctx, key, resetCode, 15*time.Minute)
 	if err != nil {
-		return "", fmt.Errorf("failed to store reset code in Redis: %w", err)
+		return "", fmt.Errorf("failed to store reset code")
 	}
 
 	return resetCode, nil
@@ -170,7 +170,7 @@ func (us *UserService) ResetPassword(ctx context.Context, email, resetCode, newP
 	// Retrieve the stored reset code from Redis
 	storedCode, err := us.redisProvider.Get(ctx, key)
 	if err != nil {
-		return fmt.Errorf("failed to retrieve reset code: %w", err)
+		return fmt.Errorf("failed to retrieve reset code")
 	}
 
 	// Compare the stored code with the provided code
@@ -181,13 +181,13 @@ func (us *UserService) ResetPassword(ctx context.Context, email, resetCode, newP
 	// Delete the reset code from Redis to prevent reuse
 	err = us.redisProvider.Del(ctx, key)
 	if err != nil {
-		return fmt.Errorf("failed to delete reset code: %w", err)
+		return fmt.Errorf("failed to delete reset code")
 	}
 
 	// Hash the new password
 	hashedPassword, err := helper.Hash(newPassword)
 	if err != nil {
-		return fmt.Errorf("failed to hash password: %w", err)
+		return fmt.Errorf("failed to hash password")
 	}
 
 	// Update the user's password in the database
@@ -195,7 +195,7 @@ func (us *UserService) ResetPassword(ctx context.Context, email, resetCode, newP
 		"password": hashedPassword,
 	})
 	if err != nil {
-		return fmt.Errorf("failed to update password: %w", err)
+		return fmt.Errorf("failed to update password")
 	}
 
 	return nil
