@@ -6,7 +6,7 @@ import (
 
 	"koneksi/server/app/helpers"
 	"koneksi/server/app/models"
-	"koneksi/server/app/services"
+	"koneksi/server/app/providers"
 	"koneksi/server/core/logger"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -18,8 +18,8 @@ type UserRepository struct {
 	collection *mongoDriver.Collection
 }
 
-func NewUserRepository(mongoService *services.MongoService) *UserRepository {
-	db := mongoService.GetDB()
+func NewUserRepository(mongoProvider *providers.MongoProvider) *UserRepository {
+	db := mongoProvider.GetDB()
 	return &UserRepository{
 		collection: db.Collection("users"),
 	}

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"koneksi/server/app/models"
-	"koneksi/server/app/services"
+	"koneksi/server/app/providers"
 	"koneksi/server/core/logger"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -17,8 +17,8 @@ type UserRoleRepository struct {
 	collection *mongoDriver.Collection
 }
 
-func NewUserRoleRepository(mongoService *services.MongoService) *UserRoleRepository {
-	db := mongoService.GetDB()
+func NewUserRoleRepository(mongoProvider *providers.MongoProvider) *UserRoleRepository {
+	db := mongoProvider.GetDB()
 	return &UserRoleRepository{
 		collection: db.Collection("user_roles"),
 	}

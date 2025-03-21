@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"koneksi/server/app/models"
-	"koneksi/server/app/services"
+	"koneksi/server/app/providers"
 	"koneksi/server/core/logger"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -13,8 +13,8 @@ import (
 )
 
 // MigrateCollections creates or updates collections with indexes
-func MigrateCollections(mongoService *services.MongoService) {
-	db := mongoService.GetDB()
+func MigrateCollections(mongoProvider *providers.MongoProvider) {
+	db := mongoProvider.GetDB()
 	ctx := context.Background()
 
 	collections := []struct {

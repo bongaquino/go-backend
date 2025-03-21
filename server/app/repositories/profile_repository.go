@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"koneksi/server/app/models"
-	"koneksi/server/app/services"
+	"koneksi/server/app/providers"
 	"koneksi/server/core/logger"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -17,8 +17,8 @@ type ProfileRepository struct {
 	collection *mongoDriver.Collection
 }
 
-func NewProfileRepository(mongoService *services.MongoService) *ProfileRepository {
-	db := mongoService.GetDB()
+func NewProfileRepository(mongoProvider *providers.MongoProvider) *ProfileRepository {
+	db := mongoProvider.GetDB()
 	return &ProfileRepository{
 		collection: db.Collection("profiles"),
 	}

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"koneksi/server/app/models"
-	"koneksi/server/app/services"
+	"koneksi/server/app/providers"
 	"koneksi/server/core/logger"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -17,8 +17,8 @@ type PolicyRepository struct {
 	collection *mongoDriver.Collection
 }
 
-func NewPolicyRepository(mongoService *services.MongoService) *PolicyRepository {
-	db := mongoService.GetDB()
+func NewPolicyRepository(mongoProvider *providers.MongoProvider) *PolicyRepository {
+	db := mongoProvider.GetDB()
 	return &PolicyRepository{
 		collection: db.Collection("policies"),
 	}

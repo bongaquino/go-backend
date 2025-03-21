@@ -1,4 +1,4 @@
-package services
+package providers
 
 import (
 	"context"
@@ -11,24 +11,24 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-// JWTService handles JWT-related operations
-type JWTService struct {
-	redisService    *RedisService
+// JwtProvider handles JWT-related operations
+type JwtProvider struct {
+	redisProvider   *RedisProvider
 	secretKey       string
 	tokenDuration   time.Duration
 	refreshDuration time.Duration
 }
 
-// NewJWTService initializes a new JWTService with Redis dependency
-func NewJWTService(redisService *RedisService) *JWTService {
+// NewJwtProvider initializes a new JwtProvider with Redis dependency
+func NewJwtProvider(redisProvider *RedisProvider) *JwtProvider {
 	jwtConfig := config.LoadJwtConfig()
 
 	if jwtConfig.JwtSecret == "" {
 		logger.Log.Fatal("JWT secret key is missing in environment variables")
 	}
 
-	return &JWTService{
-		redisService:    redisService,
+	return &JwtProvider{
+		redisProvider:   redisProvider,
 		secretKey:       jwtConfig.JwtSecret,
 		tokenDuration:   time.Duration(jwtConfig.JwtTokenExpiration) * time.Second,
 		refreshDuration: time.Duration(jwtConfig.JwtRefreshExpiration) * time.Second,
@@ -45,7 +45,7 @@ type Claims struct {
 }
 
 // GenerateTokens creates an access and refresh token for a user
-func (j *JWTService) GenerateTokens(userID string, email, clientID *string) (accessToken, refreshToken string, err error) {
+func (j *JwtProvider) GenerateTokens(userID string, email, clientID *string) (accessToken, refreshToken string, err error) {
 	// Generate access token
 	accessClaims := Claims{
 		Sub:      userID,
@@ -80,7 +80,7 @@ func (j *JWTService) GenerateTokens(userID string, email, clientID *string) (acc
 
 	// Store refresh token in Redis
 	ctx := context.Background()
-	err = j.redisService.Set(ctx, "refresh_token:"+userID, refreshToken, j.refreshDuration)
+	err = j.redisProvider.Set(ctx, "refresh_token:"+userID, refreshToken, j.refreshDuration)
 	if err != nil {
 		logger.Log.Error("Failed to store refresh token in Redis", logger.Error(err))
 		return "", "", err
@@ -90,7 +90,7 @@ func (j *JWTService) GenerateTokens(userID string, email, clientID *string) (acc
 }
 
 // ValidateToken parses and validates a JWT token
-func (j *JWTService) ValidateToken(tokenString string) (*Claims, error) {
+func (j *JwtProvider) ValidateToken(tokenString string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (any, error) {
 		return []byte(j.secretKey), nil
 	})
@@ -105,7 +105,7 @@ func (j *JWTService) ValidateToken(tokenString string) (*Claims, error) {
 }
 
 // ValidateRefreshToken checks if the refresh token is valid and exists in Redis
-func (j *JWTService) ValidateRefreshToken(tokenString string) (*Claims, error) {
+func (j *JwtProvider) ValidateRefreshToken(tokenString string) (*Claims, error) {
 	claims, err := j.ValidateToken(tokenString)
 	if err != nil {
 		return nil, err
@@ -116,7 +116,7 @@ func (j *JWTService) ValidateRefreshToken(tokenString string) (*Claims, error) {
 	}
 
 	ctx := context.Background()
-	storedToken, err := j.redisService.Get(ctx, "refresh_token:"+claims.Sub)
+	storedToken, err := j.redisProvider.Get(ctx, "refresh_token:"+claims.Sub)
 	if err != nil {
 		return nil, errors.New("refresh token not found or expired")
 	}
@@ -129,7 +129,7 @@ func (j *JWTService) ValidateRefreshToken(tokenString string) (*Claims, error) {
 }
 
 // RevokeRefreshToken removes a refresh token from Redis
-func (j *JWTService) RevokeRefreshToken(userID string) error {
+func (j *JwtProvider) RevokeRefreshToken(userID string) error {
 	ctx := context.Background()
-	return j.redisService.Del(ctx, "refresh_token:"+userID)
+	return j.redisProvider.Del(ctx, "refresh_token:"+userID)
 }

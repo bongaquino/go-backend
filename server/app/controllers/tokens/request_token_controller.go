@@ -5,7 +5,6 @@ import (
 
 	"koneksi/server/app/helpers"
 	"koneksi/server/app/repositories"
-	"koneksi/server/app/services"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,11 +12,11 @@ import (
 // RequestTokenController handles user authentication and token generation
 type RequestTokenController struct {
 	userRepo   *repositories.UserRepository
-	jwtService *services.JWTService
+	jwtService *providers.JWTService
 }
 
 // NewRequestTokenController initializes a new RequestTokenController
-func NewRequestTokenController(userRepo *repositories.UserRepository, jwtService *services.JWTService) *RequestTokenController {
+func NewRequestTokenController(userRepo *repositories.UserRepository, jwtService *providers.JWTService) *RequestTokenController {
 	return &RequestTokenController{
 		userRepo:   userRepo,
 		jwtService: jwtService,

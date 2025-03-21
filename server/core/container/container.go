@@ -5,6 +5,7 @@ import (
 	"koneksi/server/app/controllers/tokens"
 	"koneksi/server/app/controllers/users"
 	"koneksi/server/app/middleware"
+	"koneksi/server/app/providers"
 	"koneksi/server/app/repositories"
 	"koneksi/server/app/services"
 	"koneksi/server/database"
@@ -12,10 +13,10 @@ import (
 
 // Container holds the dependencies for the application
 type Container struct {
-	// Services
-	MongoService *services.MongoService
-	RedisService *services.RedisService
-	JwtService   *services.JWTService
+	// Providers
+	mongoProvider *providers.MongoProvider
+	RedisService  *providers.RedisProvider
+	JwtService    *providers.JwtProvider
 
 	// Repositories
 	PermissionRepository       *repositories.PermissionRepository
@@ -27,6 +28,9 @@ type Container struct {
 	ServiceAccountRepository   *repositories.ServiceAccountRepository
 	UserRepository             *repositories.UserRepository
 	UserRoleRepository         *repositories.UserRoleRepository
+
+	// Services
+	UserService *services.UserService
 
 	// Middleware
 	AuthnMiddleware    *middleware.AuthnMiddleware
@@ -43,45 +47,48 @@ type Container struct {
 
 // NewContainer initializes a new IoC container
 func NewContainer() *Container {
-	// Initialize services
-	mongoService := services.NewMongoService()
-	redisService := services.NewRedisService()
-	jwtService := services.NewJWTService(redisService)
+	// Initialize providers
+	mongoProvider := providers.NewMongoProvider()
+	redisProvider := providers.NewRedisProvider()
+	JwtProvider := providers.NewJwtProvider(redisProvider)
 
 	// Initialize repositories
-	permissionRepository := repositories.NewPermissionRepository(mongoService)
-	policyRepository := repositories.NewPolicyRepository(mongoService)
-	policyPermissionRepository := repositories.NewPolicyPermissionRepository(mongoService)
-	profileRepository := repositories.NewProfileRepository(mongoService)
-	roleRepository := repositories.NewRoleRepository(mongoService)
-	rolePermissionRepository := repositories.NewRolePermissionRepository(mongoService)
-	serviceAccountRepository := repositories.NewServiceAccountRepository(mongoService)
-	userRepository := repositories.NewUserRepository(mongoService)
-	userRoleRepository := repositories.NewUserRoleRepository(mongoService)
+	permissionRepository := repositories.NewPermissionRepository(mongoProvider)
+	policyRepository := repositories.NewPolicyRepository(mongoProvider)
+	policyPermissionRepository := repositories.NewPolicyPermissionRepository(mongoProvider)
+	profileRepository := repositories.NewProfileRepository(mongoProvider)
+	roleRepository := repositories.NewRoleRepository(mongoProvider)
+	rolePermissionRepository := repositories.NewRolePermissionRepository(mongoProvider)
+	serviceAccountRepository := repositories.NewServiceAccountRepository(mongoProvider)
+	userRepository := repositories.NewUserRepository(mongoProvider)
+	userRoleRepository := repositories.NewUserRoleRepository(mongoProvider)
+
+	// Initialize services
+	userService := services.NewUserService(userRepository, profileRepository, roleRepository, userRoleRepository)
 
 	// Run database migrations
-	database.MigrateCollections(mongoService)
+	database.MigrateCollections(mongoProvider)
 
 	// Run database seeders
 	database.SeedCollections(permissionRepository, roleRepository, rolePermissionRepository)
 
 	// Initialize middleware
-	authnMiddleware := middleware.NewAuthnMiddleware(jwtService)
+	authnMiddleware := middleware.NewAuthnMiddleware(JwtProvider)
 	authzMiddleware := middleware.NewAuthzMiddleware(userRoleRepository, roleRepository)
 	verifiedMiddleware := middleware.NewVerifiedMiddleware(userRepository)
 
 	// Initialize controllers
 	checkHealthController := health.NewCheckHealthController()
-	registerController := users.NewRegisterController(userRepository, profileRepository, roleRepository, userRoleRepository)
-	requestTokenController := tokens.NewRequestTokenController(userRepository, jwtService)
-	refreshTokenController := tokens.NewRefreshTokenController(userRepository, jwtService)
-	revokeTokenController := tokens.NewRevokeTokenController(userRepository, jwtService)
+	registerController := users.NewRegisterController(userService)
+	requestTokenController := tokens.NewRequestTokenController(userRepository, JwtProvider)
+	refreshTokenController := tokens.NewRefreshTokenController(userRepository, JwtProvider)
+	revokeTokenController := tokens.NewRevokeTokenController(userRepository, JwtProvider)
 
 	// Return the container
 	return &Container{
-		MongoService:               mongoService,
-		RedisService:               redisService,
-		JwtService:                 jwtService,
+		mongoProvider:              mongoProvider,
+		RedisService:               redisProvider,
+		JwtService:                 JwtProvider,
 		PermissionRepository:       permissionRepository,
 		PolicyRepository:           policyRepository,
 		PolicyPermissionRepository: policyPermissionRepository,
@@ -91,6 +98,7 @@ func NewContainer() *Container {
 		ServiceAccountRepository:   serviceAccountRepository,
 		UserRepository:             userRepository,
 		UserRoleRepository:         userRoleRepository,
+		UserService:                userService,
 		AuthnMiddleware:            authnMiddleware,
 		AuthzMiddleware:            authzMiddleware,
 		VerifiedMiddleware:         verifiedMiddleware,
