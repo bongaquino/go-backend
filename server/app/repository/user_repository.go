@@ -31,7 +31,7 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *model.User) error
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
 
-	hashedPassword, err := helper.HashPassword(user.Password)
+	hashedPassword, err := helper.Hash(user.Password)
 	if err != nil {
 		logger.Log.Error("error hashing password", logger.Error(err))
 		return err
@@ -88,6 +88,21 @@ func (r *UserRepository) DeleteUser(ctx context.Context, email string) error {
 	_, err := r.collection.DeleteOne(ctx, bson.M{"email": email})
 	if err != nil {
 		logger.Log.Error("error deleting user", logger.Error(err))
+		return err
+	}
+	return nil
+}
+
+func (r *UserRepository) SaveOTPSecret(ctx context.Context, userID, otpSecret string) error {
+	hashedSecret, err := helper.Hash(otpSecret)
+	if err != nil {
+		logger.Log.Error("error hashing OTP secret", logger.Error(err))
+		return err
+	}
+
+	_, err = r.collection.UpdateOne(ctx, bson.M{"_id": userID}, bson.M{"$set": bson.M{"otp_secret": hashedSecret}})
+	if err != nil {
+		logger.Log.Error("error saving OTP secret", logger.Error(err))
 		return err
 	}
 	return nil

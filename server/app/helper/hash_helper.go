@@ -4,17 +4,17 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// HashPassword hashes a password using bcrypt.
-func HashPassword(password string) (string, error) {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+// Hash hashes a data using bcrypt.
+func Hash(data string) (string, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data), bcrypt.DefaultCost)
 	if err != nil {
 		return "", err
 	}
 	return string(hashedPassword), nil
 }
 
-// CheckPasswordHash compares a hashed password with a plain text password.
-func CheckPasswordHash(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+// CheckHash compares a hashed data with a plain text data.
+func CheckHash(data, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(data))
 	return err == nil
 }

@@ -27,7 +27,7 @@ func (ts *TokenService) AuthenticateUser(ctx context.Context, email, password st
 		return "", "", errors.New("invalid credentials")
 	}
 
-	if !helper.CheckPasswordHash(password, user.Password) {
+	if !helper.CheckHash(password, user.Password) {
 		return "", "", errors.New("invalid credentials")
 	}
 

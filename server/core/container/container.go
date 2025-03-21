@@ -3,6 +3,7 @@ package container
 import (
 	"koneksi/server/app/controller/health"
 	"koneksi/server/app/controller/settings"
+	"koneksi/server/app/controller/settings/mfa"
 	"koneksi/server/app/controller/tokens"
 	"koneksi/server/app/controller/users"
 	"koneksi/server/app/middleware"
@@ -33,6 +34,7 @@ type Container struct {
 	// Service
 	UserService  *service.UserService
 	TokenService *service.TokenService
+	MFAService   *service.MFAService
 
 	// Middleware
 	AuthnMiddleware    *middleware.AuthnMiddleware
@@ -46,6 +48,7 @@ type Container struct {
 	RefreshTokenController   *tokens.RefreshTokenController
 	RevokeTokenController    *tokens.RevokeTokenController
 	ChangePasswordController *settings.ChangePasswordController
+	GenerateOTPController    *mfa.GenerateOTPController
 }
 
 // NewContainer initializes a new IoC container
@@ -69,6 +72,7 @@ func NewContainer() *Container {
 	// Initialize service
 	userService := service.NewUserService(userRepository, profileRepository, roleRepository, userRoleRepository)
 	tokenService := service.NewTokenService(userRepository, JwtProvider)
+	mfaService := service.NewMFAService(userRepository)
 
 	// Run database migrations
 	database.MigrateCollections(mongoProvider)
@@ -88,6 +92,7 @@ func NewContainer() *Container {
 	refreshTokenController := tokens.NewRefreshTokenController(tokenService)
 	revokeTokenController := tokens.NewRevokeTokenController(tokenService)
 	changePasswordController := settings.NewChangePasswordController(userService)
+	generateOTPController := mfa.NewGenerateOTPController(mfaService)
 
 	// Return the container
 	return &Container{
@@ -105,6 +110,7 @@ func NewContainer() *Container {
 		UserRoleRepository:         userRoleRepository,
 		UserService:                userService,
 		TokenService:               tokenService,
+		MFAService:                 mfaService,
 		AuthnMiddleware:            authnMiddleware,
 		AuthzMiddleware:            authzMiddleware,
 		VerifiedMiddleware:         verifiedMiddleware,
@@ -114,5 +120,6 @@ func NewContainer() *Container {
 		RefreshTokenController:     refreshTokenController,
 		RevokeTokenController:      revokeTokenController,
 		ChangePasswordController:   changePasswordController,
+		GenerateOTPController:      generateOTPController,
 	}
 }

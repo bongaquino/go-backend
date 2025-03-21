@@ -4,6 +4,9 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
+
+	"github.com/pquerna/otp"
+	"github.com/pquerna/otp/totp"
 )
 
 // GenerateClientID generates a cryptographically safe client ID.
@@ -24,4 +27,25 @@ func generateRandomString(length int) (string, error) {
 		return "", fmt.Errorf("failed to generate random string: %w", err)
 	}
 	return base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(bytes), nil
+}
+
+// GenerateOTPSecret generates a TOTP secret for the user
+func GenerateOTPSecret(userID string) (string, error) {
+	secret, err := totp.Generate(totp.GenerateOpts{
+		Issuer:      "KoneksiApp",
+		AccountName: userID,
+	})
+	if err != nil {
+		return "", fmt.Errorf("failed to generate OTP secret: %w", err)
+	}
+	return secret.Secret(), nil
+}
+
+// GenerateQRCode generates a QR code URL for the TOTP secret
+func GenerateQRCode(userID, secret string) (string, error) {
+	key, err := otp.NewKeyFromURL(fmt.Sprintf("otpauth://totp/KoneksiApp:%s?secret=%s&issuer=KoneksiApp", userID, secret))
+	if err != nil {
+		return "", fmt.Errorf("failed to generate QR code: %w", err)
+	}
+	return key.URL(), nil
 }

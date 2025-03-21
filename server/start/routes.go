@@ -31,5 +31,14 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 	settingsGroup.Use(container.AuthnMiddleware.HandleAuthn, container.VerifiedMiddleware.HandleVerified)
 	{
 		settingsGroup.POST("/change-password", container.ChangePasswordController.Handle)
+
+		// MFA Routes
+		mfaGroup := settingsGroup.Group("/mfa")
+		{
+			mfaGroup.POST("/generate-otp", container.GenerateOTPController.Handle)
+			// mfaGroup.POST("/verify-otp", container.VerifyMFAController.Handle)
+			// mfaGroup.POST("/enable", container.EnableMFAController.Handle)
+			// mfaGroup.POST("/disable", container.DisableMFAController.Handle)
+		}
 	}
 }

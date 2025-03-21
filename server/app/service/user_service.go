@@ -108,12 +108,12 @@ func (us *UserService) ChangePassword(ctx context.Context, userID string, reques
 	}
 
 	// Verify the old password
-	if !helper.CheckPasswordHash(request.OldPassword, user.Password) {
+	if !helper.CheckHash(request.OldPassword, user.Password) {
 		return errors.New("old password is incorrect")
 	}
 
 	// Hash the new password
-	hashedPassword, err := helper.HashPassword(request.NewPassword)
+	hashedPassword, err := helper.Hash(request.NewPassword)
 	if err != nil {
 		logger.Log.Error("error hashing new password", logger.Error(err))
 		return errors.New("failed to hash new password")
