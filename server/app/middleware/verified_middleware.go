@@ -33,7 +33,7 @@ func NewVerifiedMiddleware(userRepo *repository.UserRepository) *VerifiedMiddlew
 			}
 
 			// Check if the user is verified using UserRepository
-			user, err := userRepo.ReadUserByID(c.Request.Context(), userID)
+			user, err := userRepo.ReadUser(c.Request.Context(), userID)
 			if err != nil {
 				helper.FormatResponse(c, "error", http.StatusInternalServerError, "failed to retrieve user", nil, nil)
 				c.Abort()

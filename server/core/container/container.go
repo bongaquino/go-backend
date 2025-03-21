@@ -50,6 +50,7 @@ type Container struct {
 	ChangePasswordController *settings.ChangePasswordController
 	GenerateOTPController    *mfa.GenerateOTPController
 	EnableMFAController      *mfa.EnableMFAController
+	DisableMFAController     *mfa.DisableMFAController
 }
 
 // NewContainer initializes a new IoC container
@@ -95,6 +96,7 @@ func NewContainer() *Container {
 	changePasswordController := settings.NewChangePasswordController(userService)
 	generateOTPController := mfa.NewGenerateOTPController(mfaService)
 	enableMFAController := mfa.NewEnableMFAController(mfaService)
+	disableMFAController := mfa.NewDisableMFAController(mfaService)
 
 	// Return the container
 	return &Container{
@@ -124,5 +126,6 @@ func NewContainer() *Container {
 		ChangePasswordController:   changePasswordController,
 		GenerateOTPController:      generateOTPController,
 		EnableMFAController:        enableMFAController,
+		DisableMFAController:       disableMFAController,
 	}
 }

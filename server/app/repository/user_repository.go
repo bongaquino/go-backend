@@ -62,7 +62,7 @@ func (r *UserRepository) ReadUserByEmail(ctx context.Context, email string) (*mo
 	return &user, nil
 }
 
-func (r *UserRepository) ReadUserByID(ctx context.Context, id string) (*model.User, error) {
+func (r *UserRepository) ReadUser(ctx context.Context, id string) (*model.User, error) {
 	// Convert id to ObjectID
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -82,8 +82,15 @@ func (r *UserRepository) ReadUserByID(ctx context.Context, id string) (*model.Us
 	return &user, nil
 }
 
-func (r *UserRepository) UpdateUser(ctx context.Context, email string, update bson.M) error {
-	_, err := r.collection.UpdateOne(ctx, bson.M{"email": email}, bson.M{"$set": update})
+func (r *UserRepository) UpdateUser(ctx context.Context, id string, update bson.M) error {
+	// Convert userID to ObjectID
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		logger.Log.Error("invalid userID format", logger.Error(err))
+		return err
+	}
+
+	_, err = r.collection.UpdateOne(ctx, bson.M{"id": objectID}, bson.M{"$set": update})
 	if err != nil {
 		logger.Log.Error("error updating user", logger.Error(err))
 		return err
@@ -95,47 +102,6 @@ func (r *UserRepository) DeleteUser(ctx context.Context, email string) error {
 	_, err := r.collection.DeleteOne(ctx, bson.M{"email": email})
 	if err != nil {
 		logger.Log.Error("error deleting user", logger.Error(err))
-		return err
-	}
-	return nil
-}
-
-func (r *UserRepository) UpdateOTPSecret(ctx context.Context, userID, otpSecret string) error {
-	// Convert userID to ObjectID
-	objectID, err := primitive.ObjectIDFromHex(userID)
-	if err != nil {
-		logger.Log.Error("invalid userID format", logger.Error(err))
-		return err
-	}
-
-	// Hash the OTP secret
-	hashedSecret, err := helper.Hash(otpSecret)
-	if err != nil {
-		logger.Log.Error("error hashing OTP secret", logger.Error(err))
-		return err
-	}
-
-	// Update the user's OTP secret in the database
-	_, err = r.collection.UpdateOne(ctx, bson.M{"_id": objectID}, bson.M{"$set": bson.M{"otp_secret": hashedSecret}})
-	if err != nil {
-		logger.Log.Error("error saving OTP secret", logger.Error(err))
-		return err
-	}
-	return nil
-}
-
-func (r *UserRepository) UpdateIsMFAEnabled(ctx context.Context, userID string, isEnabled bool) error {
-	// Convert userID to ObjectID
-	objectID, err := primitive.ObjectIDFromHex(userID)
-	if err != nil {
-		logger.Log.Error("invalid userID format", logger.Error(err))
-		return err
-	}
-
-	// Update the user's MFA status in the database
-	_, err = r.collection.UpdateOne(ctx, bson.M{"_id": objectID}, bson.M{"$set": bson.M{"is_mfa_enabled": isEnabled}})
-	if err != nil {
-		logger.Log.Error("error updating MFA status", logger.Error(err))
 		return err
 	}
 	return nil

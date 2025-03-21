@@ -84,7 +84,7 @@ func (us *UserService) RegisterUser(ctx context.Context, request *dto.RegisterUs
 // ChangePassword changes the user's password
 func (us *UserService) ChangePassword(ctx context.Context, userID string, request *dto.ChangePasswordDTO) error {
 	// Fetch the user from the repository
-	user, err := us.userRepo.ReadUserByID(ctx, userID)
+	user, err := us.userRepo.ReadUser(ctx, userID)
 	if err != nil {
 		logger.Log.Error("error fetching user by ID", logger.Error(err))
 		return errors.New("failed to retrieve user")
