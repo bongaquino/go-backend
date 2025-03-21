@@ -16,9 +16,10 @@ import (
 // Container holds the dependencies for the application
 type Container struct {
 	// Providers
-	mongoProvider *provider.MongoProvider
-	RedisProvider *provider.RedisProvider
-	JWTProvider   *provider.JWTProvider
+	MongoProvider    *provider.MongoProvider
+	RedisProvider    *provider.RedisProvider
+	JWTProvider      *provider.JWTProvider
+	PostmarkProvider *provider.PostmarkProvider
 
 	// Repository
 	PermissionRepository       *repository.PermissionRepository
@@ -35,6 +36,7 @@ type Container struct {
 	UserService  *service.UserService
 	TokenService *service.TokenService
 	MFAService   *service.MFAService
+	EmailService *service.EmailService
 
 	// Middleware
 	AuthnMiddleware    *middleware.AuthnMiddleware
@@ -44,6 +46,7 @@ type Container struct {
 	// Controllers
 	CheckHealthController    *health.CheckHealthController
 	RegisterController       *users.RegisterController
+	ForgotPasswordController *users.ForgotPasswordController
 	RequestTokenController   *tokens.RequestTokenController
 	RefreshTokenController   *tokens.RefreshTokenController
 	RevokeTokenController    *tokens.RevokeTokenController
@@ -59,6 +62,7 @@ func NewContainer() *Container {
 	mongoProvider := provider.NewMongoProvider()
 	redisProvider := provider.NewRedisProvider()
 	JWTProvider := provider.NewJWTProvider(redisProvider)
+	postmarkProvider := provider.NewPostmarkProvider()
 
 	// Initialize repository
 	permissionRepository := repository.NewPermissionRepository(mongoProvider)
@@ -76,6 +80,7 @@ func NewContainer() *Container {
 		roleRepository, userRoleRepository, redisProvider)
 	tokenService := service.NewTokenService(userRepository, JWTProvider)
 	mfaService := service.NewMFAService(userRepository)
+	emailService := service.NewEmailService(postmarkProvider)
 
 	// Run database migrations
 	database.MigrateCollections(mongoProvider)
@@ -91,6 +96,7 @@ func NewContainer() *Container {
 	// Initialize controllers
 	checkHealthController := health.NewCheckHealthController()
 	registerController := users.NewRegisterController(userService)
+	forgotPasswordController := users.NewForgotPasswordController(userService, emailService)
 	requestTokenController := tokens.NewRequestTokenController(tokenService)
 	refreshTokenController := tokens.NewRefreshTokenController(tokenService)
 	revokeTokenController := tokens.NewRevokeTokenController(tokenService)
@@ -101,7 +107,7 @@ func NewContainer() *Container {
 
 	// Return the container
 	return &Container{
-		mongoProvider:              mongoProvider,
+		MongoProvider:              mongoProvider,
 		RedisProvider:              redisProvider,
 		JWTProvider:                JWTProvider,
 		PermissionRepository:       permissionRepository,
@@ -121,6 +127,7 @@ func NewContainer() *Container {
 		VerifiedMiddleware:         verifiedMiddleware,
 		CheckHealthController:      checkHealthController,
 		RegisterController:         registerController,
+		ForgotPasswordController:   forgotPasswordController,
 		RequestTokenController:     requestTokenController,
 		RefreshTokenController:     refreshTokenController,
 		RevokeTokenController:      revokeTokenController,
