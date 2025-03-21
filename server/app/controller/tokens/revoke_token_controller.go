@@ -4,23 +4,20 @@ import (
 	"net/http"
 
 	"koneksi/server/app/helper"
-	"koneksi/server/app/provider"
-	"koneksi/server/app/repository"
+	"koneksi/server/app/service"
 
 	"github.com/gin-gonic/gin"
 )
 
 // RevokeTokenController handles revoking refresh tokens
 type RevokeTokenController struct {
-	userRepo   *repository.UserRepository
-	jwtService *provider.JwtProvider
+	tokenService *service.TokenService
 }
 
 // NewRevokeTokenController initializes a new RevokeTokenController
-func NewRevokeTokenController(userRepo *repository.UserRepository, jwtService *provider.JwtProvider) *RevokeTokenController {
+func NewRevokeTokenController(tokenService *service.TokenService) *RevokeTokenController {
 	return &RevokeTokenController{
-		userRepo:   userRepo,
-		jwtService: jwtService,
+		tokenService: tokenService,
 	}
 }
 
@@ -35,24 +32,10 @@ func (rc *RevokeTokenController) Handle(c *gin.Context) {
 		return
 	}
 
-	// Validate refresh token
-	claims, err := rc.jwtService.ValidateRefreshToken(request.RefreshToken)
+	// Revoke the token using the TokenService
+	err := rc.tokenService.RevokeToken(c.Request.Context(), request.RefreshToken)
 	if err != nil {
-		helper.FormatResponse(c, "error", http.StatusUnauthorized, "invalid or expired refresh token", nil, nil)
-		return
-	}
-
-	// Check if user exists
-	user, err := rc.userRepo.ReadUserByEmail(c.Request.Context(), *claims.Email)
-	if err != nil || user == nil {
-		helper.FormatResponse(c, "error", http.StatusUnauthorized, "user no longer exists", nil, nil)
-		return
-	}
-
-	// Revoke the refresh token (remove from Redis)
-	err = rc.jwtService.RevokeRefreshToken(user.ID.Hex())
-	if err != nil {
-		helper.FormatResponse(c, "error", http.StatusInternalServerError, "could not revoke refresh token", nil, nil)
+		helper.FormatResponse(c, "error", http.StatusUnauthorized, err.Error(), nil, nil)
 		return
 	}
 

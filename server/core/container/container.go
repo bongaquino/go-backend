@@ -84,7 +84,7 @@ func NewContainer() *Container {
 	registerController := users.NewRegisterController(userService)
 	requestTokenController := tokens.NewRequestTokenController(tokenService)
 	refreshTokenController := tokens.NewRefreshTokenController(tokenService)
-	revokeTokenController := tokens.NewRevokeTokenController(userRepository, JwtProvider)
+	revokeTokenController := tokens.NewRevokeTokenController(tokenService)
 
 	// Return the container
 	return &Container{

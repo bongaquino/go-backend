@@ -58,3 +58,26 @@ func (ts *TokenService) RefreshTokens(ctx context.Context, refreshToken string) 
 
 	return accessToken, newRefreshToken, nil
 }
+
+// RevokeToken revokes the refresh token
+func (ts *TokenService) RevokeToken(ctx context.Context, refreshToken string) error {
+	// Validate the refresh token
+	claims, err := ts.jwtService.ValidateRefreshToken(refreshToken)
+	if err != nil {
+		return errors.New("invalid or expired refresh token")
+	}
+
+	// Check if the user exists
+	user, err := ts.userRepo.ReadUserByEmail(ctx, *claims.Email)
+	if err != nil || user == nil {
+		return errors.New("user no longer exists")
+	}
+
+	// Revoke the refresh token (e.g., remove it from Redis or mark it as invalid)
+	err = ts.jwtService.RevokeRefreshToken(user.ID.Hex())
+	if err != nil {
+		return errors.New("could not revoke refresh token")
+	}
+
+	return nil
+}
