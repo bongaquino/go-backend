@@ -82,7 +82,7 @@ func (j *JwtProvider) GenerateTokens(userID string, email, clientID *string) (ac
 	ctx := context.Background()
 	err = j.redisProvider.Set(ctx, "refresh_token:"+userID, refreshToken, j.refreshDuration)
 	if err != nil {
-		logger.Log.Error("Failed to store refresh token in Redis", logger.Error(err))
+		logger.Log.Error("failed to store refresh token in Redis", logger.Error(err))
 		return "", "", err
 	}
 

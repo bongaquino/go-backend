@@ -39,7 +39,7 @@ func (rc *RequestTokenController) Handle(c *gin.Context) {
 	// Check if user exists
 	user, err := rc.userRepo.ReadUserByEmail(c.Request.Context(), request.Email)
 	if err != nil || user == nil {
-		helper.FormatResponse(c, "error", http.StatusUnauthorized, "Invalid credentials", nil, nil)
+		helper.FormatResponse(c, "error", http.StatusUnauthorized, "invalid credentials", nil, nil)
 		return
 	}
 
@@ -47,19 +47,19 @@ func (rc *RequestTokenController) Handle(c *gin.Context) {
 
 	// Verify password using the helper function
 	if !helper.CheckPasswordHash(request.Password, user.Password) {
-		helper.FormatResponse(c, "error", http.StatusUnauthorized, "Invalid credentials", nil, nil)
+		helper.FormatResponse(c, "error", http.StatusUnauthorized, "invalid credentials", nil, nil)
 		return
 	}
 
 	// Generate both access & refresh tokens
 	accessToken, refreshToken, err := rc.jwtService.GenerateTokens(user.ID.Hex(), &user.Email, nil)
 	if err != nil {
-		helper.FormatResponse(c, "error", http.StatusInternalServerError, "Could not generate tokens", nil, nil)
+		helper.FormatResponse(c, "error", http.StatusInternalServerError, "could not generate tokens", nil, nil)
 		return
 	}
 
 	// Respond with tokens
-	helper.FormatResponse(c, "success", http.StatusOK, "Request token successful", gin.H{
+	helper.FormatResponse(c, "success", http.StatusOK, "request token successful", gin.H{
 		"access_token":  accessToken,
 		"refresh_token": refreshToken,
 	}, nil)
@@ -68,7 +68,7 @@ func (rc *RequestTokenController) Handle(c *gin.Context) {
 // validatePayload validates the incoming request payload
 func (rc *RequestTokenController) validatePayload(c *gin.Context, request any) error {
 	if err := c.ShouldBindJSON(request); err != nil {
-		helper.FormatResponse(c, "error", http.StatusBadRequest, "Invalid input", nil, nil)
+		helper.FormatResponse(c, "error", http.StatusBadRequest, "invalid input", nil, nil)
 		return err
 	}
 	return nil

@@ -38,32 +38,32 @@ func (rc *RevokeTokenController) Handle(c *gin.Context) {
 	// Validate refresh token
 	claims, err := rc.jwtService.ValidateRefreshToken(request.RefreshToken)
 	if err != nil {
-		helper.FormatResponse(c, "error", http.StatusUnauthorized, "Invalid or expired refresh token", nil, nil)
+		helper.FormatResponse(c, "error", http.StatusUnauthorized, "invalid or expired refresh token", nil, nil)
 		return
 	}
 
 	// Check if user exists
 	user, err := rc.userRepo.ReadUserByEmail(c.Request.Context(), *claims.Email)
 	if err != nil || user == nil {
-		helper.FormatResponse(c, "error", http.StatusUnauthorized, "User no longer exists", nil, nil)
+		helper.FormatResponse(c, "error", http.StatusUnauthorized, "user no longer exists", nil, nil)
 		return
 	}
 
 	// Revoke the refresh token (remove from Redis)
 	err = rc.jwtService.RevokeRefreshToken(user.ID.Hex())
 	if err != nil {
-		helper.FormatResponse(c, "error", http.StatusInternalServerError, "Could not revoke refresh token", nil, nil)
+		helper.FormatResponse(c, "error", http.StatusInternalServerError, "could not revoke refresh token", nil, nil)
 		return
 	}
 
 	// Return success response
-	helper.FormatResponse(c, "success", http.StatusOK, "Refresh token revoked successfully", nil, nil)
+	helper.FormatResponse(c, "success", http.StatusOK, "refresh token revoked successfully", nil, nil)
 }
 
 // validatePayload validates the incoming request payload
 func (rc *RevokeTokenController) validatePayload(c *gin.Context, request any) error {
 	if err := c.ShouldBindJSON(request); err != nil {
-		helper.FormatResponse(c, "error", http.StatusBadRequest, "Invalid input", nil, nil)
+		helper.FormatResponse(c, "error", http.StatusBadRequest, "invalid input", nil, nil)
 		return err
 	}
 	return nil

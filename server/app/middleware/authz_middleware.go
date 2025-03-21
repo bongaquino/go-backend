@@ -30,7 +30,7 @@ func (m *AuthzMiddleware) HandleAuthz(requiredRoles []string) gin.HandlerFunc {
 		// Retrieve userID from the context (assumes it's set by a previous middleware)
 		userID, exists := c.Get("userID")
 		if !exists {
-			helper.FormatResponse(c, "error", http.StatusUnauthorized, "User ID not found in context", nil, nil)
+			helper.FormatResponse(c, "error", http.StatusUnauthorized, "userID not found in context", nil, nil)
 			c.Abort()
 			return
 		}
@@ -38,7 +38,7 @@ func (m *AuthzMiddleware) HandleAuthz(requiredRoles []string) gin.HandlerFunc {
 		// Fetch roles from the database using the userID
 		roles, err := m.getUserRoles(c.Request.Context(), userID.(string))
 		if err != nil {
-			helper.FormatResponse(c, "error", http.StatusInternalServerError, "Failed to retrieve user roles", nil, nil)
+			helper.FormatResponse(c, "error", http.StatusInternalServerError, "failed to retrieve user roles", nil, nil)
 			c.Abort()
 			return
 		}
@@ -55,7 +55,7 @@ func (m *AuthzMiddleware) HandleAuthz(requiredRoles []string) gin.HandlerFunc {
 		}
 
 		if !hasRole {
-			helper.FormatResponse(c, "error", http.StatusForbidden, "User does not have the required role", nil, nil)
+			helper.FormatResponse(c, "error", http.StatusForbidden, "user does not have the required role", nil, nil)
 			c.Abort()
 			return
 		}

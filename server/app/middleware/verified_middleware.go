@@ -20,7 +20,7 @@ func NewVerifiedMiddleware(userRepo *repository.UserRepository) *VerifiedMiddlew
 			// Retrieve the userID from the context
 			userIDValue, exists := c.Get("userID")
 			if !exists {
-				helper.FormatResponse(c, "error", http.StatusUnauthorized, "User ID not found in context", nil, nil)
+				helper.FormatResponse(c, "error", http.StatusUnauthorized, "userID not found in context", nil, nil)
 				c.Abort()
 				return
 			}
@@ -28,7 +28,7 @@ func NewVerifiedMiddleware(userRepo *repository.UserRepository) *VerifiedMiddlew
 			// Ensure the userID is a string
 			userID, ok := userIDValue.(string)
 			if !ok {
-				helper.FormatResponse(c, "error", http.StatusInternalServerError, "Invalid user ID format in context", nil, nil)
+				helper.FormatResponse(c, "error", http.StatusInternalServerError, "invalid user ID format in context", nil, nil)
 				c.Abort()
 				return
 			}
@@ -36,7 +36,7 @@ func NewVerifiedMiddleware(userRepo *repository.UserRepository) *VerifiedMiddlew
 			// Convert userID to primitive.ObjectID
 			objectID, err := primitive.ObjectIDFromHex(userID)
 			if err != nil {
-				helper.FormatResponse(c, "error", http.StatusInternalServerError, "Invalid user ID format", nil, nil)
+				helper.FormatResponse(c, "error", http.StatusInternalServerError, "invalid user ID format", nil, nil)
 				c.Abort()
 				return
 			}
@@ -44,13 +44,13 @@ func NewVerifiedMiddleware(userRepo *repository.UserRepository) *VerifiedMiddlew
 			// Check if the user is verified using UserRepository
 			user, err := userRepo.ReadUserByID(c.Request.Context(), objectID)
 			if err != nil {
-				helper.FormatResponse(c, "error", http.StatusInternalServerError, "Failed to retrieve user", nil, nil)
+				helper.FormatResponse(c, "error", http.StatusInternalServerError, "failed to retrieve user", nil, nil)
 				c.Abort()
 				return
 			}
 
 			if user == nil || !user.IsVerified {
-				helper.FormatResponse(c, "error", http.StatusForbidden, "User is not verified", nil, nil)
+				helper.FormatResponse(c, "error", http.StatusForbidden, "user is not verified", nil, nil)
 				c.Abort()
 				return
 			}

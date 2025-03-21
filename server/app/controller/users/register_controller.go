@@ -33,7 +33,7 @@ func (rc *RegisterController) Handle(c *gin.Context) {
 		return
 	}
 
-	helper.FormatResponse(c, "success", http.StatusCreated, "User registered successfully", gin.H{
+	helper.FormatResponse(c, "success", http.StatusCreated, "user registered successfully", gin.H{
 		"user":      user,
 		"profile":   profile,
 		"user_role": userRole,
@@ -42,7 +42,7 @@ func (rc *RegisterController) Handle(c *gin.Context) {
 
 func (rc *RegisterController) validatePayload(c *gin.Context, request any) error {
 	if err := c.ShouldBindJSON(request); err != nil {
-		helper.FormatResponse(c, "error", http.StatusBadRequest, "Invalid input", nil, nil)
+		helper.FormatResponse(c, "error", http.StatusBadRequest, "invalid input", nil, nil)
 		return err
 	}
 	return nil

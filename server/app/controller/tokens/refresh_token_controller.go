@@ -38,26 +38,26 @@ func (rc *RefreshTokenController) Handle(c *gin.Context) {
 	// Validate refresh token
 	claims, err := rc.jwtService.ValidateRefreshToken(request.RefreshToken)
 	if err != nil {
-		helper.FormatResponse(c, "error", http.StatusUnauthorized, "Invalid or expired refresh token", nil, nil)
+		helper.FormatResponse(c, "error", http.StatusUnauthorized, "invalid or expired refresh token", nil, nil)
 		return
 	}
 
 	// Check if user still exists
 	user, err := rc.userRepo.ReadUserByEmail(c.Request.Context(), *claims.Email)
 	if err != nil || user == nil {
-		helper.FormatResponse(c, "error", http.StatusUnauthorized, "User no longer exists", nil, nil)
+		helper.FormatResponse(c, "error", http.StatusUnauthorized, "user no longer exists", nil, nil)
 		return
 	}
 
 	// Generate new access & refresh tokens (updates Redis)
 	accessToken, refreshToken, err := rc.jwtService.GenerateTokens(user.ID.Hex(), &user.Email, nil)
 	if err != nil {
-		helper.FormatResponse(c, "error", http.StatusInternalServerError, "Could not generate new tokens", nil, nil)
+		helper.FormatResponse(c, "error", http.StatusInternalServerError, "could not generate new tokens", nil, nil)
 		return
 	}
 
 	// Return the new tokens
-	helper.FormatResponse(c, "success", http.StatusOK, "Token refreshed successfully", gin.H{
+	helper.FormatResponse(c, "success", http.StatusOK, "token refreshed successfully", gin.H{
 		"access_token":  accessToken,
 		"refresh_token": refreshToken,
 	}, nil)
@@ -66,7 +66,7 @@ func (rc *RefreshTokenController) Handle(c *gin.Context) {
 // validatePayload validates the incoming request payload
 func (rc *RefreshTokenController) validatePayload(c *gin.Context, request any) error {
 	if err := c.ShouldBindJSON(request); err != nil {
-		helper.FormatResponse(c, "error", http.StatusBadRequest, "Invalid input", nil, nil)
+		helper.FormatResponse(c, "error", http.StatusBadRequest, "invalid input", nil, nil)
 		return err
 	}
 	return nil
