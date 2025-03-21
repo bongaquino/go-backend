@@ -72,7 +72,8 @@ func NewContainer() *Container {
 	userRoleRepository := repository.NewUserRoleRepository(mongoProvider)
 
 	// Initialize service
-	userService := service.NewUserService(userRepository, profileRepository, roleRepository, userRoleRepository)
+	userService := service.NewUserService(userRepository, profileRepository,
+		roleRepository, userRoleRepository, redisProvider)
 	tokenService := service.NewTokenService(userRepository, JWTProvider)
 	mfaService := service.NewMFAService(userRepository)
 

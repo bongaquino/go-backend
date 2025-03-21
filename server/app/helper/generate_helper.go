@@ -3,6 +3,7 @@ package helper
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 )
 
@@ -24,4 +25,14 @@ func generateRandomString(length int) (string, error) {
 		return "", fmt.Errorf("failed to generate random string: %w", err)
 	}
 	return base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(bytes), nil
+}
+
+// GenerateResetCode generates a secure random reset code.
+func GenerateResetCode(length int) (string, error) {
+	bytes := make([]byte, length)
+	_, err := rand.Read(bytes)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate reset code: %w", err)
+	}
+	return hex.EncodeToString(bytes), nil
 }

@@ -3,27 +3,36 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"koneksi/server/app/dto"
 	"koneksi/server/app/helper"
 	"koneksi/server/app/model"
+	"koneksi/server/app/provider"
 	"koneksi/server/app/repository"
 	"koneksi/server/core/logger"
 	"time"
 )
 
 type UserService struct {
-	userRepo     *repository.UserRepository
-	profileRepo  *repository.ProfileRepository
-	roleRepo     *repository.RoleRepository
-	userRoleRepo *repository.UserRoleRepository
+	userRepo      *repository.UserRepository
+	profileRepo   *repository.ProfileRepository
+	roleRepo      *repository.RoleRepository
+	userRoleRepo  *repository.UserRoleRepository
+	redisProvider *provider.RedisProvider
 }
 
-func NewUserService(userRepo *repository.UserRepository, profileRepo *repository.ProfileRepository, roleRepo *repository.RoleRepository, userRoleRepo *repository.UserRoleRepository) *UserService {
+func NewUserService(userRepo *repository.UserRepository,
+	profileRepo *repository.ProfileRepository,
+	roleRepo *repository.RoleRepository,
+	userRoleRepo *repository.UserRoleRepository,
+	redisProvider *provider.RedisProvider,
+) *UserService {
 	return &UserService{
-		userRepo:     userRepo,
-		profileRepo:  profileRepo,
-		roleRepo:     roleRepo,
-		userRoleRepo: userRoleRepo,
+		userRepo:      userRepo,
+		profileRepo:   profileRepo,
+		roleRepo:      roleRepo,
+		userRoleRepo:  userRoleRepo,
+		redisProvider: redisProvider,
 	}
 }
 
@@ -121,4 +130,27 @@ func (us *UserService) ChangePassword(ctx context.Context, userID string, reques
 	}
 
 	return nil
+}
+
+func (us *UserService) GeneratePasswordResetCode(ctx context.Context, email string) (string, error) {
+	// Check if the user exists
+	user, err := us.userRepo.ReadUserByEmail(ctx, email)
+	if err != nil || user == nil {
+		return "", fmt.Errorf("user not found")
+	}
+
+	// Generate a random reset code using the helper
+	resetCode, err := helper.GenerateResetCode(6) // 6 bytes (~12 hex characters)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate reset code: %w", err)
+	}
+
+	// Store the reset code in Redis with a 15-minute expiration
+	key := fmt.Sprintf("password_reset:%s", email)
+	err = us.redisProvider.Set(ctx, key, resetCode, 15*time.Minute)
+	if err != nil {
+		return "", fmt.Errorf("failed to store reset code in Redis: %w", err)
+	}
+
+	return resetCode, nil
 }
