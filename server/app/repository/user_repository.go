@@ -94,13 +94,22 @@ func (r *UserRepository) DeleteUser(ctx context.Context, email string) error {
 }
 
 func (r *UserRepository) UpdateOTPSecret(ctx context.Context, userID, otpSecret string) error {
+	// Convert userID to ObjectID
+	objectID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		logger.Log.Error("invalid userID format", logger.Error(err))
+		return err
+	}
+
+	// Hash the OTP secret
 	hashedSecret, err := helper.Hash(otpSecret)
 	if err != nil {
 		logger.Log.Error("error hashing OTP secret", logger.Error(err))
 		return err
 	}
 
-	_, err = r.collection.UpdateOne(ctx, bson.M{"_id": userID}, bson.M{"$set": bson.M{"otp_secret": hashedSecret}})
+	// Update the user's OTP secret in the database
+	_, err = r.collection.UpdateOne(ctx, bson.M{"_id": objectID}, bson.M{"$set": bson.M{"otp_secret": hashedSecret}})
 	if err != nil {
 		logger.Log.Error("error saving OTP secret", logger.Error(err))
 		return err
