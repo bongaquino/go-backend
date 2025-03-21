@@ -25,6 +25,8 @@ type Env struct {
 	JWTSecret            string `envconfig:"JWT_SECRET" default:""`
 	JWTTokenExpiration   int    `envconfig:"JWT_TOKEN_EXPIRATION" default:"3600"`
 	JWTRefreshExpiration int    `envconfig:"JWT_REFRESH_EXPIRATION" default:"86400"`
+	PostmarkAPIKey       string `envconfig:"POSTMARK_API_KEY" default:""`
+	PostmarkFrom         string `envconfig:"POSTMARK_FROM" default:""`
 	// Add more environment variables here
 }
 

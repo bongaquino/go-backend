@@ -8,6 +8,7 @@ require (
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/golang-jwt/jwt/v4 v4.5.1
 	github.com/joho/godotenv v1.5.1
+	github.com/keighl/postmark v0.0.0-20190821160221-28358b1a94e3
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/pquerna/otp v1.4.0
 	go.mongodb.org/mongo-driver v1.17.2
@@ -47,6 +48,7 @@ require (
 	github.com/xdg-go/stringprep v1.0.4 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
+	goji.io v2.0.2+incompatible // indirect
 	golang.org/x/arch v0.13.0 // indirect
 	golang.org/x/net v0.34.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
