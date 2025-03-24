@@ -30,14 +30,20 @@ func (ms *MFAService) GenerateOTP(ctx context.Context, userID string) (string, s
 		return "", "", fmt.Errorf("failed to generate OTP secret: %w", err)
 	}
 
+	// Encrypt the OTP secret
+	encryptedOtpSecret, err := helper.Encrypt(otpSecret)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to encrypt OTP secret: %w", err)
+	}
+
 	// Generate QR code
 	qrCode, err := helper.GenerateQRCode(userID, otpSecret)
 	if err != nil {
 		return "", "", fmt.Errorf("failed to generate QR code: %w", err)
 	}
 
-	// Save the plain OTP secret to the user's record in the database
-	err = ms.userRepo.UpdateUser(ctx, userID, bson.M{"otp_secret": otpSecret})
+	// Save the encrypted OTP secret to the user's record in the database
+	err = ms.userRepo.UpdateUser(ctx, userID, bson.M{"otp_secret": encryptedOtpSecret})
 	if err != nil {
 		return "", "", fmt.Errorf("failed to save OTP secret: %w", err)
 	}
@@ -55,8 +61,14 @@ func (ms *MFAService) VerifyOTP(ctx context.Context, userID, otp string) (bool, 
 		return false, fmt.Errorf("user not found")
 	}
 
-	// Verify the OTP using the stored secret
-	isValid := helper.VerifyOTP(user.OtpSecret, otp)
+	// Decrypt the stored OTP secret
+	decryptedOtpSecret, err := helper.Decrypt(user.OtpSecret)
+	if err != nil {
+		return false, fmt.Errorf("failed to decrypt OTP secret: %w", err)
+	}
+
+	// Verify the OTP using the decrypted secret
+	isValid := helper.VerifyOTP(decryptedOtpSecret, otp)
 	return isValid, nil
 }
 
