@@ -6,6 +6,7 @@ import "koneksi/server/core/env"
 type AppConfig struct {
 	AppName    string
 	AppVersion string
+	AppKey     string
 	Mode       string
 	Port       int
 }
@@ -18,6 +19,7 @@ func LoadAppConfig() *AppConfig {
 	return &AppConfig{
 		AppName:    envVars.AppName,
 		AppVersion: envVars.AppVersion,
+		AppKey:     envVars.AppKey,
 		Mode:       envVars.Mode,
 		Port:       envVars.Port,
 	}
