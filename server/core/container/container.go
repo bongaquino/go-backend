@@ -83,12 +83,6 @@ func NewContainer() *Container {
 	mfaService := service.NewMFAService(userRepository)
 	emailService := service.NewEmailService(postmarkProvider)
 
-	// Run database migrations
-	database.MigrateCollections(mongoProvider)
-
-	// Run database seeders
-	database.SeedCollections(permissionRepository, roleRepository, rolePermissionRepository)
-
 	// Initialize middleware
 	authnMiddleware := middleware.NewAuthnMiddleware(JWTProvider)
 	authzMiddleware := middleware.NewAuthzMiddleware(userRoleRepository, roleRepository)
@@ -106,6 +100,12 @@ func NewContainer() *Container {
 	generateOTPController := mfa.NewGenerateOTPController(mfaService)
 	enableMFAController := mfa.NewEnableMFAController(mfaService)
 	disableMFAController := mfa.NewDisableMFAController(mfaService)
+
+	// Run database migrations
+	database.MigrateCollections(mongoProvider)
+
+	// Run database seeders
+	database.SeedCollections(permissionRepository, roleRepository, rolePermissionRepository)
 
 	// Return the container
 	return &Container{
