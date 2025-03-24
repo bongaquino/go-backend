@@ -11,6 +11,7 @@ import (
 type Env struct {
 	AppName              string `envconfig:"APP_NAME" default:"Koneksi"`
 	AppVersion           string `envconfig:"APP_VERSION" default:"1.0.0"`
+	AppKey               string `envconfig:"APP_KEY" required:"true"`
 	Port                 int    `envconfig:"PORT" default:"3000"`
 	Mode                 string `envconfig:"MODE" default:"debug"`
 	MongoHost            string `envconfig:"MONGO_HOST" default:"mongo"`
@@ -20,13 +21,13 @@ type Env struct {
 	MongoDatabase        string `envconfig:"MONGO_DATABASE" default:"koneksi"`
 	RedisHost            string `envconfig:"REDIS_HOST" default:"redis"`
 	RedisPort            int    `envconfig:"REDIS_PORT" default:"6379"`
-	RedisPassword        string `envconfig:"REDIS_PASSWORD" default:""`
-	RedisPrefix          string `envconfig:"REDIS_PREFIX" default:"koneksi"`
-	JWTSecret            string `envconfig:"JWT_SECRET" default:""`
+	RedisPassword        string `envconfig:"REDIS_PASSWORD" required:"true"`
+	RedisPrefix          string `envconfig:"REDIS_PREFIX" required:"true"`
+	JWTSecret            string `envconfig:"JWT_SECRET" required:"true"`
 	JWTTokenExpiration   int    `envconfig:"JWT_TOKEN_EXPIRATION" default:"3600"`
 	JWTRefreshExpiration int    `envconfig:"JWT_REFRESH_EXPIRATION" default:"86400"`
-	PostmarkAPIKey       string `envconfig:"POSTMARK_API_KEY" default:""`
-	PostmarkFrom         string `envconfig:"POSTMARK_FROM" default:""`
+	PostmarkAPIKey       string `envconfig:"POSTMARK_API_KEY" required:"true"`
+	PostmarkFrom         string `envconfig:"POSTMARK_FROM" required:"true"`
 	// Add more environment variables here
 }
 
