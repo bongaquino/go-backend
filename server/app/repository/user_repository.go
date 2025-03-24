@@ -90,7 +90,7 @@ func (r *UserRepository) UpdateUser(ctx context.Context, id string, update bson.
 		return err
 	}
 
-	_, err = r.collection.UpdateOne(ctx, bson.M{"id": objectID}, bson.M{"$set": update})
+	_, err = r.collection.UpdateOne(ctx, bson.M{"_id": objectID}, bson.M{"$set": update})
 	if err != nil {
 		logger.Log.Error("error updating user", logger.Error(err))
 		return err

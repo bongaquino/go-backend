@@ -36,7 +36,7 @@ func (ms *MFAService) GenerateOTP(ctx context.Context, userID string) (string, s
 		return "", "", fmt.Errorf("failed to generate QR code: %w", err)
 	}
 
-	// Save hashed OTP secret to the user's record in the database
+	// Save the plain OTP secret to the user's record in the database
 	err = ms.userRepo.UpdateUser(ctx, userID, bson.M{"otp_secret": otpSecret})
 	if err != nil {
 		return "", "", fmt.Errorf("failed to save OTP secret: %w", err)
