@@ -50,6 +50,7 @@ type Container struct {
 	ForgotPasswordController *users.ForgotPasswordController
 	ResetPasswordController  *users.ResetPasswordController
 	RequestTokenController   *tokens.RequestTokenController
+	VerifyOTPController      *tokens.VerifyOTPController
 	RefreshTokenController   *tokens.RefreshTokenController
 	RevokeTokenController    *tokens.RevokeTokenController
 	ChangePasswordController *settings.ChangePasswordController
@@ -96,6 +97,7 @@ func NewContainer() *Container {
 	forgotPasswordController := users.NewForgotPasswordController(userService, emailService)
 	resetPasswordController := users.NewResetPasswordController(userService)
 	requestTokenController := tokens.NewRequestTokenController(tokenService, userService, mfaService)
+	verifyOTPController := tokens.NewVerifyOTPController(tokenService, mfaService)
 	refreshTokenController := tokens.NewRefreshTokenController(tokenService)
 	revokeTokenController := tokens.NewRevokeTokenController(tokenService)
 	changePasswordController := settings.NewChangePasswordController(userService)
@@ -135,6 +137,7 @@ func NewContainer() *Container {
 		ForgotPasswordController:   forgotPasswordController,
 		ResetPasswordController:    resetPasswordController,
 		RequestTokenController:     requestTokenController,
+		VerifyOTPController:        verifyOTPController,
 		RefreshTokenController:     refreshTokenController,
 		RevokeTokenController:      revokeTokenController,
 		ChangePasswordController:   changePasswordController,

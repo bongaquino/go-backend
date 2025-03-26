@@ -38,12 +38,12 @@ func (vc *VerifyOTPController) Handle(ctx *gin.Context) {
 	// Verify the OTP
 	accessToken, refreshToken, err := vc.tokenService.AuthenticateLoginCode(ctx.Request.Context(), request.LoginCode, request.OTP)
 	if err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusUnauthorized, "invalid OTP or temporary code", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusUnauthorized, "invalid login code or OTP", nil, nil)
 		return
 	}
 
 	// Respond with tokens
-	helper.FormatResponse(ctx, "success", http.StatusOK, "OTP verified successfully", gin.H{
+	helper.FormatResponse(ctx, "success", http.StatusOK, "verify OTP successful", gin.H{
 		"access_token":  accessToken,
 		"refresh_token": refreshToken,
 	}, nil)
