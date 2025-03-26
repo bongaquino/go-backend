@@ -81,8 +81,8 @@ func NewContainer() *Container {
 	// Initialize service
 	userService := service.NewUserService(userRepository, profileRepository,
 		roleRepository, userRoleRepository, redisProvider)
-	tokenService := service.NewTokenService(userRepository, JWTProvider)
 	mfaService := service.NewMFAService(userRepository, redisProvider)
+	tokenService := service.NewTokenService(userRepository, JWTProvider, mfaService)
 	emailService := service.NewEmailService(postmarkProvider)
 
 	// Initialize middleware
