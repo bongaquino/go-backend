@@ -1,11 +1,9 @@
 package profile
 
 import (
-	"net/http"
-
 	"koneksi/server/app/helper"
 	"koneksi/server/app/service"
-	"koneksi/server/config"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -23,13 +21,38 @@ func NewMeController(userService *service.UserService) *MeController {
 }
 
 // Handles the health check endpoint
-func (hc *MeController) Handle(c *gin.Context) {
-	appConfig := config.LoadAppConfig()
+func (hc *MeController) Handle(ctx *gin.Context) {
+	// Extract user ID from the context
+	userID, exists := ctx.Get("userID")
+	if !exists {
+		helper.FormatResponse(ctx, "error", http.StatusUnauthorized, "userID not found in context", nil, nil)
+		return
+	}
 
-	// Respond with success
-	helper.FormatResponse(c, "success", http.StatusOK, nil, gin.H{
-		"name":    appConfig.AppName,
-		"version": appConfig.AppVersion,
-		"healthy": true,
+	// Fetch the user profile
+	user, profile, err := hc.userService.GetUserProfile(ctx.Request.Context(), userID.(string))
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, err.Error(), nil, nil)
+		return
+	}
+
+	// Sanitize the user object by removing sensitive fields
+	sanitizedUser := gin.H{
+		"id":             user.ID,
+		"email":          user.Email,
+		"is_verified":    user.IsVerified,
+		"is_mfa_enabled": user.IsMFAEnabled,
+	}
+
+	// Sanitize the profile object by removing sensitive fields
+	sanitizedProfile := gin.H{
+		"first_name": profile.FirstName,
+		"last_name":  profile.LastName,
+	}
+
+	// Return the user profile
+	helper.FormatResponse(ctx, "success", http.StatusOK, "user profile retrieved successfully", gin.H{
+		"user":    sanitizedUser,
+		"profile": sanitizedProfile,
 	}, nil)
 }

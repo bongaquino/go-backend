@@ -39,8 +39,15 @@ func (r *ProfileRepository) CreateProfile(ctx context.Context, profile *model.Pr
 }
 
 func (r *ProfileRepository) ReadProfileByUserID(ctx context.Context, userID string) (*model.Profile, error) {
+	// Convert userID to ObjectID
+	objectID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		logger.Log.Error("invalid ID format", logger.Error(err))
+		return nil, err
+	}
+
 	var profile model.Profile
-	err := r.collection.FindOne(ctx, bson.M{"user_id": userID}).Decode(&profile)
+	err = r.collection.FindOne(ctx, bson.M{"user_id": objectID}).Decode(&profile)
 	if err != nil {
 		if err == mongoDriver.ErrNoDocuments {
 			return nil, nil
