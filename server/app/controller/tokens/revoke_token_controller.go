@@ -40,7 +40,7 @@ func (rc *RevokeTokenController) Handle(c *gin.Context) {
 	}
 
 	// Return success response
-	helper.FormatResponse(c, "success", http.StatusOK, "refresh token revoked successfully", nil, nil)
+	helper.FormatResponse(c, "success", http.StatusOK, "Token revoked successfully", nil, nil)
 }
 
 // validatePayload validates the incoming request payload

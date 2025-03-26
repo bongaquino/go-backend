@@ -40,7 +40,7 @@ func (rc *RefreshTokenController) Handle(c *gin.Context) {
 	}
 
 	// Return the new tokens
-	helper.FormatResponse(c, "success", http.StatusOK, "refresh token successful", gin.H{
+	helper.FormatResponse(c, "success", http.StatusOK, "Token refreshed successfully", gin.H{
 		"access_token":  accessToken,
 		"refresh_token": refreshToken,
 	}, nil)

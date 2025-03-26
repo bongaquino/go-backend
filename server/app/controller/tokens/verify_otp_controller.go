@@ -43,7 +43,7 @@ func (vc *VerifyOTPController) Handle(ctx *gin.Context) {
 	}
 
 	// Respond with tokens
-	helper.FormatResponse(ctx, "success", http.StatusOK, "verify OTP successful", gin.H{
+	helper.FormatResponse(ctx, "success", http.StatusOK, "OTP verified successfully", gin.H{
 		"access_token":  accessToken,
 		"refresh_token": refreshToken,
 	}, nil)
