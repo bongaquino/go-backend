@@ -124,7 +124,7 @@ func (us *UserService) ChangePassword(ctx context.Context, userID string, reques
 		"password":  hashedPassword,
 		"updatedAt": time.Now(),
 	}
-	if err := us.userRepo.UpdateUser(ctx, user.Email, update); err != nil {
+	if err := us.userRepo.UpdateUser(ctx, user.ID.Hex(), update); err != nil {
 		logger.Log.Error("error updating user password", logger.Error(err))
 		return errors.New("failed to update password")
 	}

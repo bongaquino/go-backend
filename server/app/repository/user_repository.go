@@ -86,7 +86,7 @@ func (r *UserRepository) UpdateUser(ctx context.Context, id string, update bson.
 	// Convert userID to ObjectID
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		logger.Log.Error("invalid userID format", logger.Error(err))
+		logger.Log.Error("invalid ID format", logger.Error(err))
 		return err
 	}
 
