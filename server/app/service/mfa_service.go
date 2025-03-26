@@ -131,7 +131,7 @@ func (ms *MFAService) VerifyLoginCode(ctx context.Context, loginCode, otp string
 	key := fmt.Sprintf("login_code:%s", loginCode)
 
 	// Retrieve the user ID from Redis using the login code
-	userID, err := ms.redisProvider.Get(ctx, loginCode)
+	userID, err := ms.redisProvider.Get(ctx, key)
 	if err != nil {
 		return "", fmt.Errorf("invalid login code")
 	}
