@@ -93,7 +93,7 @@ func NewContainer() *Container {
 
 	// Initialize controllers
 	checkHealthController := health.NewCheckHealthController()
-	registerController := users.NewRegisterController(userService)
+	registerController := users.NewRegisterController(userService, tokenService)
 	forgotPasswordController := users.NewForgotPasswordController(userService, emailService)
 	resetPasswordController := users.NewResetPasswordController(userService)
 	requestTokenController := tokens.NewRequestTokenController(tokenService, userService, mfaService)

@@ -11,29 +11,38 @@ import (
 )
 
 type RegisterController struct {
-	userService *service.UserService
+	userService  *service.UserService
+	tokenService *service.TokenService
 }
 
-func NewRegisterController(userService *service.UserService) *RegisterController {
+func NewRegisterController(userService *service.UserService, tokenService *service.TokenService) *RegisterController {
 	return &RegisterController{
-		userService: userService,
+		userService:  userService,
+		tokenService: tokenService,
 	}
 }
 
-func (rc *RegisterController) Handle(c *gin.Context) {
+func (rc *RegisterController) Handle(ctx *gin.Context) {
 	var request dto.RegisterUser
 
-	if err := rc.validatePayload(c, &request); err != nil {
+	if err := rc.validatePayload(ctx, &request); err != nil {
 		return
 	}
 
-	user, profile, userRole, roleName, err := rc.userService.RegisterUser(c.Request.Context(), &request)
+	user, profile, userRole, roleName, err := rc.userService.RegisterUser(ctx.Request.Context(), &request)
 	if err != nil {
-		helper.FormatResponse(c, "error", http.StatusInternalServerError, err.Error(), nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, err.Error(), nil, nil)
 		return
 	}
 
-	helper.FormatResponse(c, "success", http.StatusCreated, "user registered successfully", gin.H{
+	// Generate tokens
+	accessToken, refreshToken, err := rc.tokenService.AuthenticateUser(ctx.Request.Context(), user.Email, request.Password)
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusUnauthorized, err.Error(), nil, nil)
+		return
+	}
+
+	helper.FormatResponse(ctx, "success", http.StatusCreated, "user registered successfully", gin.H{
 		"user": gin.H{
 			"email": user.Email,
 		},
@@ -42,12 +51,16 @@ func (rc *RegisterController) Handle(c *gin.Context) {
 			"role_id":   userRole.RoleID,
 			"role_name": roleName,
 		},
+		"tokens": gin.H{
+			"access_token":  accessToken,
+			"refresh_token": refreshToken,
+		},
 	}, nil)
 }
 
-func (rc *RegisterController) validatePayload(c *gin.Context, request any) error {
-	if err := c.ShouldBindJSON(request); err != nil {
-		helper.FormatResponse(c, "error", http.StatusBadRequest, "invalid input", nil, nil)
+func (rc *RegisterController) validatePayload(ctx *gin.Context, request any) error {
+	if err := ctx.ShouldBindJSON(request); err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
 		return err
 	}
 	return nil
