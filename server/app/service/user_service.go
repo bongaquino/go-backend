@@ -149,7 +149,7 @@ func (us *UserService) GeneratePasswordResetCode(ctx context.Context, email stri
 	}
 
 	// Generate a random reset code using the helper
-	resetCode, err := helper.GenerateResetCode(6) // 6 bytes (~12 hex characters)
+	resetCode, err := helper.GenerateCode(6) // 6 bytes (~12 hex characters)
 	if err != nil {
 		return "", fmt.Errorf("failed to generate reset code")
 	}

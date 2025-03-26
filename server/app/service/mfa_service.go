@@ -3,8 +3,10 @@ package service
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"koneksi/server/app/helper"
+	"koneksi/server/app/provider"
 	"koneksi/server/app/repository"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -12,14 +14,43 @@ import (
 
 // MFAService handles MFA-related operations
 type MFAService struct {
-	userRepo *repository.UserRepository
+	userRepo      *repository.UserRepository
+	redisProvider *provider.RedisProvider
 }
 
 // NewMFAService initializes a new MFAService
-func NewMFAService(userRepo *repository.UserRepository) *MFAService {
+func NewMFAService(userRepo *repository.UserRepository, redisProvider *provider.RedisProvider) *MFAService {
 	return &MFAService{
-		userRepo: userRepo,
+		userRepo:      userRepo,
+		redisProvider: redisProvider,
 	}
+}
+
+// Generate login code for the user
+func (ms *MFAService) GenerateLoginCode(ctx context.Context, userID string) (string, error) {
+	// Check if a login code already exists in Redis
+	existingCode, err := ms.redisProvider.Get(ctx, userID)
+	if err == nil && existingCode != "" {
+		return "", fmt.Errorf("login already pending")
+	}
+
+	// Generate a login code
+	loginCode, err := helper.GenerateCode(6)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate login code: %w", err)
+	}
+
+	// Construct the Redis key
+	key := fmt.Sprintf("login_code:%s", userID)
+
+	// Store the login code in Redis with a 3-minute expiration
+	err = ms.redisProvider.Set(ctx, key, loginCode, 3*time.Minute)
+	if err != nil {
+		return "", fmt.Errorf("failed to store reset code")
+	}
+
+	// Return the login code
+	return loginCode, nil
 }
 
 // GenerateOTP generates an OTP secret and QR code for the user

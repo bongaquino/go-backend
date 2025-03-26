@@ -82,7 +82,7 @@ func NewContainer() *Container {
 	userService := service.NewUserService(userRepository, profileRepository,
 		roleRepository, userRoleRepository, redisProvider)
 	tokenService := service.NewTokenService(userRepository, JWTProvider)
-	mfaService := service.NewMFAService(userRepository)
+	mfaService := service.NewMFAService(userRepository, redisProvider)
 	emailService := service.NewEmailService(postmarkProvider)
 
 	// Initialize middleware
@@ -95,7 +95,7 @@ func NewContainer() *Container {
 	registerController := users.NewRegisterController(userService)
 	forgotPasswordController := users.NewForgotPasswordController(userService, emailService)
 	resetPasswordController := users.NewResetPasswordController(userService)
-	requestTokenController := tokens.NewRequestTokenController(tokenService, userService)
+	requestTokenController := tokens.NewRequestTokenController(tokenService, userService, mfaService)
 	refreshTokenController := tokens.NewRefreshTokenController(tokenService)
 	revokeTokenController := tokens.NewRevokeTokenController(tokenService)
 	changePasswordController := settings.NewChangePasswordController(userService)
