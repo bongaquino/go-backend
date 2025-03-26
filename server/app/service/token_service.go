@@ -35,7 +35,7 @@ func (ts *TokenService) AuthenticateUser(ctx context.Context, email, password st
 
 	accessToken, refreshToken, err = ts.jwtProvider.GenerateTokens(user.ID.Hex(), &user.Email, nil)
 	if err != nil {
-		return "", "", errors.New("could not generate tokens")
+		return "", "", errors.New("failed to generate tokens")
 	}
 
 	return accessToken, refreshToken, nil
@@ -55,7 +55,7 @@ func (ts *TokenService) RefreshTokens(ctx context.Context, refreshToken string) 
 
 	accessToken, newRefreshToken, err = ts.jwtProvider.GenerateTokens(user.ID.Hex(), &user.Email, nil)
 	if err != nil {
-		return "", "", errors.New("could not generate new tokens")
+		return "", "", errors.New("failed to generate tokens")
 	}
 
 	return accessToken, newRefreshToken, nil
@@ -78,7 +78,7 @@ func (ts *TokenService) RevokeToken(ctx context.Context, refreshToken string) er
 	// Revoke the refresh token (e.g., remove it from Redis or mark it as invalid)
 	err = ts.jwtProvider.RevokeRefreshToken(user.ID.Hex())
 	if err != nil {
-		return errors.New("could not revoke refresh token")
+		return errors.New("failed to revoke token")
 	}
 
 	return nil
@@ -88,12 +88,13 @@ func (ts *TokenService) RevokeToken(ctx context.Context, refreshToken string) er
 func (ts *TokenService) AuthenticateLoginCode(ctx context.Context, loginCode, otp string) (accessToken string, refreshToken string, err error) {
 	userID, err := ts.mfaService.VerifyLoginCode(ctx, loginCode, otp)
 	if err != nil {
-		return "", "", errors.New("invalid OTP or temporary code")
+		return "", "", errors.New("invalid login code or OTP")
 	}
 
+	// Generate tokens
 	accessToken, refreshToken, err = ts.jwtProvider.GenerateTokens(userID, nil, nil)
 	if err != nil {
-		return "", "", errors.New("could not generate tokens")
+		return "", "", errors.New("failed to generate tokens")
 	}
 
 	return accessToken, refreshToken, nil

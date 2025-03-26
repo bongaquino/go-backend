@@ -101,12 +101,6 @@ func (ms *MFAService) DisableMFA(ctx context.Context, userID string) error {
 
 // Generate login code for the user
 func (ms *MFAService) GenerateLoginCode(ctx context.Context, userID string) (string, error) {
-	// Check if a login code already exists in Redis
-	existingCode, err := ms.redisProvider.Get(ctx, userID)
-	if err == nil && existingCode != "" {
-		return "", fmt.Errorf("login already pending")
-	}
-
 	// Generate a login code
 	loginCode, err := helper.GenerateCode(6)
 	if err != nil {
@@ -114,10 +108,16 @@ func (ms *MFAService) GenerateLoginCode(ctx context.Context, userID string) (str
 	}
 
 	// Construct the Redis key
-	key := fmt.Sprintf("login_code:%s", userID)
+	key := fmt.Sprintf("login_code:%s", loginCode)
+
+	// Check if a login code already exists in Redis
+	existingCode, err := ms.redisProvider.Get(ctx, key)
+	if err == nil && existingCode != "" {
+		return "", fmt.Errorf("login already pending")
+	}
 
 	// Store the login code in Redis with a 3-minute expiration
-	err = ms.redisProvider.Set(ctx, key, loginCode, 3*time.Minute)
+	err = ms.redisProvider.Set(ctx, key, userID, 3*time.Minute)
 	if err != nil {
 		return "", fmt.Errorf("failed to store login code")
 	}
@@ -127,6 +127,9 @@ func (ms *MFAService) GenerateLoginCode(ctx context.Context, userID string) (str
 }
 
 func (ms *MFAService) VerifyLoginCode(ctx context.Context, loginCode, otp string) (string, error) {
+	// Construct the Redis key
+	key := fmt.Sprintf("login_code:%s", loginCode)
+
 	// Retrieve the user ID from Redis using the login code
 	userID, err := ms.redisProvider.Get(ctx, loginCode)
 	if err != nil {
@@ -141,9 +144,6 @@ func (ms *MFAService) VerifyLoginCode(ctx context.Context, loginCode, otp string
 	if !isValid {
 		return "", fmt.Errorf("invalid OTP")
 	}
-
-	// Construct the Redis key
-	key := fmt.Sprintf("login_code:%s", userID)
 
 	// Delete the login code from Redis
 	err = ms.redisProvider.Del(ctx, key)

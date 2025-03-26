@@ -45,7 +45,6 @@ func (voc *EnableMFAController) Handle(c *gin.Context) {
 		helper.FormatResponse(c, "error", http.StatusInternalServerError, err.Error(), nil, nil)
 		return
 	}
-
 	if !isValid {
 		helper.FormatResponse(c, "error", http.StatusUnauthorized, "invalid OTP", nil, nil)
 		return
