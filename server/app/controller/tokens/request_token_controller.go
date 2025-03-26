@@ -53,7 +53,7 @@ func (rc *RequestTokenController) Handle(ctx *gin.Context) {
 		}
 
 		// Respond with boolean flag indicating MFA is enabled
-		helper.FormatResponse(ctx, "success", http.StatusOK, "Token requested successfully", gin.H{
+		helper.FormatResponse(ctx, "success", http.StatusOK, "Login code requested successfully", gin.H{
 			"is_mfa_enabled": true,
 			"login_code":     loginCode,
 		}, nil)
