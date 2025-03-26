@@ -5,8 +5,16 @@
   "use_keyless": true,
   "proxy": {
     "listen_path": "/ipfs",
-    "target_url": "http://121.254.153.145:5001/api/v0",
-    "strip_listen_path": true
+    "target_url": "http://121.254.153.145:5001",
+    "strip_listen_path": true,
+    "endpoints": {
+      "/upload": {
+        "target_url": "http://121.254.153.145:5001"
+      },
+      "/gateway": {
+        "target_url": "http://121.254.153.145:8080/ipfs"
+      }
+    }
   },
   "version_data": {
     "not_versioned": true,
