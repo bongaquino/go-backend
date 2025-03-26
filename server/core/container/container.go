@@ -2,6 +2,7 @@ package container
 
 import (
 	"koneksi/server/app/controller/health"
+	"koneksi/server/app/controller/profile"
 	"koneksi/server/app/controller/settings"
 	"koneksi/server/app/controller/settings/mfa"
 	"koneksi/server/app/controller/tokens"
@@ -55,6 +56,7 @@ type Container struct {
 	GenerateOTPController    *mfa.GenerateOTPController
 	EnableMFAController      *mfa.EnableMFAController
 	DisableMFAController     *mfa.DisableMFAController
+	MeController             *profile.MeController
 }
 
 // NewContainer initializes a new IoC container
@@ -100,6 +102,7 @@ func NewContainer() *Container {
 	generateOTPController := mfa.NewGenerateOTPController(mfaService)
 	enableMFAController := mfa.NewEnableMFAController(mfaService)
 	disableMFAController := mfa.NewDisableMFAController(mfaService)
+	meController := profile.NewMeController(userService)
 
 	// Run database migrations
 	database.MigrateCollections(mongoProvider)
@@ -138,5 +141,6 @@ func NewContainer() *Container {
 		GenerateOTPController:      generateOTPController,
 		EnableMFAController:        enableMFAController,
 		DisableMFAController:       disableMFAController,
+		MeController:               meController,
 	}
 }

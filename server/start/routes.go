@@ -42,4 +42,11 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 			mfaGroup.POST("/disable", container.DisableMFAController.Handle)
 		}
 	}
+
+	// Profile Routes
+	profileGroup := engine.Group("/profile")
+	profileGroup.Use(container.AuthnMiddleware.HandleAuthn, container.VerifiedMiddleware.HandleVerified)
+	{
+		profileGroup.GET("/me", container.MeController.Handle)
+	}
 }

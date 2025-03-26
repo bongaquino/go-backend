@@ -200,3 +200,25 @@ func (us *UserService) ResetPassword(ctx context.Context, email, resetCode, newP
 
 	return nil
 }
+
+func (us *UserService) GetUserProfile(ctx context.Context, userID string) (*model.User, *model.Profile, error) {
+	user, err := us.userRepo.ReadUser(ctx, userID)
+	if err != nil {
+		logger.Log.Error("error fetching user by ID", logger.Error(err))
+		return nil, nil, errors.New("failed to retrieve user")
+	}
+	if user == nil {
+		return nil, nil, errors.New("user not found")
+	}
+
+	profile, err := us.profileRepo.ReadProfileByUserID(ctx, userID)
+	if err != nil {
+		logger.Log.Error("error fetching profile by user ID", logger.Error(err))
+		return nil, nil, errors.New("failed to retrieve profile")
+	}
+	if profile == nil {
+		return nil, nil, errors.New("profile not found")
+	}
+
+	return user, profile, nil
+}
