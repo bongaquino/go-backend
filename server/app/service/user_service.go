@@ -223,6 +223,28 @@ func (us *UserService) GetUserProfile(ctx context.Context, userID string) (*mode
 	return user, profile, nil
 }
 
+func (us *UserService) GetUserProfileByEmail(ctx context.Context, email string) (*model.User, *model.Profile, error) {
+	user, err := us.userRepo.ReadUserByEmail(ctx, email)
+	if err != nil {
+		logger.Log.Error("error fetching user by email", logger.Error(err))
+		return nil, nil, errors.New("failed to retrieve user")
+	}
+	if user == nil {
+		return nil, nil, errors.New("user not found")
+	}
+
+	profile, err := us.profileRepo.ReadProfileByUserID(ctx, user.ID.Hex())
+	if err != nil {
+		logger.Log.Error("error fetching profile by user ID", logger.Error(err))
+		return nil, nil, errors.New("failed to retrieve profile")
+	}
+	if profile == nil {
+		return nil, nil, errors.New("profile not found")
+	}
+
+	return user, profile, nil
+}
+
 func (us *UserService) ValidatePassword(ctx context.Context, userID, password string) (bool, error) {
 	// Retrieve the user from the database
 	user, err := us.userRepo.ReadUser(ctx, userID)

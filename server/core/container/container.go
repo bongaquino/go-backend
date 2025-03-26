@@ -95,7 +95,7 @@ func NewContainer() *Container {
 	registerController := users.NewRegisterController(userService)
 	forgotPasswordController := users.NewForgotPasswordController(userService, emailService)
 	resetPasswordController := users.NewResetPasswordController(userService)
-	requestTokenController := tokens.NewRequestTokenController(tokenService)
+	requestTokenController := tokens.NewRequestTokenController(tokenService, userService, mfaService)
 	refreshTokenController := tokens.NewRefreshTokenController(tokenService)
 	revokeTokenController := tokens.NewRevokeTokenController(tokenService)
 	changePasswordController := settings.NewChangePasswordController(userService)

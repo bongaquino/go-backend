@@ -21,7 +21,7 @@ func NewTokenService(userRepo *repository.UserRepository, jwtService *provider.J
 }
 
 // AuthenticateUser validates user credentials and generates tokens
-func (ts *TokenService) AuthenticateUser(ctx context.Context, email, password string) (accessToken, refreshToken string, err error) {
+func (ts *TokenService) AuthenticateUser(ctx context.Context, email, password string) (accessToken string, refreshToken string, err error) {
 	user, err := ts.userRepo.ReadUserByEmail(ctx, email)
 	if err != nil || user == nil {
 		return "", "", errors.New("invalid credentials")
