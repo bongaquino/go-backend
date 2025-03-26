@@ -38,13 +38,6 @@ func (rc *RequestTokenController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	// Authenticate user and generate tokens
-	accessToken, refreshToken, err := rc.tokenService.AuthenticateUser(ctx.Request.Context(), request.Email, request.Password)
-	if err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusUnauthorized, err.Error(), nil, nil)
-		return
-	}
-
 	// Get user details
 	user, _, err := rc.userService.GetUserProfileByEmail(ctx, request.Email)
 	if err != nil {
@@ -65,6 +58,13 @@ func (rc *RequestTokenController) Handle(ctx *gin.Context) {
 			helper.FormatResponse(ctx, "error", http.StatusUnauthorized, "invalid OTP", nil, nil)
 			return
 		}
+	}
+
+	// Authenticate user and generate tokens
+	accessToken, refreshToken, err := rc.tokenService.AuthenticateUser(ctx.Request.Context(), request.Email, request.Password)
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusUnauthorized, err.Error(), nil, nil)
+		return
 	}
 
 	// Respond with tokens
