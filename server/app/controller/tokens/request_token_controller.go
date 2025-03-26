@@ -46,16 +46,16 @@ func (rc *RequestTokenController) Handle(ctx *gin.Context) {
 
 	// Check if MFA is enabled
 	if user.IsMFAEnabled {
-		// Generate temporary login code
-		temporaryLoginCode, err := rc.mfaService.GenerateLoginCode(ctx.Request.Context(), user.ID.Hex())
+		// Generate login code
+		loginCode, err := rc.mfaService.GenerateLoginCode(ctx.Request.Context(), user.ID.Hex())
 		if err != nil {
-			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to generate temporary login code", nil, nil)
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to generate login code", nil, nil)
 		}
 
 		// Respond with boolean flag indicating MFA is enabled
 		helper.FormatResponse(ctx, "success", http.StatusOK, "request token successful", gin.H{
 			"is_mfa_enabled": true,
-			"login_code":     temporaryLoginCode,
+			"login_code":     loginCode,
 		}, nil)
 	} else {
 		// Authenticate user and generate tokens
