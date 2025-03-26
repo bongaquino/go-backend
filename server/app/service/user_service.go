@@ -222,3 +222,18 @@ func (us *UserService) GetUserProfile(ctx context.Context, userID string) (*mode
 
 	return user, profile, nil
 }
+
+func (us *UserService) ValidatePassword(ctx context.Context, userID, password string) (bool, error) {
+	// Retrieve the user from the database
+	user, err := us.userRepo.ReadUser(ctx, userID)
+	if err != nil {
+		return false, fmt.Errorf("failed to retrieve user: %w", err)
+	}
+	if user == nil {
+		return false, fmt.Errorf("user not found")
+	}
+
+	// Compare the provided password with the stored hash
+	isValid := helper.CheckHash(password, user.Password)
+	return isValid, nil
+}

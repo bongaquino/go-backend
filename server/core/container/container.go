@@ -101,7 +101,7 @@ func NewContainer() *Container {
 	changePasswordController := settings.NewChangePasswordController(userService)
 	generateOTPController := mfa.NewGenerateOTPController(mfaService)
 	enableMFAController := mfa.NewEnableMFAController(mfaService)
-	disableMFAController := mfa.NewDisableMFAController(mfaService)
+	disableMFAController := mfa.NewDisableMFAController(mfaService, userService)
 	meController := profile.NewMeController(userService)
 
 	// Run database migrations
