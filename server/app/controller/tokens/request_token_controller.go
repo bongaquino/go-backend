@@ -13,15 +13,13 @@ import (
 type RequestTokenController struct {
 	tokenService *service.TokenService
 	userService  *service.UserService
-	mfaService   *service.MFAService
 }
 
 // NewRequestTokenController initializes a new RequestTokenController
-func NewRequestTokenController(tokenService *service.TokenService, userService *service.UserService, mfaService *service.MFAService) *RequestTokenController {
+func NewRequestTokenController(tokenService *service.TokenService, userService *service.UserService) *RequestTokenController {
 	return &RequestTokenController{
 		tokenService: tokenService,
 		userService:  userService,
-		mfaService:   mfaService,
 	}
 }
 
@@ -30,7 +28,6 @@ func (rc *RequestTokenController) Handle(ctx *gin.Context) {
 	var request struct {
 		Email    string `json:"email" binding:"required,email"`
 		Password string `json:"password" binding:"required,min=8"`
-		OTP      string `json:"otp"`
 	}
 
 	// Validate the payload
@@ -47,31 +44,25 @@ func (rc *RequestTokenController) Handle(ctx *gin.Context) {
 
 	// Check if MFA is enabled
 	if user.IsMFAEnabled {
-		if request.OTP == "" {
-			helper.FormatResponse(ctx, "error", http.StatusUnauthorized, "OTP is required", nil, nil)
+		// Respond with boolean flag indicating MFA is enabled
+		helper.FormatResponse(ctx, "success", http.StatusOK, "request token successful", gin.H{
+			"is_mfa_enabled": true,
+		}, nil)
+	} else {
+		// Authenticate user and generate tokens
+		accessToken, refreshToken, err := rc.tokenService.AuthenticateUser(ctx.Request.Context(), request.Email, request.Password)
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusUnauthorized, err.Error(), nil, nil)
 			return
 		}
 
-		// Verify OTP
-		isValid, err := rc.mfaService.VerifyOTP(ctx.Request.Context(), user.ID.Hex(), request.OTP)
-		if err != nil || !isValid {
-			helper.FormatResponse(ctx, "error", http.StatusUnauthorized, "invalid OTP", nil, nil)
-			return
-		}
+		// Respond with tokens
+		helper.FormatResponse(ctx, "success", http.StatusOK, "request token successful", gin.H{
+			"access_token":  accessToken,
+			"refresh_token": refreshToken,
+		}, nil)
 	}
 
-	// Authenticate user and generate tokens
-	accessToken, refreshToken, err := rc.tokenService.AuthenticateUser(ctx.Request.Context(), request.Email, request.Password)
-	if err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusUnauthorized, err.Error(), nil, nil)
-		return
-	}
-
-	// Respond with tokens
-	helper.FormatResponse(ctx, "success", http.StatusOK, "request token successful", gin.H{
-		"access_token":  accessToken,
-		"refresh_token": refreshToken,
-	}, nil)
 }
 
 // validatePayload validates the incoming request payload
