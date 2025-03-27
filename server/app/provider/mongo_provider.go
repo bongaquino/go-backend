@@ -20,7 +20,8 @@ type MongoProvider struct {
 func NewMongoProvider() *MongoProvider {
 	mongoConfig := config.LoadMongoConfig()
 
-	clientOptions := options.Client().ApplyURI(mongoConfig.GetMongoUri())
+	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
+	clientOptions := options.Client().ApplyURI(mongoConfig.GetMongoUri()).SetServerAPIOptions(serverAPI)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
