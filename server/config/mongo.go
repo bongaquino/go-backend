@@ -13,6 +13,7 @@ type MongoConfig struct {
 	MongoUser     string
 	MongoPassword string
 	MongoDatabase string
+	MongoConnectionString string
 }
 
 func LoadMongoConfig() *MongoConfig {
@@ -26,10 +27,16 @@ func LoadMongoConfig() *MongoConfig {
 		MongoUser:     envVars.MongoUser,
 		MongoPassword: envVars.MongoPassword,
 		MongoDatabase: envVars.MongoDatabase,
+		MongoConnectionString: envVars.MongoConnectionString,
 	}
 }
 
 func (config *MongoConfig) GetMongoUri() string {
-	return fmt.Sprintf("mongodb://%s:%s@%s:%d/%s?authSource=%s",
-		config.MongoUser, config.MongoPassword, config.MongoHost, config.MongoPort, config.MongoDatabase, config.MongoDatabase)
+	if config.MongoConnectionString != "" {
+        return config.MongoConnectionString
+    }
+
+    return fmt.Sprintf("mongodb://%s:%s@%s:%d/%s?authSource=%s",
+        config.MongoUser, config.MongoPassword, config.MongoHost, config.MongoPort, config.MongoDatabase, config.MongoDatabase)
+
 }
