@@ -4,27 +4,27 @@ import (
 	"net/http"
 
 	"koneksi/server/app/helper"
-	"koneksi/server/app/provider"
+	"koneksi/server/app/service"
 
 	"github.com/gin-gonic/gin"
 )
 
 // GetSwarmAddressController handles fetching swarm addresses from the IPFS network
 type GetSwarmAddressController struct {
-	ipfsProvider *provider.IPFSProvider
+	ipfsService *service.IPFSService
 }
 
 // NewGetSwarmAddressController initializes a new GetSwarmAddressController
-func NewGetSwarmAddressController(ipfsProvider *provider.IPFSProvider) *GetSwarmAddressController {
+func NewGetSwarmAddressController(ipfsService *service.IPFSService) *GetSwarmAddressController {
 	return &GetSwarmAddressController{
-		ipfsProvider: ipfsProvider,
+		ipfsService: ipfsService,
 	}
 }
 
 // Handle processes the request to fetch swarm addresses
 func (gsc *GetSwarmAddressController) Handle(c *gin.Context) {
-	// Fetch the number of peers from the IPFS provider
-	numPeers, err := gsc.ipfsProvider.GetSwarmAddrs()
+	// Fetch the number of peers from the IPFS service
+	numPeers, err := gsc.ipfsService.GetSwarmPeers()
 	if err != nil {
 		helper.FormatResponse(c, "error", http.StatusInternalServerError, err.Error(), nil, nil)
 		return

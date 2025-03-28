@@ -40,6 +40,7 @@ type Container struct {
 	TokenService *service.TokenService
 	MFAService   *service.MFAService
 	EmailService *service.EmailService
+	IPFSService  *service.IPFSService
 
 	// Middleware
 	AuthnMiddleware    *middleware.AuthnMiddleware
@@ -89,6 +90,7 @@ func NewContainer() *Container {
 	mfaService := service.NewMFAService(userRepository, redisProvider)
 	tokenService := service.NewTokenService(userRepository, JWTProvider, mfaService)
 	emailService := service.NewEmailService(postmarkProvider)
+	ipfsService := service.NewIPFSService(ipfsProvider)
 
 	// Initialize middleware
 	authnMiddleware := middleware.NewAuthnMiddleware(JWTProvider)
@@ -109,7 +111,7 @@ func NewContainer() *Container {
 	enableMFAController := mfa.NewEnableMFAController(mfaService)
 	disableMFAController := mfa.NewDisableMFAController(mfaService, userService)
 	meController := profile.NewMeController(userService)
-	getSwarmAddressController := network.NewGetSwarmAddressController(ipfsProvider)
+	getSwarmAddressController := network.NewGetSwarmAddressController(ipfsService)
 
 	// Run database migrations
 	database.MigrateCollections(mongoProvider)
@@ -137,6 +139,7 @@ func NewContainer() *Container {
 		TokenService:               tokenService,
 		EmailService:               emailService,
 		MFAService:                 mfaService,
+		IPFSService:                ipfsService,
 		AuthnMiddleware:            authnMiddleware,
 		AuthzMiddleware:            authzMiddleware,
 		VerifiedMiddleware:         verifiedMiddleware,
