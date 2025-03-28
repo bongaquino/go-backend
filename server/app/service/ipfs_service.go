@@ -4,6 +4,12 @@ import (
 	"koneksi/server/app/provider"
 )
 
+// PeerDetails represents detailed information about a peer
+type PeerDetails struct {
+	ID        string   `json:"id"`
+	Addresses []string `json:"addresses"`
+}
+
 // IPFSService handles business logic related to IPFS
 type IPFSService struct {
 	ipfsProvider *provider.IPFSProvider
@@ -16,7 +22,21 @@ func NewIPFSService(ipfsProvider *provider.IPFSProvider) *IPFSService {
 	}
 }
 
-// GetSwarmPeers fetches the number of peers from the IPFS provider
-func (s *IPFSService) GetSwarmPeers() (int, error) {
-	return s.ipfsProvider.GetSwarmAddrs()
+// GetSwarmPeers fetches the number of peers and their details from the IPFS provider
+func (s *IPFSService) GetSwarmPeers() (int, []PeerDetails, error) {
+	numPeers, addrs, err := s.ipfsProvider.GetSwarmAddrsDetailed()
+	if err != nil {
+		return 0, nil, err
+	}
+
+	// Convert the map to a slice of PeerDetails
+	var peers []PeerDetails
+	for id, addresses := range addrs {
+		peers = append(peers, PeerDetails{
+			ID:        id,
+			Addresses: addresses,
+		})
+	}
+
+	return numPeers, peers, nil
 }

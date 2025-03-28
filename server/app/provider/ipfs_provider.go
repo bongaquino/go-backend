@@ -14,7 +14,7 @@ type IPFSProvider struct {
 	client  *http.Client
 }
 
-// NewIPFSProvider initializes a new IPFSProvider using the IPFSConfig
+// NewIPFSProvider initializes a new IPFSProvider
 func NewIPFSProvider() *IPFSProvider {
 	ipfsConfig := config.LoadIPFSConfig()
 
@@ -26,20 +26,20 @@ func NewIPFSProvider() *IPFSProvider {
 	}
 }
 
-// GetSwarmAddrs calls the IPFS API to get swarm addresses and returns the number of peers
-func (p *IPFSProvider) GetSwarmAddrs() (int, error) {
+// GetSwarmAddrsDetailed calls the IPFS API to get swarm addresses and returns the number of peers and their details
+func (p *IPFSProvider) GetSwarmAddrsDetailed() (int, map[string][]string, error) {
 	url := fmt.Sprintf("%s/api/v0/swarm/addrs", p.baseURL)
 
 	// Make the HTTP request
 	resp, err := p.client.Post(url, "application/json", nil)
 	if err != nil {
-		return 0, fmt.Errorf("failed to call IPFS API: %w", err)
+		return 0, nil, fmt.Errorf("failed to call IPFS API: %w", err)
 	}
 	defer resp.Body.Close()
 
 	// Check for non-200 status codes
 	if resp.StatusCode != http.StatusOK {
-		return 0, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		return 0, nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
 	// Parse the response body
@@ -47,10 +47,10 @@ func (p *IPFSProvider) GetSwarmAddrs() (int, error) {
 		Addrs map[string][]string `json:"Addrs"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return 0, fmt.Errorf("failed to decode response: %w", err)
+		return 0, nil, fmt.Errorf("failed to decode response: %w", err)
 	}
 
 	// Count the number of peers
 	numPeers := len(result.Addrs)
-	return numPeers, nil
+	return numPeers, result.Addrs, nil
 }
