@@ -2,6 +2,7 @@ package container
 
 import (
 	"koneksi/server/app/controller/health"
+	"koneksi/server/app/controller/network"
 	"koneksi/server/app/controller/profile"
 	"koneksi/server/app/controller/settings"
 	"koneksi/server/app/controller/settings/mfa"
@@ -46,19 +47,20 @@ type Container struct {
 	VerifiedMiddleware *middleware.VerifiedMiddleware
 
 	// Controllers
-	CheckHealthController    *health.CheckHealthController
-	RegisterController       *users.RegisterController
-	ForgotPasswordController *users.ForgotPasswordController
-	ResetPasswordController  *users.ResetPasswordController
-	RequestTokenController   *tokens.RequestTokenController
-	VerifyOTPController      *tokens.VerifyOTPController
-	RefreshTokenController   *tokens.RefreshTokenController
-	RevokeTokenController    *tokens.RevokeTokenController
-	ChangePasswordController *settings.ChangePasswordController
-	GenerateOTPController    *mfa.GenerateOTPController
-	EnableMFAController      *mfa.EnableMFAController
-	DisableMFAController     *mfa.DisableMFAController
-	MeController             *profile.MeController
+	CheckHealthController     *health.CheckHealthController
+	RegisterController        *users.RegisterController
+	ForgotPasswordController  *users.ForgotPasswordController
+	ResetPasswordController   *users.ResetPasswordController
+	RequestTokenController    *tokens.RequestTokenController
+	VerifyOTPController       *tokens.VerifyOTPController
+	RefreshTokenController    *tokens.RefreshTokenController
+	RevokeTokenController     *tokens.RevokeTokenController
+	ChangePasswordController  *settings.ChangePasswordController
+	GenerateOTPController     *mfa.GenerateOTPController
+	EnableMFAController       *mfa.EnableMFAController
+	DisableMFAController      *mfa.DisableMFAController
+	MeController              *profile.MeController
+	GetSwarmAddressController *network.GetSwarmAddressController
 }
 
 // NewContainer initializes a new IoC container
@@ -107,6 +109,7 @@ func NewContainer() *Container {
 	enableMFAController := mfa.NewEnableMFAController(mfaService)
 	disableMFAController := mfa.NewDisableMFAController(mfaService, userService)
 	meController := profile.NewMeController(userService)
+	getSwarmAddressController := network.NewGetSwarmAddressController(ipfsProvider)
 
 	// Run database migrations
 	database.MigrateCollections(mongoProvider)
@@ -150,5 +153,6 @@ func NewContainer() *Container {
 		EnableMFAController:        enableMFAController,
 		DisableMFAController:       disableMFAController,
 		MeController:               meController,
+		GetSwarmAddressController:  getSwarmAddressController,
 	}
 }
