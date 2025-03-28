@@ -21,6 +21,7 @@ type Container struct {
 	RedisProvider    *provider.RedisProvider
 	JWTProvider      *provider.JWTProvider
 	PostmarkProvider *provider.PostmarkProvider
+	IPFSProvider     *provider.IPFSProvider
 
 	// Repository
 	PermissionRepository       *repository.PermissionRepository
@@ -67,6 +68,7 @@ func NewContainer() *Container {
 	redisProvider := provider.NewRedisProvider()
 	JWTProvider := provider.NewJWTProvider(redisProvider)
 	postmarkProvider := provider.NewPostmarkProvider()
+	ipfsProvider := provider.NewIPFSProvider()
 
 	// Initialize repository
 	permissionRepository := repository.NewPermissionRepository(mongoProvider)
@@ -117,6 +119,8 @@ func NewContainer() *Container {
 		MongoProvider:              mongoProvider,
 		RedisProvider:              redisProvider,
 		JWTProvider:                JWTProvider,
+		PostmarkProvider:           postmarkProvider,
+		IPFSProvider:               ipfsProvider,
 		PermissionRepository:       permissionRepository,
 		PolicyRepository:           policyRepository,
 		PolicyPermissionRepository: policyPermissionRepository,
@@ -128,6 +132,7 @@ func NewContainer() *Container {
 		UserRoleRepository:         userRoleRepository,
 		UserService:                userService,
 		TokenService:               tokenService,
+		EmailService:               emailService,
 		MFAService:                 mfaService,
 		AuthnMiddleware:            authnMiddleware,
 		AuthzMiddleware:            authzMiddleware,
