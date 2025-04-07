@@ -53,7 +53,6 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 
 	// Network Routes
 	networkGroup := engine.Group("/network")
-	networkGroup.Use(container.AuthnMiddleware.HandleAuthn, container.VerifiedMiddleware.HandleVerified)
 	{
 		networkGroup.GET("/get-swarm-address", container.GetSwarmAddressController.Handle)
 	}
