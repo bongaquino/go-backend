@@ -29,6 +29,18 @@ func (rc *RegisterController) Handle(ctx *gin.Context) {
 		return
 	}
 
+	// Check if user already exists
+	exists, err := rc.userService.UserExists(ctx.Request.Context(), request.Email)
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, err.Error(), nil, nil)
+		return
+	}
+	if exists {
+		helper.FormatResponse(ctx, "error", http.StatusConflict, "user already exists", nil, nil)
+		return
+	}
+
+	// Register the user
 	user, profile, userRole, roleName, err := rc.userService.RegisterUser(ctx.Request.Context(), &request)
 	if err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, err.Error(), nil, nil)

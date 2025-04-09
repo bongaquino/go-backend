@@ -36,17 +36,21 @@ func NewUserService(userRepo *repository.UserRepository,
 	}
 }
 
-// RegisterUser registers a new user
-func (us *UserService) RegisterUser(ctx context.Context, request *dto.RegisterUser) (*model.User, *model.Profile, *model.UserRole, string, error) {
-	existingUser, err := us.userRepo.ReadUserByEmail(ctx, request.Email)
+// UserExists checks if a user with the given email already exists
+func (us *UserService) UserExists(ctx context.Context, email string) (bool, error) {
+	// Query the repository to check if the user exists
+	user, err := us.userRepo.ReadUserByEmail(ctx, email)
 	if err != nil {
-		logger.Log.Error("error checking existing user", logger.Error(err))
-		return nil, nil, nil, "", errors.New("internal server error")
-	}
-	if existingUser != nil {
-		return nil, nil, nil, "", errors.New("email already exists")
+		logger.Log.Error("error checking if user exists", logger.Error(err))
+		return false, errors.New("internal server error")
 	}
 
+	// Return true if the user exists, false otherwise
+	return user != nil, nil
+}
+
+// RegisterUser registers a new user
+func (us *UserService) RegisterUser(ctx context.Context, request *dto.RegisterUser) (*model.User, *model.Profile, *model.UserRole, string, error) {
 	user := &model.User{
 		Email:      request.Email,
 		Password:   request.Password,
