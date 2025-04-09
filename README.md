@@ -31,6 +31,11 @@ git clone https://github.com/koneksi-tech/koneksi-backend
 cd koneksi-backend
 ```
 
+### **🔹 Creating the shared Docker network**
+```sh
+docker network create koneksi-network
+```
+
 ### **🔹 Starting the Services**
 To start all services, run:
 ```sh
