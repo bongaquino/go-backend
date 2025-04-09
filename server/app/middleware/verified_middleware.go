@@ -10,12 +10,12 @@ import (
 )
 
 type VerifiedMiddleware struct {
-	HandleVerified gin.HandlerFunc
+	Handle gin.HandlerFunc
 }
 
 func NewVerifiedMiddleware(userRepo *repository.UserRepository) *VerifiedMiddleware {
 	return &VerifiedMiddleware{
-		HandleVerified: func(c *gin.Context) {
+		Handle: func(c *gin.Context) {
 			// Retrieve the userID from the context
 			userIDValue, exists := c.Get("userID")
 			if !exists {

@@ -25,7 +25,7 @@ func NewAuthzMiddleware(userRoleRepository *repository.UserRoleRepository, roleR
 	}
 }
 
-func (m *AuthzMiddleware) HandleAuthz(requiredRoles []string) gin.HandlerFunc {
+func (m *AuthzMiddleware) Handle(requiredRoles []string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Retrieve userID from the context (assumes it's set by a previous middleware)
 		userID, exists := c.Get("userID")

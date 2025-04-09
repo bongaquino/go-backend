@@ -15,147 +15,181 @@ import (
 	"koneksi/server/database"
 )
 
-// Container holds the dependencies for the application
-type Container struct {
-	// Providers
-	MongoProvider    *provider.MongoProvider
-	RedisProvider    *provider.RedisProvider
-	JWTProvider      *provider.JWTProvider
-	PostmarkProvider *provider.PostmarkProvider
-	IPFSProvider     *provider.IPFSProvider
-
-	// Repository
-	PermissionRepository       *repository.PermissionRepository
-	PolicyRepository           *repository.PolicyRepository
-	PolicyPermissionRepository *repository.PolicyPermissionRepository
-	ProfileRepository          *repository.ProfileRepository
-	RoleRepository             *repository.RoleRepository
-	RolePermissionRepository   *repository.RolePermissionRepository
-	ServiceAccountRepository   *repository.ServiceAccountRepository
-	UserRepository             *repository.UserRepository
-	UserRoleRepository         *repository.UserRoleRepository
-
-	// Service
-	UserService  *service.UserService
-	TokenService *service.TokenService
-	MFAService   *service.MFAService
-	EmailService *service.EmailService
-	IPFSService  *service.IPFSService
-
-	// Middleware
-	AuthnMiddleware    *middleware.AuthnMiddleware
-	AuthzMiddleware    *middleware.AuthzMiddleware
-	VerifiedMiddleware *middleware.VerifiedMiddleware
-
-	// Controllers
-	CheckHealthController     *health.CheckHealthController
-	RegisterController        *users.RegisterController
-	ForgotPasswordController  *users.ForgotPasswordController
-	ResetPasswordController   *users.ResetPasswordController
-	RequestTokenController    *tokens.RequestTokenController
-	VerifyOTPController       *tokens.VerifyOTPController
-	RefreshTokenController    *tokens.RefreshTokenController
-	RevokeTokenController     *tokens.RevokeTokenController
-	ChangePasswordController  *settings.ChangePasswordController
-	GenerateOTPController     *mfa.GenerateOTPController
-	EnableMFAController       *mfa.EnableMFAController
-	DisableMFAController      *mfa.DisableMFAController
-	MeController              *profile.MeController
-	GetSwarmAddressController *network.GetSwarmAddressController
+// Providers
+type Providers struct {
+	Mongo    *provider.MongoProvider
+	Redis    *provider.RedisProvider
+	JWT      *provider.JWTProvider
+	Postmark *provider.PostmarkProvider
+	IPFS     *provider.IPFSProvider
 }
 
-// NewContainer initializes a new IoC container
+// Repositories
+type Repositories struct {
+	Permission       *repository.PermissionRepository
+	Policy           *repository.PolicyRepository
+	PolicyPermission *repository.PolicyPermissionRepository
+	Profile          *repository.ProfileRepository
+	Role             *repository.RoleRepository
+	RolePermission   *repository.RolePermissionRepository
+	ServiceAccount   *repository.ServiceAccountRepository
+	User             *repository.UserRepository
+	UserRole         *repository.UserRoleRepository
+}
+
+// Services
+type Services struct {
+	User  *service.UserService
+	Token *service.TokenService
+	MFA   *service.MFAService
+	Email *service.EmailService
+	IPFS  *service.IPFSService
+}
+
+// Middleware
+type Middleware struct {
+	Authn    *middleware.AuthnMiddleware
+	Authz    *middleware.AuthzMiddleware
+	Verified *middleware.VerifiedMiddleware
+}
+
+// Controller Groups
+type HealthControllers struct {
+	Check *health.CheckHealthController
+}
+
+type UserControllers struct {
+	Register       *users.RegisterController
+	ForgotPassword *users.ForgotPasswordController
+	ResetPassword  *users.ResetPasswordController
+}
+
+type TokenControllers struct {
+	Request *tokens.RequestTokenController
+	Verify  *tokens.VerifyOTPController
+	Refresh *tokens.RefreshTokenController
+	Revoke  *tokens.RevokeTokenController
+}
+
+type SettingsControllers struct {
+	ChangePassword *settings.ChangePasswordController
+}
+
+type MFAControllers struct {
+	Generate *mfa.GenerateOTPController
+	Enable   *mfa.EnableMFAController
+	Disable  *mfa.DisableMFAController
+}
+
+type ProfileControllers struct {
+	Me *profile.MeController
+}
+
+type NetworkControllers struct {
+	GetSwarmAddress *network.GetSwarmAddressController
+}
+
+// Grouped Controllers
+type Controllers struct {
+	Health   *HealthControllers
+	Users    *UserControllers
+	Tokens   *TokenControllers
+	Settings *SettingsControllers
+	MFA      *MFAControllers
+	Profile  *ProfileControllers
+	Network  *NetworkControllers
+}
+
+// Container
+type Container struct {
+	Providers    *Providers
+	Repositories *Repositories
+	Services     *Services
+	Middleware   *Middleware
+	Controllers  *Controllers
+}
+
+// NewContainer
 func NewContainer() *Container {
-	// Initialize provider
-	mongoProvider := provider.NewMongoProvider()
-	redisProvider := provider.NewRedisProvider()
-	JWTProvider := provider.NewJWTProvider(redisProvider)
-	postmarkProvider := provider.NewPostmarkProvider()
-	ipfsProvider := provider.NewIPFSProvider()
+	// Providers
+	providers := &Providers{
+		Mongo:    provider.NewMongoProvider(),
+		Redis:    provider.NewRedisProvider(),
+		Postmark: provider.NewPostmarkProvider(),
+	}
+	providers.JWT = provider.NewJWTProvider(providers.Redis)
+	providers.IPFS = provider.NewIPFSProvider()
 
-	// Initialize repository
-	permissionRepository := repository.NewPermissionRepository(mongoProvider)
-	policyRepository := repository.NewPolicyRepository(mongoProvider)
-	policyPermissionRepository := repository.NewPolicyPermissionRepository(mongoProvider)
-	profileRepository := repository.NewProfileRepository(mongoProvider)
-	roleRepository := repository.NewRoleRepository(mongoProvider)
-	rolePermissionRepository := repository.NewRolePermissionRepository(mongoProvider)
-	serviceAccountRepository := repository.NewServiceAccountRepository(mongoProvider)
-	userRepository := repository.NewUserRepository(mongoProvider)
-	userRoleRepository := repository.NewUserRoleRepository(mongoProvider)
+	// Repositories
+	repositories := &Repositories{
+		Permission:       repository.NewPermissionRepository(providers.Mongo),
+		Policy:           repository.NewPolicyRepository(providers.Mongo),
+		PolicyPermission: repository.NewPolicyPermissionRepository(providers.Mongo),
+		Profile:          repository.NewProfileRepository(providers.Mongo),
+		Role:             repository.NewRoleRepository(providers.Mongo),
+		RolePermission:   repository.NewRolePermissionRepository(providers.Mongo),
+		ServiceAccount:   repository.NewServiceAccountRepository(providers.Mongo),
+		User:             repository.NewUserRepository(providers.Mongo),
+		UserRole:         repository.NewUserRoleRepository(providers.Mongo),
+	}
 
-	// Initialize service
-	userService := service.NewUserService(userRepository, profileRepository,
-		roleRepository, userRoleRepository, redisProvider)
-	mfaService := service.NewMFAService(userRepository, redisProvider)
-	tokenService := service.NewTokenService(userRepository, JWTProvider, mfaService)
-	emailService := service.NewEmailService(postmarkProvider)
-	ipfsService := service.NewIPFSService(ipfsProvider)
+	// Services
+	services := &Services{
+		User:  service.NewUserService(repositories.User, repositories.Profile, repositories.Role, repositories.UserRole, providers.Redis),
+		MFA:   service.NewMFAService(repositories.User, providers.Redis),
+		Email: service.NewEmailService(providers.Postmark),
+		IPFS:  service.NewIPFSService(providers.IPFS),
+	}
+	services.Token = service.NewTokenService(repositories.User, providers.JWT, services.MFA)
 
-	// Initialize middleware
-	authnMiddleware := middleware.NewAuthnMiddleware(JWTProvider)
-	authzMiddleware := middleware.NewAuthzMiddleware(userRoleRepository, roleRepository)
-	verifiedMiddleware := middleware.NewVerifiedMiddleware(userRepository)
+	// Middleware
+	middlewares := &Middleware{
+		Authn:    middleware.NewAuthnMiddleware(providers.JWT),
+		Authz:    middleware.NewAuthzMiddleware(repositories.UserRole, repositories.Role),
+		Verified: middleware.NewVerifiedMiddleware(repositories.User),
+	}
 
-	// Initialize controllers
-	checkHealthController := health.NewCheckHealthController()
-	registerController := users.NewRegisterController(userService, tokenService)
-	forgotPasswordController := users.NewForgotPasswordController(userService, emailService)
-	resetPasswordController := users.NewResetPasswordController(userService)
-	requestTokenController := tokens.NewRequestTokenController(tokenService, userService, mfaService)
-	verifyOTPController := tokens.NewVerifyOTPController(tokenService, mfaService)
-	refreshTokenController := tokens.NewRefreshTokenController(tokenService)
-	revokeTokenController := tokens.NewRevokeTokenController(tokenService)
-	changePasswordController := settings.NewChangePasswordController(userService)
-	generateOTPController := mfa.NewGenerateOTPController(mfaService)
-	enableMFAController := mfa.NewEnableMFAController(mfaService)
-	disableMFAController := mfa.NewDisableMFAController(mfaService, userService)
-	meController := profile.NewMeController(userService)
-	getSwarmAddressController := network.NewGetSwarmAddressController(ipfsService)
+	// Controllers
+	controllers := &Controllers{
+		Health: &HealthControllers{
+			Check: health.NewCheckHealthController(),
+		},
+		Users: &UserControllers{
+			Register:       users.NewRegisterController(services.User, services.Token),
+			ForgotPassword: users.NewForgotPasswordController(services.User, services.Email),
+			ResetPassword:  users.NewResetPasswordController(services.User),
+		},
+		Tokens: &TokenControllers{
+			Request: tokens.NewRequestTokenController(services.Token, services.User, services.MFA),
+			Verify:  tokens.NewVerifyOTPController(services.Token, services.MFA),
+			Refresh: tokens.NewRefreshTokenController(services.Token),
+			Revoke:  tokens.NewRevokeTokenController(services.Token),
+		},
+		Settings: &SettingsControllers{
+			ChangePassword: settings.NewChangePasswordController(services.User),
+		},
+		MFA: &MFAControllers{
+			Generate: mfa.NewGenerateOTPController(services.MFA),
+			Enable:   mfa.NewEnableMFAController(services.MFA),
+			Disable:  mfa.NewDisableMFAController(services.MFA, services.User),
+		},
+		Profile: &ProfileControllers{
+			Me: profile.NewMeController(services.User),
+		},
+		Network: &NetworkControllers{
+			GetSwarmAddress: network.NewGetSwarmAddressController(services.IPFS),
+		},
+	}
 
-	// Run database migrations
-	database.MigrateCollections(mongoProvider)
+	// Run migrations & seeders
+	database.MigrateCollections(providers.Mongo)
+	database.SeedCollections(repositories.Permission, repositories.Role, repositories.RolePermission)
 
-	// Run database seeders
-	database.SeedCollections(permissionRepository, roleRepository, rolePermissionRepository)
-
-	// Return the container
 	return &Container{
-		MongoProvider:              mongoProvider,
-		RedisProvider:              redisProvider,
-		JWTProvider:                JWTProvider,
-		PostmarkProvider:           postmarkProvider,
-		IPFSProvider:               ipfsProvider,
-		PermissionRepository:       permissionRepository,
-		PolicyRepository:           policyRepository,
-		PolicyPermissionRepository: policyPermissionRepository,
-		ProfileRepository:          profileRepository,
-		RoleRepository:             roleRepository,
-		RolePermissionRepository:   rolePermissionRepository,
-		ServiceAccountRepository:   serviceAccountRepository,
-		UserRepository:             userRepository,
-		UserRoleRepository:         userRoleRepository,
-		UserService:                userService,
-		TokenService:               tokenService,
-		EmailService:               emailService,
-		MFAService:                 mfaService,
-		IPFSService:                ipfsService,
-		AuthnMiddleware:            authnMiddleware,
-		AuthzMiddleware:            authzMiddleware,
-		VerifiedMiddleware:         verifiedMiddleware,
-		CheckHealthController:      checkHealthController,
-		RegisterController:         registerController,
-		ForgotPasswordController:   forgotPasswordController,
-		ResetPasswordController:    resetPasswordController,
-		RequestTokenController:     requestTokenController,
-		VerifyOTPController:        verifyOTPController,
-		RefreshTokenController:     refreshTokenController,
-		RevokeTokenController:      revokeTokenController,
-		ChangePasswordController:   changePasswordController,
-		GenerateOTPController:      generateOTPController,
-		EnableMFAController:        enableMFAController,
-		DisableMFAController:       disableMFAController,
-		MeController:               meController,
-		GetSwarmAddressController:  getSwarmAddressController,
+		Providers:    providers,
+		Repositories: repositories,
+		Services:     services,
+		Middleware:   middlewares,
+		Controllers:  controllers,
 	}
 }
