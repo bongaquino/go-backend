@@ -13,7 +13,7 @@ services:
       - mongo-data:/data/db
       - ./docker/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
     networks:
-      - network
+      - koneksi-network
 
   # Mongo Express (Web UI for MongoDB)
   mongo-express:
@@ -27,7 +27,7 @@ services:
     ports:
       - "8082:8081"
     networks:
-      - network
+      - koneksi-network
 
   # Redis
   redis:
@@ -40,7 +40,7 @@ services:
     volumes:
       - redis-data:/data
     networks:
-      - network
+      - koneksi-network
 
   # Redis Commander (Web UI for Redis)
   redis-commander:
@@ -52,7 +52,7 @@ services:
     ports:
       - "8083:8081"
     networks:
-      - network
+      - koneksi-network
 
   # Elasticsearch (ELK Stack)
   elasticsearch:
@@ -71,7 +71,7 @@ services:
     ports:
       - "9200:9200"
     networks:
-      - network
+      - koneksi-network
 
   # Logstash (ELK Stack)
   logstash:
@@ -86,7 +86,7 @@ services:
     ports:
       - "12201:12201/udp"
     networks:
-      - network
+      - koneksi-network
 
   # Kibana (ELK Stack)
   kibana:
@@ -97,7 +97,7 @@ services:
     depends_on:
       - elasticsearch
     networks:
-      - network
+      - koneksi-network
 
   # Gateway
   gateway:
@@ -118,7 +118,7 @@ services:
     depends_on:
       - redis
     networks:
-      - network
+      - koneksi-network
 
   # Server
   server:
@@ -135,7 +135,7 @@ services:
     depends_on:
       - mongo
     networks:
-      - network
+      - koneksi-network
     ports:
       - "3000:3000"
     # logging:
@@ -150,5 +150,5 @@ volumes:
   elastic-data:
 
 networks:
-  network:
-    driver: bridge
+  koneksi-network:
+    external: true
