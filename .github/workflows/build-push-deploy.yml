@@ -1,0 +1,83 @@
+name: Docker CI/DO App Platform CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push-docker-image:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ vars.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+
+    - name: Create .env file
+      run: |
+        echo "APP_NAME=$APP_NAME" >> $GITHUB_WORKSPACE/server/.env
+        echo "APP_VERSION=$APP_VERSION" >> $GITHUB_WORKSPACE/server/.env
+        echo "APP_KEY=$APP_KEY" >> $GITHUB_WORKSPACE/server/.env
+        echo "PORT=$PORT" >> $GITHUB_WORKSPACE/server/.env
+        echo "MODE=$MODE" >> $GITHUB_WORKSPACE/server/.env
+        echo "MONGO_HOST=$MONGO_HOST" >> $GITHUB_WORKSPACE/server/.env
+        echo "MONGO_PORT=$MONGO_PORT" >> $GITHUB_WORKSPACE/server/.env
+        echo "MONGO_USER=$MONGO_USER" >> $GITHUB_WORKSPACE/server/.env
+        echo "MONGO_PASSWORD=$MONGO_PASSWORD" >> $GITHUB_WORKSPACE/server/.env
+        echo "MONGO_DATABASE=$MONGO_DATABASE" >> $GITHUB_WORKSPACE/server/.env
+        echo "MONGO_CONNECTION_STRING=$MONGO_CONNECTION_STRING" >> $GITHUB_WORKSPACE/server/.env
+        echo "REDIS_HOST=$REDIS_HOST" >> $GITHUB_WORKSPACE/server/.env
+        echo "REDIS_PORT=$REDIS_PORT" >> $GITHUB_WORKSPACE/server/.env
+        echo "REDIS_PASSWORD=$REDIS_PASSWORD" >> $GITHUB_WORKSPACE/server/.env
+        echo "REDIS_PREFIX=$REDIS_PREFIX" >> $GITHUB_WORKSPACE/server/.env
+        echo "JWT_SECRET=$JWT_SECRET" >> $GITHUB_WORKSPACE/server/.env
+        echo "JWT_TOKEN_EXPIRATION=$JWT_TOKEN_EXPIRATION" >> $GITHUB_WORKSPACE/server/.env
+        echo "JWT_REFRESH_EXPIRATION=$JWT_REFRESH_EXPIRATION" >> $GITHUB_WORKSPACE/server/.env
+        echo "POSTMARK_API_KEY=$POSTMARK_API_KEY" >> $GITHUB_WORKSPACE/server/.env
+        echo "POSTMARK_FROM=$POSTMARK_FROM" >> $GITHUB_WORKSPACE/server/.env
+        echo "IPFS_NODE_URL=$IPFS_NODE_URL" >> $GITHUB_WORKSPACE/server/.env
+      env:
+        APP_NAME: ${{ vars.APP_NAME }}
+        APP_VERSION: ${{ vars.APP_VERSION }}
+        APP_KEY: ${{ vars.APP_KEY }}
+        PORT: ${{ vars.PORT }}
+        MODE: ${{ vars.MODE }}
+        MONGO_HOST: ${{ vars.MONGO_HOST }}
+        MONGO_PORT: ${{ vars.MONGO_PORT }}
+        MONGO_USER: ${{ vars.MONGO_USER }}
+        MONGO_PASSWORD: ${{ vars.MONGO_PASSWORD }}
+        MONGO_DATABASE: ${{ vars.MONGO_DATABASE }}
+        MONGO_CONNECTION_STRING: ${{ vars.MONGO_CONNECTION_STRING }}
+        REDIS_HOST: ${{ vars.REDIS_HOST }}
+        REDIS_PORT: ${{ vars.REDIS_PORT }}
+        REDIS_PASSWORD: ${{ vars.REDIS_PASSWORD }}
+        REDIS_PREFIX: ${{ vars.REDIS_PREFIX }}
+        JWT_SECRET: ${{ vars.JWT_SECRET }}
+        JWT_TOKEN_EXPIRATION: ${{ vars.JWT_TOKEN_EXPIRATION }}
+        JWT_REFRESH_EXPIRATION: ${{ vars.JWT_REFRESH_EXPIRATION }}
+        POSTMARK_API_KEY: ${{ vars.POSTMARK_API_KEY }}
+        POSTMARK_FROM: ${{ vars.POSTMARK_FROM }}
+        IPFS_NODE_URL: ${{ vars.IPFS_NODE_URL }}
+        
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v6
+      with:
+        context: ./server
+        file: ./server/Dockerfile
+        push: true
+        tags: ${{ vars.DOCKER_BUILD_TAG }}
+
+    - name: Install doctl
+      uses: digitalocean/action-doctl@v2
+      with:
+        token: ${{ secrets.DIGITALOCEAN_TOKEN }}
+
+    - name: Deploy to DigitalOcean App Platform
+      run: |
+        doctl apps create-deployment ${{ vars.DIGITALOCEAN_APP_ID }} --force-rebuild
