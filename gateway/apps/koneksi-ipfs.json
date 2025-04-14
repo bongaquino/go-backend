@@ -5,14 +5,14 @@
   "use_keyless": true,
   "proxy": {
     "listen_path": "/ipfs",
-    "target_url": "http://121.254.153.145:5001",
+    "target_url": "http://218.38.136.34:5001",
     "strip_listen_path": true,
     "endpoints": {
       "/upload": {
-        "target_url": "http://121.254.153.145:5001"
+        "target_url": "http://218.38.136.34:5001"
       },
       "/gateway": {
-        "target_url": "http://121.254.153.145:8080/ipfs"
+        "target_url": "http://218.38.136.34:8080/ipfs"
       }
     }
   },
