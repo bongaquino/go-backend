@@ -67,8 +67,9 @@ func (rc *RequestTokenController) Handle(ctx *gin.Context) {
 	} else {
 		// Respond with tokens
 		helper.FormatResponse(ctx, "success", http.StatusOK, "Token requested successfully", gin.H{
-			"access_token":  accessToken,
-			"refresh_token": refreshToken,
+			"is_mfa_enabled": false,
+			"access_token":   accessToken,
+			"refresh_token":  refreshToken,
 		}, nil)
 	}
 
