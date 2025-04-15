@@ -4,8 +4,8 @@
   "org_id": "default",
   "use_keyless": true,
   "proxy": {
-    "listen_path": "/ipfs",
-    "target_url": "http://218.38.136.34:5001",
+    "listen_path": "/ipfs/gateway",
+    "target_url": "http://218.38.136.34:8080/ipfs",
     "strip_listen_path": true
   },
   "version_data": {
