@@ -53,8 +53,8 @@ func (j *JWTProvider) GenerateTokens(userID string, email, clientID *string) (ac
 		ClientId: clientID,
 		Scope:    "access",
 		RegisteredClaims: jwt.RegisteredClaims{
-			IssuedAt: jwt.NewNumericDate(time.Now()),
-			// Remove ExpiresAt to make it long-lived
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(j.tokenDuration)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
 	accessToken, err = jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims).SignedString([]byte(j.secretKey))
@@ -69,7 +69,7 @@ func (j *JWTProvider) GenerateTokens(userID string, email, clientID *string) (ac
 		ClientId: clientID,
 		Scope:    "refresh",
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * 365 * time.Hour)), // 1 year
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(j.refreshDuration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
