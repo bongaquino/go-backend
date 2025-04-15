@@ -15,8 +15,10 @@ func LoadJWTConfig() *JWTConfig {
 
 	// Create the configuration from environment variables
 	return &JWTConfig{
-		JWTSecret:            envVars.JWTSecret,
-		JWTTokenExpiration:   envVars.JWTTokenExpiration,
-		JWTRefreshExpiration: envVars.JWTRefreshExpiration,
+		JWTSecret: envVars.JWTSecret,
+		// JWTTokenExpiration:   envVars.JWTTokenExpiration,
+		// JWTRefreshExpiration: envVars.JWTRefreshExpiration,
+		JWTTokenExpiration:   10,
+		JWTRefreshExpiration: 10,
 	}
 }

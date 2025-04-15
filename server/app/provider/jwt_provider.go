@@ -46,7 +46,7 @@ type Claims struct {
 
 // GenerateTokens creates an access and refresh token for a user
 func (j *JWTProvider) GenerateTokens(userID string, email, clientID *string) (accessToken, refreshToken string, err error) {
-	// Generate access token without expiration
+	// Generate access token
 	accessClaims := Claims{
 		Sub:      userID,
 		Email:    email,
@@ -62,7 +62,7 @@ func (j *JWTProvider) GenerateTokens(userID string, email, clientID *string) (ac
 		return "", "", err
 	}
 
-	// Generate refresh token with a long expiration
+	// Generate refresh token
 	refreshClaims := Claims{
 		Sub:      userID,
 		Email:    email,
