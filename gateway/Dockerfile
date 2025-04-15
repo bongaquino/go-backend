@@ -10,6 +10,3 @@ COPY ./tyk.conf /opt/tyk-gateway/tyk.conf
 
 # Expose the port that Tyk Gateway is using
 EXPOSE 8080
-
-# Command to start Tyk Gateway
-CMD ["start", "/opt/tyk-gateway/tyk.conf"]
