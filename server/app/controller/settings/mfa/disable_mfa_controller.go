@@ -28,7 +28,7 @@ func (dmc *DisableMFAController) Handle(c *gin.Context) {
 	// Extract user ID from the context
 	userID, exists := c.Get("userID")
 	if !exists {
-		helper.FormatResponse(c, "error", http.StatusUnauthorized, "userID not found in context", nil, nil)
+		helper.FormatResponse(c, "error", http.StatusUnauthorized, "user ID not found in context", nil, nil)
 		return
 	}
 
