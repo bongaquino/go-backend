@@ -90,28 +90,6 @@ func (us *UserService) RegisterUser(ctx context.Context, request *dto.RegisterUs
 		logger.Log.Error("error assigning default role", logger.Error(err))
 		return nil, nil, nil, "", errors.New("failed to assign default role")
 	}
-	/*
-	// Generate a verification token
-	token, err := helper.GenerateCode(6)
-	if err != nil {
-		logger.Log.Error("error generating verification token", logger.Error(err))
-		return nil, nil, nil, "", errors.New("failed to generate verification token")
-	}
-
-	// Store the verification token in Redis with an expiration (e.g., 24 hours)
-	err = us.redisProvider.Set(ctx, fmt.Sprintf("verification:%s", user.Email), token, 24*time.Hour)
-	if err != nil {
-		logger.Log.Error("error storing verification token in Redis", logger.Error(err))
-		return nil, nil, nil, "", errors.New("failed to store verification token")
-	}
-
-	// Send the verification email
-	err = us.emailService.SendVerificationCode(user.Email, token)
-	if err != nil {
-		logger.Log.Error("error sending verification email", logger.Error(err))
-		return nil, nil, nil, "", errors.New("failed to send verification email")
-	}
-	*/
 	
 	return user, profile, userRoleAssignment, userRole.Name, nil
 }
