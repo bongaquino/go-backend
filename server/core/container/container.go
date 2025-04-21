@@ -62,6 +62,7 @@ type UserControllers struct {
 	Register       *users.RegisterController
 	ForgotPassword *users.ForgotPasswordController
 	ResetPassword  *users.ResetPasswordController
+	VerifyAccount *users.VerifyAccountController
 }
 
 type TokenControllers struct {
@@ -155,9 +156,10 @@ func NewContainer() *Container {
 			Check: health.NewCheckHealthController(),
 		},
 		Users: &UserControllers{
-			Register:       users.NewRegisterController(services.User, services.Token),
+			Register:       users.NewRegisterController(services.User, services.Token, providers.Redis, services.Email),
 			ForgotPassword: users.NewForgotPasswordController(services.User, services.Email),
 			ResetPassword:  users.NewResetPasswordController(services.User),
+			VerifyAccount:  users.NewVerifyAccountController(services.User),
 		},
 		Tokens: &TokenControllers{
 			Request: tokens.NewRequestTokenController(services.Token, services.User, services.MFA),
