@@ -309,3 +309,42 @@ func (us *UserService) VerifyUserAccount(ctx context.Context, email string, code
 
 	return nil
 }
+
+func (us *UserService) GenerateVerificationToken(ctx context.Context, email string) (string, error) {
+	// Check if the user exists and is not already verified
+	user, err := us.userRepo.ReadUserByEmail(ctx, email)
+	if err != nil {
+		return "", fmt.Errorf("failed to retrieve user: %w", err)
+	}
+	if user == nil {
+		return "", fmt.Errorf("user not found")
+	}
+
+	if user.IsVerified {
+		return "", fmt.Errorf("account already verified")
+	}
+
+	// Construct the Redis key
+	key := fmt.Sprintf("verification:%s", email)
+
+	// Retrieve the stored verification token from Redis
+	storedToken, err := us.redisProvider.Get(ctx, key)
+
+	// If there is no stored token or an error occurred, generate a new one and store it in Redis
+	if storedToken == "" || err != nil {
+		newToken, err := helper.GenerateCode(6)
+		if err != nil {
+			return "", fmt.Errorf("failed to generate verification code: %w", err)
+		}
+
+		// Store the verification token in Redis with an expiration (e.g., 24 hours)
+		err = us.redisProvider.Set(ctx, fmt.Sprintf("verification:%s", email), newToken, 24*time.Hour)
+		if err != nil {
+			return "", fmt.Errorf("failed to store verification code in Redis: %w", err)
+		}
+
+		return newToken, nil
+	}
+
+	return storedToken, nil
+}

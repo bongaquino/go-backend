@@ -9,9 +9,6 @@ import (
 	"koneksi/server/app/provider"
 
 	"github.com/gin-gonic/gin"
-
-	"fmt"
-	"time"
 )
 
 type RegisterController struct {
@@ -56,16 +53,9 @@ func (rc *RegisterController) Handle(ctx *gin.Context) {
 	}
 
 	// Generate a verification token
-	token, err := helper.GenerateCode(6)
+	token, err := rc.userService.GenerateVerificationToken(ctx.Request.Context(), request.Email)
 	if err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to generate verification code", nil, nil)
-		return
-	}
-
-	// Store the verification token in Redis with an expiration (e.g., 24 hours)
-	err = rc.redisProvider.Set(ctx, fmt.Sprintf("verification:%s", user.Email), token, 24*time.Hour)
-	if err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to store verification token in Redis", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, err.Error(), nil, nil)
 		return
 	}
 
