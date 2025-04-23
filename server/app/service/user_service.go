@@ -265,6 +265,18 @@ func (us *UserService) ValidatePassword(ctx context.Context, userID, password st
 }
 
 func (us *UserService) VerifyUserAccount(ctx context.Context, email string, code string) error {
+	user, err := us.userRepo.ReadUserByEmail(ctx, email)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve user: %w", err)
+	}
+	if user == nil {
+		return fmt.Errorf("user not found")
+	}
+
+	if user.IsVerified {
+		return fmt.Errorf("account already verified")
+	}
+	
 	// Construct the Redis key
 	key := fmt.Sprintf("verification:%s", email)
 
@@ -283,18 +295,6 @@ func (us *UserService) VerifyUserAccount(ctx context.Context, email string, code
 	err = us.redisProvider.Del(ctx, key)
 	if err != nil {
 		return fmt.Errorf("failed to delete verification token")
-	}
-
-	user, err := us.userRepo.ReadUserByEmail(ctx, email)
-	if err != nil {
-		return fmt.Errorf("failed to retrieve user: %w", err)
-	}
-	if user == nil {
-		return fmt.Errorf("user not found")
-	}
-
-	if user.IsVerified {
-		return fmt.Errorf("account already verified")
 	}
 
 	update := map[string]any{
