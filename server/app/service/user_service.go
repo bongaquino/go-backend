@@ -332,7 +332,7 @@ func (us *UserService) GenerateVerificationToken(ctx context.Context, email stri
 
 	// If there is no stored token or an error occurred, generate a new one and store it in Redis
 	if storedToken == "" || err != nil {
-		newToken, err := helper.GenerateCode(6)
+		newToken, err := helper.GenerateNumericCode(6)
 		if err != nil {
 			return "", fmt.Errorf("failed to generate verification code: %w", err)
 		}
