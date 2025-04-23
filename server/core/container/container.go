@@ -157,7 +157,7 @@ func NewContainer() *Container {
 			Check: health.NewCheckHealthController(),
 		},
 		Users: &UserControllers{
-			Register:       				 users.NewRegisterController(services.User, services.Token, providers.Redis, services.Email),
+			Register:       				 users.NewRegisterController(services.User, services.Token, services.Email),
 			ForgotPassword: 				 users.NewForgotPasswordController(services.User, services.Email),
 			ResetPassword:  				 users.NewResetPasswordController(services.User),
 			VerifyAccount:  				 users.NewVerifyAccountController(services.User),

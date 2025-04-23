@@ -6,7 +6,6 @@ import (
 	"koneksi/server/app/dto"
 	"koneksi/server/app/helper"
 	"koneksi/server/app/service"
-	"koneksi/server/app/provider"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,15 +13,13 @@ import (
 type RegisterController struct {
 	userService   *service.UserService
 	tokenService  *service.TokenService
-	redisProvider *provider.RedisProvider
 	emailService  *service.EmailService
 }
 
-func NewRegisterController(userService *service.UserService, tokenService *service.TokenService, redisProvider *provider.RedisProvider, emailService *service.EmailService) *RegisterController {
+func NewRegisterController(userService *service.UserService, tokenService *service.TokenService, emailService *service.EmailService) *RegisterController {
 	return &RegisterController{
 		userService:  userService,
 		tokenService: tokenService,
-		redisProvider: redisProvider,
 		emailService: emailService,
 	}
 }
