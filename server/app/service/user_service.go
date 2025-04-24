@@ -54,7 +54,7 @@ func (us *UserService) RegisterUser(ctx context.Context, request *dto.RegisterUs
 	user := &model.User{
 		Email:      request.Email,
 		Password:   request.Password,
-		IsVerified: true,
+		IsVerified: false, // Set to false initially
 	}
 	if err := us.userRepo.CreateUser(ctx, user); err != nil {
 		logger.Log.Error("error creating user", logger.Error(err))
@@ -90,7 +90,7 @@ func (us *UserService) RegisterUser(ctx context.Context, request *dto.RegisterUs
 		logger.Log.Error("error assigning default role", logger.Error(err))
 		return nil, nil, nil, "", errors.New("failed to assign default role")
 	}
-
+	
 	return user, profile, userRoleAssignment, userRole.Name, nil
 }
 
@@ -262,4 +262,89 @@ func (us *UserService) ValidatePassword(ctx context.Context, userID, password st
 	// Compare the provided password with the stored hash
 	isValid := helper.CheckHash(password, user.Password)
 	return isValid, nil
+}
+
+func (us *UserService) VerifyUserAccount(ctx context.Context, email string, code string) error {
+	user, err := us.userRepo.ReadUserByEmail(ctx, email)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve user: %w", err)
+	}
+	if user == nil {
+		return fmt.Errorf("user not found")
+	}
+
+	if user.IsVerified {
+		return fmt.Errorf("account already verified")
+	}
+	
+	// Construct the Redis key
+	key := fmt.Sprintf("verification:%s", email)
+
+	// Retrieve the stored verification token from Redis
+	storedToken, err := us.redisProvider.Get(ctx, key)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve verification token")
+	}
+
+	// Compare the stored code with the provided code
+	if storedToken != code {
+		return fmt.Errorf("invalid verification code")
+	}
+
+	// Delete the reset code from Redis to prevent reuse
+	err = us.redisProvider.Del(ctx, key)
+	if err != nil {
+		return fmt.Errorf("failed to delete verification token")
+	}
+
+	update := map[string]any{
+		"is_verified":  true,
+		"updated_at": time.Now(),
+	}
+
+	if err := us.userRepo.UpdateUserByEmail(ctx, email, update); err != nil {
+		logger.Log.Error("error verifying user account", logger.Error(err))
+		return errors.New("failed to verify account")
+	}
+
+	return nil
+}
+
+func (us *UserService) GenerateVerificationToken(ctx context.Context, email string) (string, error) {
+	// Check if the user exists and is not already verified
+	user, err := us.userRepo.ReadUserByEmail(ctx, email)
+	if err != nil {
+		return "", fmt.Errorf("failed to retrieve user: %w", err)
+	}
+	if user == nil {
+		return "", fmt.Errorf("user not found")
+	}
+
+	if user.IsVerified {
+		return "", fmt.Errorf("account already verified")
+	}
+
+	// Construct the Redis key
+	key := fmt.Sprintf("verification:%s", email)
+
+	// Retrieve the stored verification token from Redis
+	storedToken, err := us.redisProvider.Get(ctx, key)
+
+	// If there is no stored token or an error occurred, generate a new one and store it in Redis
+	if storedToken == "" || err != nil {
+		newToken, err := helper.GenerateNumericCode(6)
+		if err != nil {
+			return "", fmt.Errorf("failed to generate verification code: %w", err)
+		}
+
+		// Store the verification token in Redis with an expiration (e.g., 24 hours)
+		err = us.redisProvider.Set(ctx, fmt.Sprintf("verification:%s", email), newToken, 24*time.Hour)
+		if err != nil {
+			return "", fmt.Errorf("failed to store verification code in Redis: %w", err)
+		}
+
+		return newToken, nil
+	}
+
+	return storedToken, nil
 }
