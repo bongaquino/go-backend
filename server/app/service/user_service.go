@@ -9,6 +9,7 @@ import (
 	"koneksi/server/app/model"
 	"koneksi/server/app/provider"
 	"koneksi/server/app/repository"
+	"koneksi/server/config"
 	"koneksi/server/core/logger"
 	"time"
 )
@@ -137,6 +138,9 @@ func (us *UserService) ChangePassword(ctx context.Context, userID string, reques
 }
 
 func (us *UserService) GeneratePasswordResetCode(ctx context.Context, email string) (string, error) {
+	// Load the Redis configuration
+	redisConfig := config.LoadRedisConfig()
+
 	// Check if the user exists
 	user, err := us.userRepo.ReadUserByEmail(ctx, email)
 	if err != nil || user == nil {
@@ -159,7 +163,7 @@ func (us *UserService) GeneratePasswordResetCode(ctx context.Context, email stri
 	}
 
 	// Store the reset code in Redis with a 15-minute expiration
-	err = us.redisProvider.Set(ctx, key, resetCode, 15*time.Minute)
+	err = us.redisProvider.Set(ctx, key, resetCode, redisConfig.PasswordResetCodeExpiry)
 	if err != nil {
 		return "", fmt.Errorf("failed to store reset code")
 	}
@@ -311,6 +315,9 @@ func (us *UserService) VerifyUserAccount(ctx context.Context, email string, code
 }
 
 func (us *UserService) GenerateVerificationCode(ctx context.Context, email string) (string, error) {
+	// Load the Redis configuration
+	redisConfig := config.LoadRedisConfig()
+
 	// Check if the user exists and is not already verified
 	user, err := us.userRepo.ReadUserByEmail(ctx, email)
 	if err != nil {
@@ -332,18 +339,17 @@ func (us *UserService) GenerateVerificationCode(ctx context.Context, email strin
 
 	// If there is no stored token or an error occurred, generate a new one and store it in Redis
 	if storedCode == "" || err != nil {
-		newToken, err := helper.GenerateNumericCode(6)
+		newCode, err := helper.GenerateNumericCode(6)
 		if err != nil {
 			return "", fmt.Errorf("failed to generate verification code: %w", err)
 		}
 
-		// Store the verification code in Redis with an expiration (e.g., 24 hours)
-		err = us.redisProvider.Set(ctx, fmt.Sprintf("verification:%s", email), newToken, 24*time.Hour)
+		err = us.redisProvider.Set(ctx, fmt.Sprintf("verification:%s", email), newCode, redisConfig.VerificationCodeExpiry)
 		if err != nil {
 			return "", fmt.Errorf("failed to store verification code in Redis: %w", err)
 		}
 
-		return newToken, nil
+		return newCode, nil
 	}
 
 	return storedCode, nil
