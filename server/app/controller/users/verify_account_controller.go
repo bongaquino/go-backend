@@ -33,15 +33,15 @@ func (vac *VerifyAccountController) Handle(c *gin.Context) {
 		return
 	}
 
-	// Extract email from the user token
-	email, exists := c.Get("userID")
+	// userID email from the user token
+	userID, exists := c.Get("userID")
 	if !exists {
 		helper.FormatResponse(c, "error", http.StatusUnauthorized, "unauthorized", nil, nil)
 		return
 	}
 
 	// Verify code using the UserService
-	err := vac.userService.VerifyUserAccount(c.Request.Context(), email.(string), request.VerificationCode)
+	err := vac.userService.VerifyUserAccount(c.Request.Context(), userID.(string), request.VerificationCode)
 	if err != nil {
 		helper.FormatResponse(c, "error", http.StatusBadRequest, err.Error(), nil, nil)
 		return

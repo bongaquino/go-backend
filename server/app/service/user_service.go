@@ -253,7 +253,7 @@ func (us *UserService) GetUserProfileByEmail(ctx context.Context, email string) 
 	return user, profile, nil
 }
 
-func (us *UserService) ValidatePassword(ctx context.Context, userID, password string) (bool, error) {
+func (us *UserService) ValidatePassword(ctx context.Context, userID string, password string) (bool, error) {
 	// Retrieve the user from the database
 	user, err := us.userRepo.ReadUser(ctx, userID)
 	if err != nil {
@@ -268,8 +268,8 @@ func (us *UserService) ValidatePassword(ctx context.Context, userID, password st
 	return isValid, nil
 }
 
-func (us *UserService) VerifyUserAccount(ctx context.Context, email string, code string) error {
-	user, err := us.userRepo.ReadUserByEmail(ctx, email)
+func (us *UserService) VerifyUserAccount(ctx context.Context, userID string, code string) error {
+	user, err := us.userRepo.ReadUser(ctx, userID)
 	if err != nil {
 		return fmt.Errorf("failed to retrieve user: %w", err)
 	}
@@ -282,7 +282,7 @@ func (us *UserService) VerifyUserAccount(ctx context.Context, email string, code
 	}
 
 	// Construct the Redis key
-	key := fmt.Sprintf("verification:%s", email)
+	key := fmt.Sprintf("verification:%s", userID)
 
 	// Retrieve the stored verification code from Redis
 	storedCode, err := us.redisProvider.Get(ctx, key)
@@ -306,7 +306,7 @@ func (us *UserService) VerifyUserAccount(ctx context.Context, email string, code
 		"updated_at":  time.Now(),
 	}
 
-	if err := us.userRepo.UpdateUserByEmail(ctx, email, update); err != nil {
+	if err := us.userRepo.UpdateUser(ctx, userID, update); err != nil {
 		logger.Log.Error("error verifying user account", logger.Error(err))
 		return errors.New("failed to verify account")
 	}
@@ -314,12 +314,12 @@ func (us *UserService) VerifyUserAccount(ctx context.Context, email string, code
 	return nil
 }
 
-func (us *UserService) GenerateVerificationCode(ctx context.Context, email string) (string, error) {
+func (us *UserService) GenerateVerificationCode(ctx context.Context, userID string) (string, error) {
 	// Load the Redis configuration
 	redisConfig := config.LoadRedisConfig()
 
 	// Check if the user exists and is not already verified
-	user, err := us.userRepo.ReadUserByEmail(ctx, email)
+	user, err := us.userRepo.ReadUser(ctx, userID)
 	if err != nil {
 		return "", fmt.Errorf("failed to retrieve user: %w", err)
 	}
@@ -332,7 +332,7 @@ func (us *UserService) GenerateVerificationCode(ctx context.Context, email strin
 	}
 
 	// Construct the Redis key
-	key := fmt.Sprintf("verification:%s", email)
+	key := fmt.Sprintf("verification:%s", userID)
 
 	// Retrieve the stored verification code from Redis
 	storedCode, err := us.redisProvider.Get(ctx, key)
@@ -344,7 +344,7 @@ func (us *UserService) GenerateVerificationCode(ctx context.Context, email strin
 			return "", fmt.Errorf("failed to generate verification code: %w", err)
 		}
 
-		err = us.redisProvider.Set(ctx, fmt.Sprintf("verification:%s", email), newCode, redisConfig.VerificationCodeExpiry)
+		err = us.redisProvider.Set(ctx, fmt.Sprintf("verification:%s", userID), newCode, redisConfig.VerificationCodeExpiry)
 		if err != nil {
 			return "", fmt.Errorf("failed to store verification code in Redis: %w", err)
 		}
