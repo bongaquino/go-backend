@@ -60,5 +60,11 @@ func (cpc *ChangePasswordController) validatePayload(ctx *gin.Context, request *
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "new passwords do not match", nil, nil)
 		return fmt.Errorf("new passwords do not match")
 	}
+	// Check if new passwords pass validation
+	isValid, validationErr := helper.ValidatePassword(request.NewPassword)
+	if !isValid {
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, validationErr.Error(), nil, nil)
+		return validationErr
+	}
 	return nil
 }
