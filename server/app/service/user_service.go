@@ -319,6 +319,7 @@ func (us *UserService) GenerateVerificationCode(ctx context.Context, userID stri
 	redisConfig := config.LoadRedisConfig()
 
 	// Check if the user exists and is not already verified
+	fmt.Println("User ID:", userID)
 	user, err := us.userRepo.ReadUser(ctx, userID)
 	if err != nil {
 		return "", fmt.Errorf("failed to retrieve user: %w", err)

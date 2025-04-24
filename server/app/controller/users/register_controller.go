@@ -50,7 +50,7 @@ func (rc *RegisterController) Handle(ctx *gin.Context) {
 	}
 
 	// Generate a verification code
-	code, err := rc.userService.GenerateVerificationCode(ctx.Request.Context(), request.Email)
+	code, err := rc.userService.GenerateVerificationCode(ctx.Request.Context(), user.ID.Hex())
 	if err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, err.Error(), nil, nil)
 		return
