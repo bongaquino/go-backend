@@ -24,7 +24,6 @@ func NewVerifyAccountController(userService *service.UserService) *VerifyAccount
 
 func (vac *VerifyAccountController) Handle(c *gin.Context) {
 	var request struct {
-		Email            string `json:"email" binding:"required,email"`
 		VerificationCode string `json:"verification_code" binding:"required"`
 	}
 
@@ -34,8 +33,15 @@ func (vac *VerifyAccountController) Handle(c *gin.Context) {
 		return
 	}
 
+	// Extract email from the user token
+	email, exists := c.Get("userID")
+	if !exists {
+		helper.FormatResponse(c, "error", http.StatusUnauthorized, "unauthorized", nil, nil)
+		return
+	}
+
 	// Verify code using the UserService
-	err := vac.userService.VerifyUserAccount(c.Request.Context(), request.Email, request.VerificationCode)
+	err := vac.userService.VerifyUserAccount(c.Request.Context(), email.(string), request.VerificationCode)
 	if err != nil {
 		helper.FormatResponse(c, "error", http.StatusBadRequest, err.Error(), nil, nil)
 		return

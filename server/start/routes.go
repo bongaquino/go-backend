@@ -18,8 +18,8 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 		userGroup.POST("/register", container.Controllers.Users.Register.Handle)
 		userGroup.POST("/forgot-password", container.Controllers.Users.ForgotPassword.Handle)
 		userGroup.POST("/reset-password", container.Controllers.Users.ResetPassword.Handle)
-		userGroup.POST("/verify-account", container.Controllers.Users.VerifyAccount.Handle)
-		userGroup.POST("/resend-verification-code", container.Controllers.Users.ResendVerificationCode.Handle)
+		userGroup.Use(container.Middleware.Authn.Handle).POST("/verify-account", container.Controllers.Users.VerifyAccount.Handle)
+		userGroup.Use(container.Middleware.Authn.Handle).POST("/resend-verification-code", container.Controllers.Users.ResendVerificationCode.Handle)
 	}
 
 	// Token Routes

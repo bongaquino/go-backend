@@ -23,15 +23,15 @@ func NewGenerateOTPController(mfaService *service.MFAService) *GenerateOTPContro
 
 // Handle generates an OTP secret and QR code for the user
 func (goc *GenerateOTPController) Handle(c *gin.Context) {
-	// Extract user ID from the context
-	userID, exists := c.Get("userID")
+	// Extract email from the user token
+	email, exists := c.Get("userID")
 	if !exists {
-		helper.FormatResponse(c, "error", http.StatusUnauthorized, "user ID not found in context", nil, nil)
+		helper.FormatResponse(c, "error", http.StatusUnauthorized, "unauthorized", nil, nil)
 		return
 	}
 
 	// Generate OTP secret and QR code
-	otpSecret, qrCode, err := goc.mfaService.GenerateOTP(c.Request.Context(), userID.(string))
+	otpSecret, qrCode, err := goc.mfaService.GenerateOTP(c.Request.Context(), email.(string))
 	if err != nil {
 		helper.FormatResponse(c, "error", http.StatusInternalServerError, err.Error(), nil, nil)
 		return
