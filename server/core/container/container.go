@@ -59,11 +59,11 @@ type HealthControllers struct {
 }
 
 type UserControllers struct {
-	Register                *users.RegisterController
-	ForgotPassword          *users.ForgotPasswordController
-	ResetPassword           *users.ResetPasswordController
-	VerifyAccount           *users.VerifyAccountController
-	ResendVerificationToken *users.ResendVerificationTokenController
+	Register               *users.RegisterController
+	ForgotPassword         *users.ForgotPasswordController
+	ResetPassword          *users.ResetPasswordController
+	VerifyAccount          *users.VerifyAccountController
+	ResendVerificationCode *users.ResendVerificationCodeController
 }
 
 type TokenControllers struct {
@@ -157,11 +157,11 @@ func NewContainer() *Container {
 			Check: health.NewCheckHealthController(),
 		},
 		Users: &UserControllers{
-			Register:       				 users.NewRegisterController(services.User, services.Token, services.Email),
-			ForgotPassword: 				 users.NewForgotPasswordController(services.User, services.Email),
-			ResetPassword:  				 users.NewResetPasswordController(services.User),
-			VerifyAccount:  				 users.NewVerifyAccountController(services.User),
-			ResendVerificationToken: users.NewResendVerificationTokenController(services.User, services.Email),
+			Register:               users.NewRegisterController(services.User, services.Token, services.Email),
+			ForgotPassword:         users.NewForgotPasswordController(services.User, services.Email),
+			ResetPassword:          users.NewResetPasswordController(services.User),
+			VerifyAccount:          users.NewVerifyAccountController(services.User),
+			ResendVerificationCode: users.NewResendVerificationCodeController(services.User, services.Email),
 		},
 		Tokens: &TokenControllers{
 			Request: tokens.NewRequestTokenController(services.Token, services.User, services.MFA),

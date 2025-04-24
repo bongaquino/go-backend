@@ -24,8 +24,8 @@ func NewVerifyAccountController(userService *service.UserService) *VerifyAccount
 
 func (vac *VerifyAccountController) Handle(c *gin.Context) {
 	var request struct {
-		Email              string `json:"email" binding:"required,email"`
-		Token              string `json:"token" binding:"required"`
+		Email string `json:"email" binding:"required,email"`
+		Code  string `json:"code" binding:"required"`
 	}
 
 	// Validate the request payload
@@ -34,8 +34,8 @@ func (vac *VerifyAccountController) Handle(c *gin.Context) {
 		return
 	}
 
-	// Verify token using the UserService
-	err := vac.userService.VerifyUserAccount(c.Request.Context(), request.Email, request.Token)
+	// Verify code using the UserService
+	err := vac.userService.VerifyUserAccount(c.Request.Context(), request.Email, request.Code)
 	if err != nil {
 		helper.FormatResponse(c, "error", http.StatusBadRequest, err.Error(), nil, nil)
 		return

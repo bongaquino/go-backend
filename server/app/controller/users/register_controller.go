@@ -11,9 +11,9 @@ import (
 )
 
 type RegisterController struct {
-	userService   *service.UserService
-	tokenService  *service.TokenService
-	emailService  *service.EmailService
+	userService  *service.UserService
+	tokenService *service.TokenService
+	emailService *service.EmailService
 }
 
 func NewRegisterController(userService *service.UserService, tokenService *service.TokenService, emailService *service.EmailService) *RegisterController {
@@ -49,15 +49,15 @@ func (rc *RegisterController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	// Generate a verification token
-	token, err := rc.userService.GenerateVerificationToken(ctx.Request.Context(), request.Email)
+	// Generate a verification code
+	code, err := rc.userService.GenerateVerificationCode(ctx.Request.Context(), request.Email)
 	if err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, err.Error(), nil, nil)
 		return
 	}
 
 	// Send the verification email
-	err = rc.emailService.SendVerificationCode(user.Email, token)
+	err = rc.emailService.SendVerificationCode(user.Email, code)
 	if err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to send verification email", nil, nil)
 		return
