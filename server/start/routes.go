@@ -48,7 +48,7 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 
 	// Profile Routes
 	profileGroup := engine.Group("/profile")
-	profileGroup.Use(container.Middleware.Authn.Handle, container.Middleware.Verified.Handle)
+	profileGroup.Use(container.Middleware.Authn.Handle)
 	{
 		profileGroup.GET("/me", container.Controllers.Profile.Me.Handle)
 	}
