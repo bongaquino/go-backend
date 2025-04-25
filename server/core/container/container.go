@@ -140,7 +140,7 @@ func NewContainer() *Container {
 		Email: service.NewEmailService(providers.Postmark),
 		IPFS:  service.NewIPFSService(providers.IPFS),
 	}
-	services.Token = service.NewTokenService(repositories.User, providers.JWT, services.MFA)
+	services.Token = service.NewTokenService(repositories.User, providers.JWT, services.MFA, providers.Redis)
 
 	// Middleware
 	middlewares := &Middleware{
