@@ -168,6 +168,15 @@ func (us *UserService) GeneratePasswordResetCode(ctx context.Context, email stri
 }
 
 func (us *UserService) ResetPassword(ctx context.Context, email, resetCode, newPassword string) error {
+	// Retrieve the user by email from the database
+	user, err := us.userRepo.ReadUserByEmail(ctx, email)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve user: %w", err)
+	}
+	if user == nil {
+		return fmt.Errorf("user not found")
+	}
+
 	// Construct the Redis key
 	key := fmt.Sprintf("password_reset:%s", email)
 
@@ -182,10 +191,21 @@ func (us *UserService) ResetPassword(ctx context.Context, email, resetCode, newP
 		return fmt.Errorf("invalid reset code")
 	}
 
+	// Check if new password is not the same as the old one
+	if helper.CheckHash(newPassword, user.Password) {
+		return fmt.Errorf("new password must be different from the old one")
+	}
+
 	// Delete the reset code from Redis to prevent reuse
 	err = us.redisProvider.Del(ctx, key)
 	if err != nil {
 		return fmt.Errorf("failed to delete reset code")
+	}
+
+	// Reset the user's lockout status if applicable
+	err = us.ResetLockout(ctx, email)
+	if err != nil {
+		return fmt.Errorf("failed to reset lockout: %w", err)
 	}
 
 	// Hash the new password
@@ -262,4 +282,15 @@ func (us *UserService) ValidatePassword(ctx context.Context, userID, password st
 	// Compare the provided password with the stored hash
 	isValid := helper.CheckHash(password, user.Password)
 	return isValid, nil
+}
+
+// ResetLockout resets the account lockout status for a given email
+func (us *UserService) ResetLockout(ctx context.Context, email string) error {
+	key := fmt.Sprintf("failed_login_attempts:%s", email)
+	us.redisProvider.Del(ctx, key)
+
+	key = fmt.Sprintf("lockout:%s", email)
+	us.redisProvider.Del(ctx, key)
+
+	return nil
 }
