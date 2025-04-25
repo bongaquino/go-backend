@@ -14,6 +14,7 @@ type User struct {
 	OtpSecret    string             `bson:"otp_secret"`
 	IsVerified   bool               `bson:"is_verified"`
 	IsMFAEnabled bool               `bson:"is_mfa_enabled"`
+	IsLocked     bool               `bson:"is_locked"`
 	CreatedAt    time.Time          `bson:"created_at"`
 	UpdatedAt    time.Time          `bson:"updated_at"`
 }

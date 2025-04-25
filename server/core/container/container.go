@@ -51,6 +51,7 @@ type Middleware struct {
 	Authn    *middleware.AuthnMiddleware
 	Authz    *middleware.AuthzMiddleware
 	Verified *middleware.VerifiedMiddleware
+	Locked   *middleware.LockedMiddleware
 }
 
 // Controller Groups
@@ -147,6 +148,7 @@ func NewContainer() *Container {
 		Authn:    middleware.NewAuthnMiddleware(providers.JWT),
 		Authz:    middleware.NewAuthzMiddleware(repositories.UserRole, repositories.Role),
 		Verified: middleware.NewVerifiedMiddleware(repositories.User),
+		Locked:   middleware.NewLockedMiddleware(repositories.User),
 	}
 
 	// Controllers

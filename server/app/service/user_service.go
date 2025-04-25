@@ -202,10 +202,12 @@ func (us *UserService) ResetPassword(ctx context.Context, email, resetCode, newP
 		return fmt.Errorf("failed to delete reset code")
 	}
 
-	// Reset the user's lockout status if applicable
-	err = us.ResetLockout(ctx, email)
-	if err != nil {
-		return fmt.Errorf("failed to reset lockout: %w", err)
+	// Reset the user's is_locked status if applicable
+	update := map[string]any{
+		"is_locked": false,
+	}
+	if err := us.userRepo.UpdateUserByEmail(ctx, email, update); err != nil {
+		return fmt.Errorf("failed to update user lock status: %w", err)
 	}
 
 	// Hash the new password
@@ -282,15 +284,4 @@ func (us *UserService) ValidatePassword(ctx context.Context, userID, password st
 	// Compare the provided password with the stored hash
 	isValid := helper.CheckHash(password, user.Password)
 	return isValid, nil
-}
-
-// ResetLockout resets the account lockout status for a given email
-func (us *UserService) ResetLockout(ctx context.Context, email string) error {
-	key := fmt.Sprintf("failed_login_attempts:%s", email)
-	us.redisProvider.Del(ctx, key)
-
-	key = fmt.Sprintf("lockout:%s", email)
-	us.redisProvider.Del(ctx, key)
-
-	return nil
 }
