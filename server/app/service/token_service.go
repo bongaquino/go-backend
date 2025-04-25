@@ -36,7 +36,7 @@ func (ts *TokenService) AuthenticateUser(ctx context.Context, email, password st
 	}
 
 	// Check if the account is locked
-	isLocked, err := ts.isAccountLocked(ctx, email)
+	isLocked, err := ts.IsAccountLocked(ctx, email)
 	if err != nil {
 		return "", "", fmt.Errorf("failed to check account status: %w", err)
 	}
@@ -46,7 +46,7 @@ func (ts *TokenService) AuthenticateUser(ctx context.Context, email, password st
 
 	if !helper.CheckHash(password, user.Password) {
 		// Increment the failed attempt counter
-		err = ts.incrementFailedAttempts(ctx, email)
+		err = ts.IncrementFailedAttempts(ctx, email)
 		if err != nil {
 			return "", "", fmt.Errorf("failed to increment failed attempts: %w", err)
 		}
@@ -55,7 +55,7 @@ func (ts *TokenService) AuthenticateUser(ctx context.Context, email, password st
 	}
 
 	// Reset the failed attempt counter on successful login
-	ts.resetFailedAttempts(ctx, email)
+	ts.ResetFailedAttempts(ctx, email)
 
 	accessToken, refreshToken, err = ts.jwtProvider.GenerateTokens(user.ID.Hex(), &user.Email, nil)
 	if err != nil {
@@ -65,7 +65,7 @@ func (ts *TokenService) AuthenticateUser(ctx context.Context, email, password st
 	return accessToken, refreshToken, nil
 }
 
-func (ts *TokenService) isAccountLocked(ctx context.Context, email string) (bool, error) {
+func (ts *TokenService) IsAccountLocked(ctx context.Context, email string) (bool, error) {
 	key := fmt.Sprintf("lockout:%s", email)
 	isLocked, err := ts.redisProvider.Get(ctx, key)
 	if isLocked != "1" || err != nil {
@@ -76,7 +76,7 @@ func (ts *TokenService) isAccountLocked(ctx context.Context, email string) (bool
 }
 
 // IncrementFailedAttempts increments the failed login attempts count for a given email
-func (ts *TokenService) incrementFailedAttempts(ctx context.Context, email string) error {
+func (ts *TokenService) IncrementFailedAttempts(ctx context.Context, email string) error {
 	key := fmt.Sprintf("failed_login_attempts:%s", email)
 
 	// Get the current number of failed attempts
@@ -109,7 +109,7 @@ func (ts *TokenService) incrementFailedAttempts(ctx context.Context, email strin
 
 	// Lock the account if there are 5 or more failed attempts
 	if attempts >= 5 {
-		err = ts.lockAccount(ctx, email)
+		err = ts.LockAccount(ctx, email)
 		if err != nil {
 			return err
 		}
@@ -119,17 +119,18 @@ func (ts *TokenService) incrementFailedAttempts(ctx context.Context, email strin
 }
 
 // ResetFailedAttempts resets the failed login attempts count for a given email
-func (ts *TokenService) resetFailedAttempts(ctx context.Context, email string) error {
+func (ts *TokenService) ResetFailedAttempts(ctx context.Context, email string) error {
 	key := fmt.Sprintf("failed_login_attempts:%s", email)
 	err := ts.redisProvider.Del(ctx, key)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
-// lockAccount locks the account for 24 hours by setting a key in Redis with an expiration time of 24 hours
-func (ts *TokenService) lockAccount(ctx context.Context, email string) error {
+// LockAccount locks the account for 24 hours by setting a key in Redis with an expiration time of 24 hours
+func (ts *TokenService) LockAccount(ctx context.Context, email string) error {
 	lockKey := fmt.Sprintf("lockout:%s", email)
 
 	err := ts.redisProvider.Set(ctx, lockKey, true, 24*time.Hour)
