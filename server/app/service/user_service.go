@@ -196,7 +196,7 @@ func (us *UserService) ResetPassword(ctx context.Context, email, resetCode, newP
 	}
 
 	// Check if new password is not the same as the old one
-	if helper.CheckHash(newPassword, user.Password)  {
+	if helper.CheckHash(newPassword, user.Password) {
 		return fmt.Errorf("new password must be different from the old one")
 	}
 
@@ -204,6 +204,14 @@ func (us *UserService) ResetPassword(ctx context.Context, email, resetCode, newP
 	err = us.redisProvider.Del(ctx, key)
 	if err != nil {
 		return fmt.Errorf("failed to delete reset code")
+	}
+
+	// Reset the user's is_locked status if applicable
+	update := map[string]any{
+		"is_locked": false,
+	}
+	if err := us.userRepo.UpdateUserByEmail(ctx, email, update); err != nil {
+		return fmt.Errorf("failed to update user lock status: %w", err)
 	}
 
 	// Hash the new password

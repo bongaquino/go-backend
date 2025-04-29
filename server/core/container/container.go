@@ -51,6 +51,7 @@ type Middleware struct {
 	Authn    *middleware.AuthnMiddleware
 	Authz    *middleware.AuthzMiddleware
 	Verified *middleware.VerifiedMiddleware
+	Locked   *middleware.LockedMiddleware
 }
 
 // Controller Groups
@@ -142,13 +143,14 @@ func NewContainer() *Container {
 		Email: service.NewEmailService(providers.Postmark),
 		IPFS:  service.NewIPFSService(providers.IPFS),
 	}
-	services.Token = service.NewTokenService(repositories.User, providers.JWT, services.MFA)
+	services.Token = service.NewTokenService(repositories.User, providers.JWT, services.MFA, providers.Redis)
 
 	// Middleware
 	middlewares := &Middleware{
 		Authn:    middleware.NewAuthnMiddleware(providers.JWT),
 		Authz:    middleware.NewAuthzMiddleware(repositories.UserRole, repositories.Role),
 		Verified: middleware.NewVerifiedMiddleware(repositories.User),
+		Locked:   middleware.NewLockedMiddleware(repositories.User),
 	}
 
 	// Controllers
