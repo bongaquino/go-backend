@@ -9,6 +9,7 @@ import (
 	"koneksi/server/app/model"
 	"koneksi/server/app/provider"
 	"koneksi/server/app/repository"
+	"koneksi/server/config"
 	"koneksi/server/core/logger"
 	"time"
 )
@@ -54,7 +55,7 @@ func (us *UserService) RegisterUser(ctx context.Context, request *dto.RegisterUs
 	user := &model.User{
 		Email:      request.Email,
 		Password:   request.Password,
-		IsVerified: true,
+		IsVerified: false, // Set to false initially
 	}
 	if err := us.userRepo.CreateUser(ctx, user); err != nil {
 		logger.Log.Error("error creating user", logger.Error(err))
@@ -137,6 +138,9 @@ func (us *UserService) ChangePassword(ctx context.Context, userID string, reques
 }
 
 func (us *UserService) GeneratePasswordResetCode(ctx context.Context, email string) (string, error) {
+	// Load the Redis configuration
+	redisConfig := config.LoadRedisConfig()
+
 	// Check if the user exists
 	user, err := us.userRepo.ReadUserByEmail(ctx, email)
 	if err != nil || user == nil {
@@ -159,7 +163,7 @@ func (us *UserService) GeneratePasswordResetCode(ctx context.Context, email stri
 	}
 
 	// Store the reset code in Redis with a 15-minute expiration
-	err = us.redisProvider.Set(ctx, key, resetCode, 15*time.Minute)
+	err = us.redisProvider.Set(ctx, key, resetCode, redisConfig.PasswordResetCodeExpiry)
 	if err != nil {
 		return "", fmt.Errorf("failed to store reset code")
 	}
@@ -271,7 +275,7 @@ func (us *UserService) GetUserProfileByEmail(ctx context.Context, email string) 
 	return user, profile, nil
 }
 
-func (us *UserService) ValidatePassword(ctx context.Context, userID, password string) (bool, error) {
+func (us *UserService) ValidatePassword(ctx context.Context, userID string, password string) (bool, error) {
 	// Retrieve the user from the database
 	user, err := us.userRepo.ReadUser(ctx, userID)
 	if err != nil {
@@ -284,4 +288,92 @@ func (us *UserService) ValidatePassword(ctx context.Context, userID, password st
 	// Compare the provided password with the stored hash
 	isValid := helper.CheckHash(password, user.Password)
 	return isValid, nil
+}
+
+func (us *UserService) VerifyUserAccount(ctx context.Context, userID string, code string) error {
+	user, err := us.userRepo.ReadUser(ctx, userID)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve user: %w", err)
+	}
+	if user == nil {
+		return fmt.Errorf("user not found")
+	}
+
+	if user.IsVerified {
+		return fmt.Errorf("account already verified")
+	}
+
+	// Construct the Redis key
+	key := fmt.Sprintf("verification:%s", userID)
+
+	// Retrieve the stored verification code from Redis
+	storedCode, err := us.redisProvider.Get(ctx, key)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve verification code")
+	}
+
+	// Compare the stored code with the provided code
+	if storedCode != code {
+		return fmt.Errorf("invalid verification code")
+	}
+
+	// Delete the reset code from Redis to prevent reuse
+	err = us.redisProvider.Del(ctx, key)
+	if err != nil {
+		return fmt.Errorf("failed to delete verification code")
+	}
+
+	update := map[string]any{
+		"is_verified": true,
+		"updated_at":  time.Now(),
+	}
+
+	if err := us.userRepo.UpdateUser(ctx, userID, update); err != nil {
+		logger.Log.Error("error verifying user account", logger.Error(err))
+		return errors.New("failed to verify account")
+	}
+
+	return nil
+}
+
+func (us *UserService) GenerateVerificationCode(ctx context.Context, userID string) (string, error) {
+	// Load the Redis configuration
+	redisConfig := config.LoadRedisConfig()
+
+	// Check if the user exists and is not already verified
+	fmt.Println("User ID:", userID)
+	user, err := us.userRepo.ReadUser(ctx, userID)
+	if err != nil {
+		return "", fmt.Errorf("failed to retrieve user: %w", err)
+	}
+	if user == nil {
+		return "", fmt.Errorf("user not found")
+	}
+
+	if user.IsVerified {
+		return "", fmt.Errorf("account already verified")
+	}
+
+	// Construct the Redis key
+	key := fmt.Sprintf("verification:%s", userID)
+
+	// Retrieve the stored verification code from Redis
+	storedCode, err := us.redisProvider.Get(ctx, key)
+
+	// If there is no stored token or an error occurred, generate a new one and store it in Redis
+	if storedCode == "" || err != nil {
+		newCode, err := helper.GenerateNumericCode(6)
+		if err != nil {
+			return "", fmt.Errorf("failed to generate verification code: %w", err)
+		}
+
+		err = us.redisProvider.Set(ctx, fmt.Sprintf("verification:%s", userID), newCode, redisConfig.VerificationCodeExpiry)
+		if err != nil {
+			return "", fmt.Errorf("failed to store verification code in Redis: %w", err)
+		}
+
+		return newCode, nil
+	}
+
+	return storedCode, nil
 }

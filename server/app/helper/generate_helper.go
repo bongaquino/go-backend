@@ -37,3 +37,17 @@ func GenerateCode(length int) (string, error) {
 	}
 	return strings.ToUpper(hex.EncodeToString(bytes)), nil
 }
+
+// GenerateNumericCode generates a secure random code with only numeric characters
+func GenerateNumericCode(length int) (string, error) {
+	digits := make([]byte, length)
+	_, err := rand.Read(digits)
+	if err != nil {
+			return "", fmt.Errorf("failed to generate random digit: %w", err)
+	}
+	for i := range digits {
+			digits[i] = byte(digits[i] % 10 + '0') // Convert byte to ASCII digit
+	}
+	return string(digits), nil
+}
+

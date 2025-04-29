@@ -13,12 +13,14 @@ import (
 type RegisterController struct {
 	userService  *service.UserService
 	tokenService *service.TokenService
+	emailService *service.EmailService
 }
 
-func NewRegisterController(userService *service.UserService, tokenService *service.TokenService) *RegisterController {
+func NewRegisterController(userService *service.UserService, tokenService *service.TokenService, emailService *service.EmailService) *RegisterController {
 	return &RegisterController{
 		userService:  userService,
 		tokenService: tokenService,
+		emailService: emailService,
 	}
 }
 
@@ -47,6 +49,20 @@ func (rc *RegisterController) Handle(ctx *gin.Context) {
 		return
 	}
 
+	// Generate a verification code
+	code, err := rc.userService.GenerateVerificationCode(ctx.Request.Context(), user.ID.Hex())
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, err.Error(), nil, nil)
+		return
+	}
+
+	// Send the verification email
+	err = rc.emailService.SendVerificationCode(user.Email, code)
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to send verification email", nil, nil)
+		return
+	}
+
 	// Generate tokens
 	accessToken, refreshToken, err := rc.tokenService.AuthenticateUser(ctx.Request.Context(), user.Email, request.Password)
 	if err != nil {
@@ -70,10 +86,16 @@ func (rc *RegisterController) Handle(ctx *gin.Context) {
 	}, nil)
 }
 
-func (rc *RegisterController) validatePayload(ctx *gin.Context, request any) error {
+func (rc *RegisterController) validatePayload(ctx *gin.Context, request *dto.RegisterUser) error {
 	if err := ctx.ShouldBindJSON(request); err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
 		return err
+	}
+	// Check if new passwords pass validation
+	isValid, validationErr := helper.ValidatePassword(request.Password)
+	if !isValid || validationErr != nil {
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, validationErr.Error(), nil, nil)
+		return validationErr
 	}
 	return nil
 }
