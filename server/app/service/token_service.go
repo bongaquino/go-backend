@@ -39,7 +39,7 @@ func (ts *TokenService) AuthenticateUser(ctx context.Context, email, password st
 
 	// Check if user account is locked due to too many failed login attempts
 	if user.IsLocked {
-		return "", "", errors.New("your account has been locked due to too many failed login attempts. Please reset your password or contact support")
+		return "", "", errors.New("account locked due to multiple failed login attempts")
 	}
 
 	if !helper.CheckHash(password, user.Password) {
@@ -109,7 +109,7 @@ func (ts *TokenService) RefreshTokens(ctx context.Context, refreshToken string) 
 
 	// Check if user account is locked due to too many failed login attempts
 	if user.IsLocked {
-		return "", "", errors.New("your account has been locked due to too many failed login attempts. Please reset your password or contact support")
+		return "", "", errors.New("account locked due to multiple failed login attempts")
 	}
 
 	accessToken, newRefreshToken, err = ts.jwtProvider.GenerateTokens(user.ID.Hex(), &user.Email, nil)
@@ -158,7 +158,7 @@ func (ts *TokenService) AuthenticateLoginCode(ctx context.Context, loginCode, ot
 
 	// Check if user account is locked due to too many failed login attempts
 	if user.IsLocked {
-		return "", "", errors.New("your account has been locked due to too many failed login attempts. Please reset your password or contact support")
+		return "", "", errors.New("account locked due to multiple failed login attempts")
 	}
 
 	// Generate tokens

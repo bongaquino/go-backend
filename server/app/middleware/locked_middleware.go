@@ -43,7 +43,7 @@ func NewLockedMiddleware(userRepo *repository.UserRepository) *LockedMiddleware 
 			}
 
 			if user != nil && user.IsLocked {
-				helper.FormatResponse(c, "error", http.StatusForbidden, "your account has been locked due to too many failed login attempts. Please reset your password or contact support", nil, nil)
+				helper.FormatResponse(c, "error", http.StatusForbidden, "account locked due to multiple failed login attempts", nil, nil)
 				c.Abort()
 				return
 			}
