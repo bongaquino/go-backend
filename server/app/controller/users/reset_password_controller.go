@@ -42,6 +42,13 @@ func (rpc *ResetPasswordController) Handle(c *gin.Context) {
 		return
 	}
 
+	// Check if new passwords pass validation
+	isValid, validationErr := helper.ValidatePassword(request.NewPassword)
+	if !isValid || validationErr != nil {
+		helper.FormatResponse(c, "error", http.StatusBadRequest, validationErr.Error(), nil, nil)
+		return
+	}
+
 	// Reset the password using the UserService
 	err := rpc.userService.ResetPassword(c.Request.Context(), request.Email, request.ResetCode, request.NewPassword)
 	if err != nil {

@@ -86,10 +86,16 @@ func (rc *RegisterController) Handle(ctx *gin.Context) {
 	}, nil)
 }
 
-func (rc *RegisterController) validatePayload(ctx *gin.Context, request any) error {
+func (rc *RegisterController) validatePayload(ctx *gin.Context, request *dto.RegisterUser) error {
 	if err := ctx.ShouldBindJSON(request); err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
 		return err
+	}
+	// Check if new passwords pass validation
+	isValid, validationErr := helper.ValidatePassword(request.Password)
+	if !isValid || validationErr != nil {
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, validationErr.Error(), nil, nil)
+		return validationErr
 	}
 	return nil
 }
