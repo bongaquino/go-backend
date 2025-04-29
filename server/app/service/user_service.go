@@ -172,6 +172,15 @@ func (us *UserService) GeneratePasswordResetCode(ctx context.Context, email stri
 }
 
 func (us *UserService) ResetPassword(ctx context.Context, email, resetCode, newPassword string) error {
+	// Retrieve the user by email from the database
+	user, err := us.userRepo.ReadUserByEmail(ctx, email)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve user: %w", err)
+	}
+	if user == nil {
+		return fmt.Errorf("user not found")
+	}
+
 	// Construct the Redis key
 	key := fmt.Sprintf("password_reset:%s", email)
 
@@ -184,6 +193,11 @@ func (us *UserService) ResetPassword(ctx context.Context, email, resetCode, newP
 	// Compare the stored code with the provided code
 	if storedCode != resetCode {
 		return fmt.Errorf("invalid reset code")
+	}
+
+	// Check if new password is not the same as the old one
+	if helper.CheckHash(newPassword, user.Password)  {
+		return fmt.Errorf("new password must be different from the old one")
 	}
 
 	// Delete the reset code from Redis to prevent reuse
