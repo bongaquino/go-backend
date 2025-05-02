@@ -7,6 +7,7 @@ FROM tykio/tyk-gateway:latest
 COPY ./apps /opt/tyk-gateway/apps
 COPY ./templates /opt/tyk-gateway/templates
 COPY ./tyk.conf /opt/tyk-gateway/tyk.conf
+COPY ./policy/policies.json /opt/tyk-gateway/policies/policies.json
 
 # Expose the port that Tyk Gateway is using
 EXPOSE 8080

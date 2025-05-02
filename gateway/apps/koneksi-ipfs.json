@@ -2,7 +2,7 @@
   "name": "koneksi-ipfs",
   "api_id": "koneksi-ipfs",
   "org_id": "default",
-  "use_keyless": true,
+  "use_keyless": false,
   "proxy": {
     "listen_path": "/ipfs",
     "target_url": "http://218.38.136.34:5001",
@@ -16,13 +16,18 @@
       }
     }
   },
-  "auth": {
-    "auth_header_name": "Authorization",
-    "jwt_signing_method": "HS256",
-    "jwt_source": "fJtc6V1BuycUOSRwF1yzRvwzwaFS3IfDmekyu2oR8gV0kIgJCSOSvA0gev_2bFbJuUOMub5_mey2dCv4zxPAow",
-    "jwt_identity_base_field": "sub",
-    "jwt_policy_field_name": "scope",
-    "jwt_default_policies": ["access"],
-    "jwt_source_is_base64": false
-  }
+   "auth": {
+    "auth_header_name": "Authorization"
+  },
+  "use_basic_auth": false,
+  "enable_jwt": true,
+  "use_standard_auth": false,
+  "use_go_plugin_auth": false,
+  "enable_coprocess_auth": false,
+  "custom_plugin_auth_enabled": false,
+  "jwt_signing_method": "hmac",
+  "jwt_source": "Zkp0YzZWMUJ1eWNVT1NSd0YxeXpSdnd6d2FGUzNJZkRtZWt5dTJvUjhnVjBrSWdKQ1NPU3ZBMGdldl8yYkZiSnVVT011YjVfbWV5MmRDdjR6eFBBb3c=",
+  "jwt_identity_base_field": "sub",
+  "jwt_policy_field_name": "scope",
+  "jwt_default_policies": ["access"]
 }
