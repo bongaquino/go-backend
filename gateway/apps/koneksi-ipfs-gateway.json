@@ -1,11 +1,11 @@
 {
-  "name": "koneksi-ipfs",
-  "api_id": "koneksi-ipfs",
+  "name": "koneksi-ipfs-gateway",
+  "api_id": "koneksi-ipfs-gateway",
   "org_id": "default",
   "use_keyless": false,
   "proxy": {
-    "listen_path": "/ipfs",
-    "target_url": "http://218.38.136.34:5001",
+    "listen_path": "/ipfs/gateway",
+    "target_url": "http://218.38.136.34:8080/ipfs",
     "strip_listen_path": true
   },
   "version_data": {
@@ -16,7 +16,7 @@
       }
     }
   },
-   "auth": {
+  "auth": {
     "auth_header_name": "Authorization"
   },
   "use_basic_auth": false,

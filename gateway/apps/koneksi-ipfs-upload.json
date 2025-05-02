@@ -1,11 +1,11 @@
 {
-  "name": "koneksi-ipfs",
-  "api_id": "koneksi-ipfs",
+  "name": "koneksi-ipfs-upload",
+  "api_id": "koneksi-ipfs-upload",
   "org_id": "default",
   "use_keyless": false,
   "proxy": {
-    "listen_path": "/ipfs",
-    "target_url": "http://218.38.136.34:5001",
+    "listen_path": "/ipfs/upload",
+    "target_url": "http://218.38.136.34:5001/api/v0/add",
     "strip_listen_path": true
   },
   "version_data": {
