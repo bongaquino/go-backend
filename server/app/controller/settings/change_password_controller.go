@@ -35,7 +35,7 @@ func (cpc *ChangePasswordController) Handle(ctx *gin.Context) {
 	// Extract user ID from the context
 	userID, exists := ctx.Get("userID")
 	if !exists {
-		helper.FormatResponse(ctx, "error", http.StatusUnauthorized, "userID not found in context", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusUnauthorized, "user ID not found in context", nil, nil)
 		return
 	}
 
@@ -59,6 +59,12 @@ func (cpc *ChangePasswordController) validatePayload(ctx *gin.Context, request *
 	if request.NewPassword != request.ConfirmNewPassword {
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "new passwords do not match", nil, nil)
 		return fmt.Errorf("new passwords do not match")
+	}
+	// Check if new passwords pass validation
+	isValid, validationErr := helper.ValidatePassword(request.NewPassword)
+	if !isValid {
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, validationErr.Error(), nil, nil)
+		return validationErr
 	}
 	return nil
 }

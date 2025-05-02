@@ -46,15 +46,15 @@ type Claims struct {
 
 // GenerateTokens creates an access and refresh token for a user
 func (j *JWTProvider) GenerateTokens(userID string, email, clientID *string) (accessToken, refreshToken string, err error) {
-	// Generate access token without expiration
+	// Generate access token
 	accessClaims := Claims{
 		Sub:      userID,
 		Email:    email,
 		ClientId: clientID,
 		Scope:    "access",
 		RegisteredClaims: jwt.RegisteredClaims{
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(j.tokenDuration)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
 	accessToken, err = jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims).SignedString([]byte(j.secretKey))
@@ -62,14 +62,14 @@ func (j *JWTProvider) GenerateTokens(userID string, email, clientID *string) (ac
 		return "", "", err
 	}
 
-	// Generate refresh token with a long expiration
+	// Generate refresh token
 	refreshClaims := Claims{
 		Sub:      userID,
 		Email:    email,
 		ClientId: clientID,
 		Scope:    "refresh",
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * 365 * time.Hour)), // 1 year
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(j.refreshDuration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}

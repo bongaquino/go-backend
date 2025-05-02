@@ -31,7 +31,7 @@ func (gsc *GetSwarmAddressController) Handle(c *gin.Context) {
 	}
 
 	// Respond with the number of peers and their details
-	helper.FormatResponse(c, "success", http.StatusOK, "Swarm addresses fetched successfully", gin.H{
+	helper.FormatResponse(c, "success", http.StatusOK, "swarm addresses fetched successfully", gin.H{
 		"num_peers": numPeers,
 		"peers":     peers,
 	}, nil)

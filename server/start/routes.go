@@ -18,6 +18,8 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 		userGroup.POST("/register", container.Controllers.Users.Register.Handle)
 		userGroup.POST("/forgot-password", container.Controllers.Users.ForgotPassword.Handle)
 		userGroup.POST("/reset-password", container.Controllers.Users.ResetPassword.Handle)
+		userGroup.Use(container.Middleware.Authn.Handle).POST("/verify-account", container.Controllers.Users.VerifyAccount.Handle)
+		userGroup.Use(container.Middleware.Authn.Handle).POST("/resend-verification-code", container.Controllers.Users.ResendVerificationCode.Handle)
 	}
 
 	// Token Routes
@@ -46,7 +48,7 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 
 	// Profile Routes
 	profileGroup := engine.Group("/profile")
-	profileGroup.Use(container.Middleware.Authn.Handle, container.Middleware.Verified.Handle)
+	profileGroup.Use(container.Middleware.Authn.Handle)
 	{
 		profileGroup.GET("/me", container.Controllers.Profile.Me.Handle)
 	}

@@ -51,6 +51,7 @@ type Middleware struct {
 	Authn    *middleware.AuthnMiddleware
 	Authz    *middleware.AuthzMiddleware
 	Verified *middleware.VerifiedMiddleware
+	Locked   *middleware.LockedMiddleware
 }
 
 // Controller Groups
@@ -59,9 +60,11 @@ type HealthControllers struct {
 }
 
 type UserControllers struct {
-	Register       *users.RegisterController
-	ForgotPassword *users.ForgotPasswordController
-	ResetPassword  *users.ResetPasswordController
+	Register               *users.RegisterController
+	ForgotPassword         *users.ForgotPasswordController
+	ResetPassword          *users.ResetPasswordController
+	VerifyAccount          *users.VerifyAccountController
+	ResendVerificationCode *users.ResendVerificationCodeController
 }
 
 type TokenControllers struct {
@@ -140,13 +143,14 @@ func NewContainer() *Container {
 		Email: service.NewEmailService(providers.Postmark),
 		IPFS:  service.NewIPFSService(providers.IPFS),
 	}
-	services.Token = service.NewTokenService(repositories.User, providers.JWT, services.MFA)
+	services.Token = service.NewTokenService(repositories.User, providers.JWT, services.MFA, providers.Redis)
 
 	// Middleware
 	middlewares := &Middleware{
 		Authn:    middleware.NewAuthnMiddleware(providers.JWT),
 		Authz:    middleware.NewAuthzMiddleware(repositories.UserRole, repositories.Role),
 		Verified: middleware.NewVerifiedMiddleware(repositories.User),
+		Locked:   middleware.NewLockedMiddleware(repositories.User),
 	}
 
 	// Controllers
@@ -155,9 +159,11 @@ func NewContainer() *Container {
 			Check: health.NewCheckHealthController(),
 		},
 		Users: &UserControllers{
-			Register:       users.NewRegisterController(services.User, services.Token),
-			ForgotPassword: users.NewForgotPasswordController(services.User, services.Email),
-			ResetPassword:  users.NewResetPasswordController(services.User),
+			Register:               users.NewRegisterController(services.User, services.Token, services.Email),
+			ForgotPassword:         users.NewForgotPasswordController(services.User, services.Email),
+			ResetPassword:          users.NewResetPasswordController(services.User),
+			VerifyAccount:          users.NewVerifyAccountController(services.User),
+			ResendVerificationCode: users.NewResendVerificationCodeController(services.User, services.Email),
 		},
 		Tokens: &TokenControllers{
 			Request: tokens.NewRequestTokenController(services.Token, services.User, services.MFA),
