@@ -26,15 +26,18 @@ type Providers struct {
 
 // Repositories
 type Repositories struct {
-	Permission       *repository.PermissionRepository
-	Policy           *repository.PolicyRepository
-	PolicyPermission *repository.PolicyPermissionRepository
-	Profile          *repository.ProfileRepository
-	Role             *repository.RoleRepository
-	RolePermission   *repository.RolePermissionRepository
-	ServiceAccount   *repository.ServiceAccountRepository
-	User             *repository.UserRepository
-	UserRole         *repository.UserRoleRepository
+	Permission             *repository.PermissionRepository
+	Policy                 *repository.PolicyRepository
+	PolicyPermission       *repository.PolicyPermissionRepository
+	Profile                *repository.ProfileRepository
+	Role                   *repository.RoleRepository
+	RolePermission         *repository.RolePermissionRepository
+	ServiceAccount         *repository.ServiceAccountRepository
+	User                   *repository.UserRepository
+	UserRole               *repository.UserRoleRepository
+	Access                 *repository.AccessRepository
+	Organization           *repository.OrganizationRepository
+	OrganizationUserAccess *repository.OrganizationUserAccessRepository
 }
 
 // Services
@@ -125,15 +128,18 @@ func NewContainer() *Container {
 
 	// Repositories
 	repositories := &Repositories{
-		Permission:       repository.NewPermissionRepository(providers.Mongo),
-		Policy:           repository.NewPolicyRepository(providers.Mongo),
-		PolicyPermission: repository.NewPolicyPermissionRepository(providers.Mongo),
-		Profile:          repository.NewProfileRepository(providers.Mongo),
-		Role:             repository.NewRoleRepository(providers.Mongo),
-		RolePermission:   repository.NewRolePermissionRepository(providers.Mongo),
-		ServiceAccount:   repository.NewServiceAccountRepository(providers.Mongo),
-		User:             repository.NewUserRepository(providers.Mongo),
-		UserRole:         repository.NewUserRoleRepository(providers.Mongo),
+		Permission:             repository.NewPermissionRepository(providers.Mongo),
+		Policy:                 repository.NewPolicyRepository(providers.Mongo),
+		PolicyPermission:       repository.NewPolicyPermissionRepository(providers.Mongo),
+		Profile:                repository.NewProfileRepository(providers.Mongo),
+		Role:                   repository.NewRoleRepository(providers.Mongo),
+		RolePermission:         repository.NewRolePermissionRepository(providers.Mongo),
+		ServiceAccount:         repository.NewServiceAccountRepository(providers.Mongo),
+		User:                   repository.NewUserRepository(providers.Mongo),
+		UserRole:               repository.NewUserRoleRepository(providers.Mongo),
+		Access:                 repository.NewAccessRepository(providers.Mongo),
+		Organization:           repository.NewOrganizationRepository(providers.Mongo),
+		OrganizationUserAccess: repository.NewOrganizationUserAccessRepository(providers.Mongo),
 	}
 
 	// Services
