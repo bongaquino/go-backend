@@ -98,6 +98,7 @@ type NetworkControllers struct {
 
 type AdminControllers struct {
 	ListUsers *adminUsers.ListController
+	ReadUser  *adminUsers.ReadController
 }
 
 // Grouped Controllers
@@ -199,6 +200,7 @@ func NewContainer() *Container {
 		},
 		Admin: &AdminControllers{
 			ListUsers: adminUsers.NewListController(services.User),
+			ReadUser:  adminUsers.NewReadController(services.User),
 		},
 	}
 
