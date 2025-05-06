@@ -65,12 +65,12 @@ func (us *UserService) UserExists(ctx context.Context, email string) (bool, erro
 	return user != nil, nil
 }
 
-// RegisterUser registers a new user
-func (us *UserService) RegisterUser(ctx context.Context, request *dto.CreateUser) (*model.User, *model.Profile, *model.UserRole, string, error) {
+// CreateUser registers a new user
+func (us *UserService) CreateUser(ctx context.Context, request *dto.CreateUser) (*model.User, *model.Profile, *model.UserRole, string, error) {
 	user := &model.User{
 		Email:      request.Email,
 		Password:   request.Password,
-		IsVerified: false, // Set to false initially
+		IsVerified: request.IsVerified,
 	}
 	if err := us.userRepo.CreateUser(ctx, user); err != nil {
 		logger.Log.Error("error creating user", logger.Error(err))

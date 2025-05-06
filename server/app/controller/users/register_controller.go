@@ -44,9 +44,10 @@ func (rc *RegisterController) Handle(ctx *gin.Context) {
 
 	// Add user role to the request
 	request.Role = "user"
+	request.IsVerified = false
 
 	// Register the user
-	user, profile, userRole, roleName, err := rc.userService.RegisterUser(ctx.Request.Context(), &request)
+	user, profile, userRole, roleName, err := rc.userService.CreateUser(ctx.Request.Context(), &request)
 	if err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, err.Error(), nil, nil)
 		return

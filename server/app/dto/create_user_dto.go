@@ -9,4 +9,5 @@ type CreateUser struct {
 	Password        string  `json:"password" binding:"required,min=8"`
 	ConfirmPassword string  `json:"confirm_password" binding:"required,eqfield=Password"`
 	Role            string  `json:"role"`
+	IsVerified      bool    `json:"is_verified"`
 }
