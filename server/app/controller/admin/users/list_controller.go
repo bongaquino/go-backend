@@ -24,7 +24,7 @@ func NewListController(userService *service.UserService) *ListController {
 func (lc *ListController) Handle(ctx *gin.Context) {
 	users, err := lc.userService.ListUsers(ctx.Request.Context(), 1, 10)
 	if err != nil {
-		ctx.JSON(500, gin.H{"error": "Failed to fetch users", "details": err.Error()})
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to fetch users", nil, err)
 		return
 	}
 	// Respond with success
