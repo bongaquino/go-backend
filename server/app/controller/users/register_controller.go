@@ -25,7 +25,7 @@ func NewRegisterController(userService *service.UserService, tokenService *servi
 }
 
 func (rc *RegisterController) Handle(ctx *gin.Context) {
-	var request dto.RegisterUser
+	var request dto.CreateUser
 
 	if err := rc.validatePayload(ctx, &request); err != nil {
 		return
@@ -40,6 +40,11 @@ func (rc *RegisterController) Handle(ctx *gin.Context) {
 	if exists {
 		helper.FormatResponse(ctx, "error", http.StatusConflict, "user already exists", nil, nil)
 		return
+	}
+
+	// Add default role to the request
+	if request.Role == "" {
+		request.Role = "user"
 	}
 
 	// Register the user
@@ -86,7 +91,7 @@ func (rc *RegisterController) Handle(ctx *gin.Context) {
 	}, nil)
 }
 
-func (rc *RegisterController) validatePayload(ctx *gin.Context, request *dto.RegisterUser) error {
+func (rc *RegisterController) validatePayload(ctx *gin.Context, request *dto.CreateUser) error {
 	if err := ctx.ShouldBindJSON(request); err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
 		return err

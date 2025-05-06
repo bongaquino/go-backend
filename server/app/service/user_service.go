@@ -66,7 +66,7 @@ func (us *UserService) UserExists(ctx context.Context, email string) (bool, erro
 }
 
 // RegisterUser registers a new user
-func (us *UserService) RegisterUser(ctx context.Context, request *dto.RegisterUser) (*model.User, *model.Profile, *model.UserRole, string, error) {
+func (us *UserService) RegisterUser(ctx context.Context, request *dto.CreateUser) (*model.User, *model.Profile, *model.UserRole, string, error) {
 	user := &model.User{
 		Email:      request.Email,
 		Password:   request.Password,
@@ -89,13 +89,13 @@ func (us *UserService) RegisterUser(ctx context.Context, request *dto.RegisterUs
 		return nil, nil, nil, "", errors.New("failed to create profile")
 	}
 
-	userRole, err := us.roleRepo.ReadRoleByName(ctx, "user")
+	userRole, err := us.roleRepo.ReadRoleByName(ctx, request.Role)
 	if err != nil {
-		logger.Log.Error("error retrieving default role", logger.Error(err))
-		return nil, nil, nil, "", errors.New("failed to assign default role")
+		logger.Log.Error("error retrieving role", logger.Error(err))
+		return nil, nil, nil, "", errors.New("failed to assign role")
 	}
 	if userRole == nil {
-		return nil, nil, nil, "", errors.New("default role not found")
+		return nil, nil, nil, "", errors.New("role not found")
 	}
 
 	userRoleAssignment := &model.UserRole{
@@ -103,8 +103,8 @@ func (us *UserService) RegisterUser(ctx context.Context, request *dto.RegisterUs
 		RoleID: userRole.ID,
 	}
 	if err := us.userRoleRepo.CreateUserRole(ctx, userRoleAssignment); err != nil {
-		logger.Log.Error("error assigning default role", logger.Error(err))
-		return nil, nil, nil, "", errors.New("failed to assign default role")
+		logger.Log.Error("error assigning role", logger.Error(err))
+		return nil, nil, nil, "", errors.New("failed to assign role")
 	}
 
 	return user, profile, userRoleAssignment, userRole.Name, nil
