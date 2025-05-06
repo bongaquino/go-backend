@@ -4,6 +4,7 @@ import (
 	"koneksi/server/app/helper"
 	"koneksi/server/app/service"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,7 +23,23 @@ func NewListController(userService *service.UserService) *ListController {
 
 // Handle handles the health check request
 func (lc *ListController) Handle(ctx *gin.Context) {
-	users, err := lc.userService.ListUsers(ctx.Request.Context(), 1, 10)
+	// Get pagination parameters from query params
+	page := ctx.DefaultQuery("page", "1")
+	limit := ctx.DefaultQuery("limit", "10")
+
+	pageInt, err := strconv.Atoi(page)
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid page parameter", nil, err)
+		return
+	}
+
+	limitInt, err := strconv.Atoi(limit)
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid limit parameter", nil, err)
+		return
+	}
+
+	users, err := lc.userService.ListUsers(ctx.Request.Context(), pageInt, limitInt)
 	if err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to fetch users", nil, err)
 		return
