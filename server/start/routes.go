@@ -40,9 +40,9 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 		// MFA Routes
 		mfaGroup := settingsGroup.Group("/mfa")
 		{
-			mfaGroup.POST("/generate-otp", container.Controllers.MFA.Generate.Handle)
-			mfaGroup.POST("/enable", container.Controllers.MFA.Enable.Handle)
-			mfaGroup.POST("/disable", container.Controllers.MFA.Disable.Handle)
+			mfaGroup.POST("/generate-otp", container.Controllers.Settings.MFA.Generate.Handle)
+			mfaGroup.POST("/enable", container.Controllers.Settings.MFA.Enable.Handle)
+			mfaGroup.POST("/disable", container.Controllers.Settings.MFA.Disable.Handle)
 		}
 	}
 
@@ -63,8 +63,8 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 	adminGroup := engine.Group("/admin")
 	adminGroup.Use(container.Middleware.Authn.Handle, container.Middleware.Authz.Handle([]string{"admin"}))
 	{
-		adminGroup.GET("users/list", container.Controllers.Admin.ListUsers.Handle)
-		adminGroup.GET("users/:userID/read", container.Controllers.Admin.ReadUser.Handle)
-		adminGroup.POST("users/create", container.Controllers.Admin.CreateUser.Handle)
+		adminGroup.GET("users/list", container.Controllers.Admin.Users.List.Handle)
+		adminGroup.GET("users/:userID/read", container.Controllers.Admin.Users.Read.Handle)
+		adminGroup.POST("users/create", container.Controllers.Admin.Users.Create.Handle)
 	}
 }

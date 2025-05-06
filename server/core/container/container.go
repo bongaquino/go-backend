@@ -16,7 +16,6 @@ import (
 	"koneksi/server/database"
 )
 
-// Providers
 type Providers struct {
 	Mongo    *provider.MongoProvider
 	Redis    *provider.RedisProvider
@@ -25,7 +24,6 @@ type Providers struct {
 	IPFS     *provider.IPFSProvider
 }
 
-// Repositories
 type Repositories struct {
 	Permission             *repository.PermissionRepository
 	Policy                 *repository.PolicyRepository
@@ -41,7 +39,6 @@ type Repositories struct {
 	OrganizationUserAccess *repository.OrganizationUserAccessRepository
 }
 
-// Services
 type Services struct {
 	User  *service.UserService
 	Token *service.TokenService
@@ -50,7 +47,6 @@ type Services struct {
 	IPFS  *service.IPFSService
 }
 
-// Middleware
 type Middleware struct {
 	Authn    *middleware.AuthnMiddleware
 	Authz    *middleware.AuthzMiddleware
@@ -58,157 +54,192 @@ type Middleware struct {
 	Locked   *middleware.LockedMiddleware
 }
 
-// Controller Groups
-type HealthControllers struct {
-	Check *health.CheckHealthController
-}
-
-type UserControllers struct {
-	Register               *users.RegisterController
-	ForgotPassword         *users.ForgotPasswordController
-	ResetPassword          *users.ResetPasswordController
-	VerifyAccount          *users.VerifyAccountController
-	ResendVerificationCode *users.ResendVerificationCodeController
-}
-
-type TokenControllers struct {
-	Request *tokens.RequestTokenController
-	Verify  *tokens.VerifyOTPController
-	Refresh *tokens.RefreshTokenController
-	Revoke  *tokens.RevokeTokenController
-}
-
-type SettingsControllers struct {
-	ChangePassword *settings.ChangePasswordController
-}
-
-type MFAControllers struct {
-	Generate *mfa.GenerateOTPController
-	Enable   *mfa.EnableMFAController
-	Disable  *mfa.DisableMFAController
-}
-
-type ProfileControllers struct {
-	Me *profile.MeController
-}
-
-type NetworkControllers struct {
-	GetSwarmAddress *network.GetSwarmAddressController
-}
-
-type AdminControllers struct {
-	ListUsers  *adminUsers.ListController
-	ReadUser   *adminUsers.ReadController
-	CreateUser *adminUsers.CreateController
-}
-
-// Grouped Controllers
 type Controllers struct {
-	Health   *HealthControllers
-	Users    *UserControllers
-	Tokens   *TokenControllers
-	Settings *SettingsControllers
-	MFA      *MFAControllers
-	Profile  *ProfileControllers
-	Network  *NetworkControllers
-	Admin    *AdminControllers
+	Health struct {
+		Check *health.CheckHealthController
+	}
+	Users struct {
+		Register               *users.RegisterController
+		ForgotPassword         *users.ForgotPasswordController
+		ResetPassword          *users.ResetPasswordController
+		VerifyAccount          *users.VerifyAccountController
+		ResendVerificationCode *users.ResendVerificationCodeController
+	}
+	Tokens struct {
+		Request *tokens.RequestTokenController
+		Verify  *tokens.VerifyOTPController
+		Refresh *tokens.RefreshTokenController
+		Revoke  *tokens.RevokeTokenController
+	}
+	Settings struct {
+		ChangePassword *settings.ChangePasswordController
+		MFA            struct {
+			Generate *mfa.GenerateOTPController
+			Enable   *mfa.EnableMFAController
+			Disable  *mfa.DisableMFAController
+		}
+	}
+	Profile struct {
+		Me *profile.MeController
+	}
+	Network struct {
+		GetSwarmAddress *network.GetSwarmAddressController
+	}
+	Admin struct {
+		Users struct {
+			List   *adminUsers.ListController
+			Read   *adminUsers.ReadController
+			Create *adminUsers.CreateController
+		}
+	}
 }
 
-// Container
 type Container struct {
-	Providers    *Providers
-	Repositories *Repositories
-	Services     *Services
-	Middleware   *Middleware
-	Controllers  *Controllers
+	Providers    Providers
+	Repositories Repositories
+	Services     Services
+	Middleware   Middleware
+	Controllers  Controllers
 }
 
-// NewContainer
-func NewContainer() *Container {
-	// Providers
-	providers := &Providers{
-		Mongo:    provider.NewMongoProvider(),
-		Redis:    provider.NewRedisProvider(),
-		Postmark: provider.NewPostmarkProvider(),
-	}
-	providers.JWT = provider.NewJWTProvider(providers.Redis)
-	providers.IPFS = provider.NewIPFSProvider()
+func initProviders() Providers {
+	mongo := provider.NewMongoProvider()
+	redis := provider.NewRedisProvider()
+	postmark := provider.NewPostmarkProvider()
+	jwt := provider.NewJWTProvider(redis)
+	ipfs := provider.NewIPFSProvider()
+	return Providers{mongo, redis, jwt, postmark, ipfs}
+}
 
-	// Repositories
-	repositories := &Repositories{
-		Permission:             repository.NewPermissionRepository(providers.Mongo),
-		Policy:                 repository.NewPolicyRepository(providers.Mongo),
-		PolicyPermission:       repository.NewPolicyPermissionRepository(providers.Mongo),
-		Profile:                repository.NewProfileRepository(providers.Mongo),
-		Role:                   repository.NewRoleRepository(providers.Mongo),
-		RolePermission:         repository.NewRolePermissionRepository(providers.Mongo),
-		ServiceAccount:         repository.NewServiceAccountRepository(providers.Mongo),
-		User:                   repository.NewUserRepository(providers.Mongo),
-		UserRole:               repository.NewUserRoleRepository(providers.Mongo),
-		Access:                 repository.NewAccessRepository(providers.Mongo),
-		Organization:           repository.NewOrganizationRepository(providers.Mongo),
-		OrganizationUserAccess: repository.NewOrganizationUserAccessRepository(providers.Mongo),
+func initRepositories(p Providers) Repositories {
+	return Repositories{
+		Permission:             repository.NewPermissionRepository(p.Mongo),
+		Policy:                 repository.NewPolicyRepository(p.Mongo),
+		PolicyPermission:       repository.NewPolicyPermissionRepository(p.Mongo),
+		Profile:                repository.NewProfileRepository(p.Mongo),
+		Role:                   repository.NewRoleRepository(p.Mongo),
+		RolePermission:         repository.NewRolePermissionRepository(p.Mongo),
+		ServiceAccount:         repository.NewServiceAccountRepository(p.Mongo),
+		User:                   repository.NewUserRepository(p.Mongo),
+		UserRole:               repository.NewUserRoleRepository(p.Mongo),
+		Access:                 repository.NewAccessRepository(p.Mongo),
+		Organization:           repository.NewOrganizationRepository(p.Mongo),
+		OrganizationUserAccess: repository.NewOrganizationUserAccessRepository(p.Mongo),
 	}
+}
 
-	// Services
-	services := &Services{
-		User:  service.NewUserService(repositories.User, repositories.Profile, repositories.Role, repositories.UserRole, providers.Redis),
-		MFA:   service.NewMFAService(repositories.User, providers.Redis),
-		Email: service.NewEmailService(providers.Postmark),
-		IPFS:  service.NewIPFSService(providers.IPFS),
+func initServices(p Providers, r Repositories) Services {
+	user := service.NewUserService(r.User, r.Profile, r.Role, r.UserRole, p.Redis)
+	email := service.NewEmailService(p.Postmark)
+	mfa := service.NewMFAService(r.User, p.Redis)
+	ipfs := service.NewIPFSService(p.IPFS)
+	token := service.NewTokenService(r.User, p.JWT, mfa, p.Redis)
+	return Services{user, token, mfa, email, ipfs}
+}
+
+func initMiddleware(p Providers, r Repositories) Middleware {
+	return Middleware{
+		Authn:    middleware.NewAuthnMiddleware(p.JWT),
+		Authz:    middleware.NewAuthzMiddleware(r.UserRole, r.Role),
+		Verified: middleware.NewVerifiedMiddleware(r.User),
+		Locked:   middleware.NewLockedMiddleware(r.User),
 	}
-	services.Token = service.NewTokenService(repositories.User, providers.JWT, services.MFA, providers.Redis)
+}
 
-	// Middleware
-	middlewares := &Middleware{
-		Authn:    middleware.NewAuthnMiddleware(providers.JWT),
-		Authz:    middleware.NewAuthzMiddleware(repositories.UserRole, repositories.Role),
-		Verified: middleware.NewVerifiedMiddleware(repositories.User),
-		Locked:   middleware.NewLockedMiddleware(repositories.User),
-	}
-
-	// Controllers
-	controllers := &Controllers{
-		Health: &HealthControllers{
+func initControllers(s Services) Controllers {
+	return Controllers{
+		Health: struct {
+			Check *health.CheckHealthController
+		}{
 			Check: health.NewCheckHealthController(),
 		},
-		Users: &UserControllers{
-			Register:               users.NewRegisterController(services.User, services.Token, services.Email),
-			ForgotPassword:         users.NewForgotPasswordController(services.User, services.Email),
-			ResetPassword:          users.NewResetPasswordController(services.User),
-			VerifyAccount:          users.NewVerifyAccountController(services.User),
-			ResendVerificationCode: users.NewResendVerificationCodeController(services.User, services.Email),
+		Users: struct {
+			Register               *users.RegisterController
+			ForgotPassword         *users.ForgotPasswordController
+			ResetPassword          *users.ResetPasswordController
+			VerifyAccount          *users.VerifyAccountController
+			ResendVerificationCode *users.ResendVerificationCodeController
+		}{
+			Register:               users.NewRegisterController(s.User, s.Token, s.Email),
+			ForgotPassword:         users.NewForgotPasswordController(s.User, s.Email),
+			ResetPassword:          users.NewResetPasswordController(s.User),
+			VerifyAccount:          users.NewVerifyAccountController(s.User),
+			ResendVerificationCode: users.NewResendVerificationCodeController(s.User, s.Email),
 		},
-		Tokens: &TokenControllers{
-			Request: tokens.NewRequestTokenController(services.Token, services.User, services.MFA),
-			Verify:  tokens.NewVerifyOTPController(services.Token, services.MFA),
-			Refresh: tokens.NewRefreshTokenController(services.Token),
-			Revoke:  tokens.NewRevokeTokenController(services.Token),
+		Tokens: struct {
+			Request *tokens.RequestTokenController
+			Verify  *tokens.VerifyOTPController
+			Refresh *tokens.RefreshTokenController
+			Revoke  *tokens.RevokeTokenController
+		}{
+			Request: tokens.NewRequestTokenController(s.Token, s.User, s.MFA),
+			Verify:  tokens.NewVerifyOTPController(s.Token, s.MFA),
+			Refresh: tokens.NewRefreshTokenController(s.Token),
+			Revoke:  tokens.NewRevokeTokenController(s.Token),
 		},
-		Settings: &SettingsControllers{
-			ChangePassword: settings.NewChangePasswordController(services.User),
+		Settings: struct {
+			ChangePassword *settings.ChangePasswordController
+			MFA            struct {
+				Generate *mfa.GenerateOTPController
+				Enable   *mfa.EnableMFAController
+				Disable  *mfa.DisableMFAController
+			}
+		}{
+			ChangePassword: settings.NewChangePasswordController(s.User),
+			MFA: struct {
+				Generate *mfa.GenerateOTPController
+				Enable   *mfa.EnableMFAController
+				Disable  *mfa.DisableMFAController
+			}{
+				Generate: mfa.NewGenerateOTPController(s.MFA),
+				Enable:   mfa.NewEnableMFAController(s.MFA),
+				Disable:  mfa.NewDisableMFAController(s.MFA, s.User),
+			},
 		},
-		MFA: &MFAControllers{
-			Generate: mfa.NewGenerateOTPController(services.MFA),
-			Enable:   mfa.NewEnableMFAController(services.MFA),
-			Disable:  mfa.NewDisableMFAController(services.MFA, services.User),
+		Profile: struct {
+			Me *profile.MeController
+		}{
+			Me: profile.NewMeController(s.User),
 		},
-		Profile: &ProfileControllers{
-			Me: profile.NewMeController(services.User),
+		Network: struct {
+			GetSwarmAddress *network.GetSwarmAddressController
+		}{
+			GetSwarmAddress: network.NewGetSwarmAddressController(s.IPFS),
 		},
-		Network: &NetworkControllers{
-			GetSwarmAddress: network.NewGetSwarmAddressController(services.IPFS),
-		},
-		Admin: &AdminControllers{
-			ListUsers:  adminUsers.NewListController(services.User),
-			ReadUser:   adminUsers.NewReadController(services.User),
-			CreateUser: adminUsers.NewCreateController(services.User, services.Token, services.Email),
+		Admin: struct {
+			Users struct {
+				List   *adminUsers.ListController
+				Read   *adminUsers.ReadController
+				Create *adminUsers.CreateController
+			}
+		}{
+			Users: struct {
+				List   *adminUsers.ListController
+				Read   *adminUsers.ReadController
+				Create *adminUsers.CreateController
+			}{
+				List:   adminUsers.NewListController(s.User),
+				Read:   adminUsers.NewReadController(s.User),
+				Create: adminUsers.NewCreateController(s.User, s.Token, s.Email),
+			},
 		},
 	}
+}
 
-	// Run migrations & seeders
+func NewContainer() *Container {
+	providers := initProviders()
+	repositories := initRepositories(providers)
+	services := initServices(providers, repositories)
+	middlewares := initMiddleware(providers, repositories)
+	controllers := initControllers(services)
+
 	database.MigrateCollections(providers.Mongo)
-	database.SeedCollections(repositories.Permission, repositories.Role, repositories.RolePermission)
+
+	database.SeedCollections(
+		repositories.Permission,
+		repositories.Role,
+		repositories.RolePermission,
+	)
 
 	return &Container{
 		Providers:    providers,
