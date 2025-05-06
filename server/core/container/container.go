@@ -1,6 +1,7 @@
 package container
 
 import (
+	adminUsers "koneksi/server/app/controller/admin/users"
 	"koneksi/server/app/controller/health"
 	"koneksi/server/app/controller/network"
 	"koneksi/server/app/controller/profile"
@@ -95,6 +96,10 @@ type NetworkControllers struct {
 	GetSwarmAddress *network.GetSwarmAddressController
 }
 
+type AdminControllers struct {
+	ListUsers *adminUsers.ListController
+}
+
 // Grouped Controllers
 type Controllers struct {
 	Health   *HealthControllers
@@ -104,6 +109,7 @@ type Controllers struct {
 	MFA      *MFAControllers
 	Profile  *ProfileControllers
 	Network  *NetworkControllers
+	Admin    *AdminControllers
 }
 
 // Container
@@ -190,6 +196,9 @@ func NewContainer() *Container {
 		},
 		Network: &NetworkControllers{
 			GetSwarmAddress: network.NewGetSwarmAddressController(services.IPFS),
+		},
+		Admin: &AdminControllers{
+			ListUsers: adminUsers.NewListController(services.User),
 		},
 	}
 

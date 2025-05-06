@@ -39,9 +39,18 @@ func (r *UserRoleRepository) CreateUserRole(ctx context.Context, userRole *model
 }
 
 func (r *UserRoleRepository) ReadUserRoles(ctx context.Context, userID string) ([]model.UserRole, error) {
+	// Convert id to ObjectID
+	objectID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		logger.Log.Error("invalid ID format", logger.Error(err))
+		return nil, err
+	}
+
+	// Initialize an empty slice to hold the results
 	var results []model.UserRole
 
-	cursor, err := r.collection.Find(ctx, bson.M{"user_id": userID})
+	// Use the Find method to retrieve user roles
+	cursor, err := r.collection.Find(ctx, bson.M{"user_id": objectID})
 	if err != nil {
 		logger.Log.Error("error retrieving user roles", logger.Error(err))
 		return nil, err
