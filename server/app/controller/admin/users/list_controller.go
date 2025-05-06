@@ -1,7 +1,9 @@
 package user
 
 import (
+	"koneksi/server/app/helper"
 	"koneksi/server/app/service"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,11 +21,12 @@ func NewListController(userService *service.UserService) *ListController {
 }
 
 // Handle handles the health check request
-func (c *ListController) Handle(ctx *gin.Context) {
-	users, err := c.userService.ListUsers(ctx.Request.Context(), 1, 10)
+func (lc *ListController) Handle(ctx *gin.Context) {
+	users, err := lc.userService.ListUsers(ctx.Request.Context(), 1, 10)
 	if err != nil {
 		ctx.JSON(500, gin.H{"error": "Failed to fetch users", "details": err.Error()})
 		return
 	}
-	ctx.JSON(200, gin.H{"users": users})
+	// Respond with success
+	helper.FormatResponse(ctx, "success", http.StatusOK, nil, users, nil)
 }
