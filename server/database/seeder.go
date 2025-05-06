@@ -60,6 +60,7 @@ func seedPermissions(ctx context.Context, permissionRepo *repository.PermissionR
 func seedRoles(ctx context.Context, roleRepo *repository.RoleRepository) error {
 	roles := []model.Role{
 		{Name: "user"},
+		{Name: "admin"},
 	}
 
 	for _, role := range roles {
