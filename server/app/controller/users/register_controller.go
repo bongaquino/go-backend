@@ -42,10 +42,8 @@ func (rc *RegisterController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	// Add default role to the request
-	if request.Role == "" {
-		request.Role = "user"
-	}
+	// Add user role to the request
+	request.Role = "user"
 
 	// Register the user
 	user, profile, userRole, roleName, err := rc.userService.RegisterUser(ctx.Request.Context(), &request)
