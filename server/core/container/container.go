@@ -97,8 +97,9 @@ type NetworkControllers struct {
 }
 
 type AdminControllers struct {
-	ListUsers *adminUsers.ListController
-	ReadUser  *adminUsers.ReadController
+	ListUsers  *adminUsers.ListController
+	ReadUser   *adminUsers.ReadController
+	CreateUser *adminUsers.CreateController
 }
 
 // Grouped Controllers
@@ -199,8 +200,9 @@ func NewContainer() *Container {
 			GetSwarmAddress: network.NewGetSwarmAddressController(services.IPFS),
 		},
 		Admin: &AdminControllers{
-			ListUsers: adminUsers.NewListController(services.User),
-			ReadUser:  adminUsers.NewReadController(services.User),
+			ListUsers:  adminUsers.NewListController(services.User),
+			ReadUser:   adminUsers.NewReadController(services.User),
+			CreateUser: adminUsers.NewCreateController(services.User, services.Token, services.Email),
 		},
 	}
 

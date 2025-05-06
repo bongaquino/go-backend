@@ -65,5 +65,6 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 	{
 		adminGroup.GET("users/list", container.Controllers.Admin.ListUsers.Handle)
 		adminGroup.GET("users/:userID/read", container.Controllers.Admin.ReadUser.Handle)
+		adminGroup.POST("users/create", container.Controllers.Admin.CreateUser.Handle)
 	}
 }
