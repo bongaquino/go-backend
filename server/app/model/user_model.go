@@ -15,6 +15,7 @@ type User struct {
 	IsVerified   bool               `bson:"is_verified"`
 	IsMFAEnabled bool               `bson:"is_mfa_enabled"`
 	IsLocked     bool               `bson:"is_locked"`
+	IsDeleted    bool               `bson:"is_deleted"`
 	CreatedAt    time.Time          `bson:"created_at"`
 	UpdatedAt    time.Time          `bson:"updated_at"`
 }
