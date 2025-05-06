@@ -37,6 +37,21 @@ func NewUserService(userRepo *repository.UserRepository,
 	}
 }
 
+func (us *UserService) ListUsers(ctx context.Context, page, limit int) ([]*model.User, error) {
+	// Fetch users from the repository
+	users, err := us.userRepo.ListUsers(ctx, page, limit)
+	if err != nil {
+		logger.Log.Error("error fetching users", logger.Error(err))
+		return nil, errors.New("internal server error")
+	}
+	// Convert []model.User to []*model.User
+	userPointers := make([]*model.User, len(users))
+	for i := range users {
+		userPointers[i] = &users[i]
+	}
+	return userPointers, nil
+}
+
 // UserExists checks if a user with the given email already exists
 func (us *UserService) UserExists(ctx context.Context, email string) (bool, error) {
 	// Query the repository to check if the user exists

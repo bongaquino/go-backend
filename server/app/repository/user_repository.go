@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	mongoDriver "go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type UserRepository struct {
@@ -23,6 +24,30 @@ func NewUserRepository(mongoProvider *provider.MongoProvider) *UserRepository {
 	return &UserRepository{
 		collection: db.Collection("users"),
 	}
+}
+
+func (r *UserRepository) ListUsers(ctx context.Context, page, limit int) ([]model.User, error) {
+	var users []model.User
+
+	// Calculate the number of documents to skip
+	skip := (page - 1) * limit
+
+	// Set options for pagination
+	opts := options.Find().SetSkip(int64(skip)).SetLimit(int64(limit))
+
+	cursor, err := r.collection.Find(ctx, bson.M{}, opts)
+	if err != nil {
+		logger.Log.Error("error fetching users", logger.Error(err))
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	if err = cursor.All(ctx, &users); err != nil {
+		logger.Log.Error("error decoding users", logger.Error(err))
+		return nil, err
+	}
+
+	return users, nil
 }
 
 func (r *UserRepository) CreateUser(ctx context.Context, user *model.User) error {

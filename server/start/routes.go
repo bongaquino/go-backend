@@ -58,4 +58,11 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 	{
 		networkGroup.GET("/get-swarm-address", container.Controllers.Network.GetSwarmAddress.Handle)
 	}
+
+	// Admin Routes
+	adminGroup := engine.Group("/admin")
+	adminGroup.Use(container.Middleware.Authn.Handle, container.Middleware.Authz.Handle([]string{"admin"}))
+	{
+		adminGroup.GET("users/list", container.Controllers.Admin.ListUsers.Handle)
+	}
 }
