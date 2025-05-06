@@ -44,6 +44,13 @@ func (lc *ListController) Handle(ctx *gin.Context) {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to fetch users", nil, err)
 		return
 	}
+
+	// Exclude sensitive fields from the response
+	for i := range users {
+		users[i].Password = "REDACTED"
+		users[i].OtpSecret = "REDACTED"
+	}
+
 	// Respond with success
 	helper.FormatResponse(ctx, "success", http.StatusOK, nil, users, nil)
 }
