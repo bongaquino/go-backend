@@ -22,23 +22,23 @@ func NewGenerateOTPController(mfaService *service.MFAService) *GenerateOTPContro
 }
 
 // Handle generates an OTP secret and QR code for the user
-func (goc *GenerateOTPController) Handle(c *gin.Context) {
+func (goc *GenerateOTPController) Handle(ctx *gin.Context) {
 	// Extract email from the user token
-	email, exists := c.Get("userID")
+	email, exists := ctx.Get("userID")
 	if !exists {
-		helper.FormatResponse(c, "error", http.StatusUnauthorized, "unauthorized", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusUnauthorized, "unauthorized", nil, nil)
 		return
 	}
 
 	// Generate OTP secret and QR code
-	otpSecret, qrCode, err := goc.mfaService.GenerateOTP(c.Request.Context(), email.(string))
+	otpSecret, qrCode, err := goc.mfaService.GenerateOTP(ctx.Request.Context(), email.(string))
 	if err != nil {
-		helper.FormatResponse(c, "error", http.StatusInternalServerError, err.Error(), nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, err.Error(), nil, nil)
 		return
 	}
 
 	// Respond with the OTP secret and QR code
-	helper.FormatResponse(c, "success", http.StatusOK, "OTP generated successfully", gin.H{
+	helper.FormatResponse(ctx, "success", http.StatusOK, "OTP generated successfully", gin.H{
 		"otp_secret": otpSecret,
 		"qr_code":    qrCode,
 	}, nil)

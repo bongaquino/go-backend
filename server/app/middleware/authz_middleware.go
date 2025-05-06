@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"koneksi/server/app/helper"
@@ -26,20 +25,20 @@ func NewAuthzMiddleware(userRoleRepository *repository.UserRoleRepository, roleR
 }
 
 func (m *AuthzMiddleware) Handle(requiredRoles []string) gin.HandlerFunc {
-	return func(c *gin.Context) {
+	return func(ctx *gin.Context) {
 		// Retrieve userID from the context (assumes it's set by a previous middleware)
-		userID, exists := c.Get("userID")
+		userID, exists := ctx.Get("userID")
 		if !exists {
-			helper.FormatResponse(c, "error", http.StatusUnauthorized, "userID not found in context", nil, nil)
-			c.Abort()
+			helper.FormatResponse(ctx, "error", http.StatusUnauthorized, "userID not found in context", nil, nil)
+			ctx.Abort()
 			return
 		}
 
 		// Fetch roles from the database using the userID
-		roles, err := m.getUserRoles(c.Request.Context(), userID.(string))
+		roles, err := m.getUserRoles(ctx.Request.Context(), userID.(string))
 		if err != nil {
-			helper.FormatResponse(c, "error", http.StatusInternalServerError, "failed to retrieve user roles", nil, nil)
-			c.Abort()
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to retrieve user roles", nil, nil)
+			ctx.Abort()
 			return
 		}
 
@@ -55,13 +54,13 @@ func (m *AuthzMiddleware) Handle(requiredRoles []string) gin.HandlerFunc {
 		}
 
 		if !hasRole {
-			helper.FormatResponse(c, "error", http.StatusForbidden, "user does not have the required role", nil, nil)
-			c.Abort()
+			helper.FormatResponse(ctx, "error", http.StatusForbidden, "user does not have the required role", nil, nil)
+			ctx.Abort()
 			return
 		}
 
 		// Continue to the next middleware
-		c.Next()
+		ctx.Next()
 	}
 }
 
@@ -72,9 +71,6 @@ func (m *AuthzMiddleware) getUserRoles(ctx context.Context, userID string) ([]st
 	if err != nil {
 		return nil, err
 	}
-
-	// TODO: Debug the fetched user roles
-	fmt.Printf("Roles for userID %s: %+v\n", userID, userRoles)
 
 	// Initialize a slice to store role names
 	var roles []string

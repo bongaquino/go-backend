@@ -24,31 +24,31 @@ func NewResendVerificationCodeController(userService *service.UserService, email
 	}
 }
 
-func (rvtc *ResendVerificationCodeController) Handle(c *gin.Context) {
+func (rvtc *ResendVerificationCodeController) Handle(ctx *gin.Context) {
 	// Extract userID from the user token
-	userID, exists := c.Get("userID")
+	userID, exists := ctx.Get("userID")
 	if !exists {
-		helper.FormatResponse(c, "error", http.StatusUnauthorized, "unauthorized", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusUnauthorized, "unauthorized", nil, nil)
 		return
 	}
 
 	// Get user email from the UserService
-	user, _, _ := rvtc.userService.GetUserProfile(c.Request.Context(), userID.(string))
+	user, _, _ := rvtc.userService.GetUserProfile(ctx.Request.Context(), userID.(string))
 
 	// Resend verification code using the UserService
-	code, err := rvtc.userService.GenerateVerificationCode(c.Request.Context(), userID.(string))
+	code, err := rvtc.userService.GenerateVerificationCode(ctx.Request.Context(), userID.(string))
 	if err != nil {
-		helper.FormatResponse(c, "error", http.StatusBadRequest, err.Error(), nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, err.Error(), nil, nil)
 		return
 	}
 
 	// Send the verification email
 	err = rvtc.emailService.SendVerificationCode(user.Email, code)
 	if err != nil {
-		helper.FormatResponse(c, "error", http.StatusInternalServerError, "failed to send verification email", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to send verification email", nil, nil)
 		return
 	}
 
 	// Respond with success
-	helper.FormatResponse(c, "success", http.StatusOK, "verification code resent successfully", nil, nil)
+	helper.FormatResponse(ctx, "success", http.StatusOK, "verification code resent successfully", nil, nil)
 }

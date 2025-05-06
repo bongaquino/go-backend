@@ -18,11 +18,11 @@ func NewCheckHealthController() *CheckHealthController {
 }
 
 // Handles the health check endpoint
-func (hc *CheckHealthController) Handle(c *gin.Context) {
+func (hc *CheckHealthController) Handle(ctx *gin.Context) {
 	appConfig := config.LoadAppConfig()
 
 	// Respond with success
-	helper.FormatResponse(c, "success", http.StatusOK, nil, gin.H{
+	helper.FormatResponse(ctx, "success", http.StatusOK, nil, gin.H{
 		"name":    appConfig.AppName,
 		"version": appConfig.AppVersion,
 		"healthy": true,

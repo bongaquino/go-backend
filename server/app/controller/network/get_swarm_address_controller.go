@@ -22,16 +22,16 @@ func NewGetSwarmAddressController(ipfsService *service.IPFSService) *GetSwarmAdd
 }
 
 // Handle processes the request to fetch swarm addresses
-func (gsc *GetSwarmAddressController) Handle(c *gin.Context) {
+func (gsc *GetSwarmAddressController) Handle(ctx *gin.Context) {
 	// Fetch the number of peers and their details from the IPFS service
 	numPeers, peers, err := gsc.ipfsService.GetSwarmPeers()
 	if err != nil {
-		helper.FormatResponse(c, "error", http.StatusInternalServerError, err.Error(), nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, err.Error(), nil, nil)
 		return
 	}
 
 	// Respond with the number of peers and their details
-	helper.FormatResponse(c, "success", http.StatusOK, "swarm addresses fetched successfully", gin.H{
+	helper.FormatResponse(ctx, "success", http.StatusOK, "swarm addresses fetched successfully", gin.H{
 		"num_peers": numPeers,
 		"peers":     peers,
 	}, nil)

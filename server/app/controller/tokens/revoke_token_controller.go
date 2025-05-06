@@ -22,31 +22,31 @@ func NewRevokeTokenController(tokenService *service.TokenService) *RevokeTokenCo
 }
 
 // Handle processes the revoke token request (Logout)
-func (rc *RevokeTokenController) Handle(c *gin.Context) {
+func (rc *RevokeTokenController) Handle(ctx *gin.Context) {
 	var request struct {
 		RefreshToken string `json:"refresh_token" binding:"required"`
 	}
 
 	// Validate the payload
-	if err := rc.validatePayload(c, &request); err != nil {
+	if err := rc.validatePayload(ctx, &request); err != nil {
 		return
 	}
 
 	// Revoke the token using the TokenService
-	err := rc.tokenService.RevokeToken(c.Request.Context(), request.RefreshToken)
+	err := rc.tokenService.RevokeToken(ctx.Request.Context(), request.RefreshToken)
 	if err != nil {
-		helper.FormatResponse(c, "error", http.StatusUnauthorized, err.Error(), nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusUnauthorized, err.Error(), nil, nil)
 		return
 	}
 
 	// Return success response
-	helper.FormatResponse(c, "success", http.StatusOK, "token revoked successfully", nil, nil)
+	helper.FormatResponse(ctx, "success", http.StatusOK, "token revoked successfully", nil, nil)
 }
 
 // validatePayload validates the incoming request payload
-func (rc *RevokeTokenController) validatePayload(c *gin.Context, request any) error {
-	if err := c.ShouldBindJSON(request); err != nil {
-		helper.FormatResponse(c, "error", http.StatusBadRequest, "invalid input", nil, nil)
+func (rc *RevokeTokenController) validatePayload(ctx *gin.Context, request any) error {
+	if err := ctx.ShouldBindJSON(request); err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
 		return err
 	}
 	return nil

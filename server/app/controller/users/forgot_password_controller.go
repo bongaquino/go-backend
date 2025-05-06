@@ -21,31 +21,31 @@ func NewForgotPasswordController(userService *service.UserService, emailService 
 	}
 }
 
-func (fpc *ForgotPasswordController) Handle(c *gin.Context) {
+func (fpc *ForgotPasswordController) Handle(ctx *gin.Context) {
 	var request struct {
 		Email string `json:"email" binding:"required,email"`
 	}
 
 	// Validate the request payload
-	if err := c.ShouldBindJSON(&request); err != nil {
-		helper.FormatResponse(c, "error", http.StatusBadRequest, "invalid input", nil, nil)
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
 		return
 	}
 
 	// Generate a password reset code
-	resetCode, err := fpc.userService.GeneratePasswordResetCode(c.Request.Context(), request.Email)
+	resetCode, err := fpc.userService.GeneratePasswordResetCode(ctx.Request.Context(), request.Email)
 	if err != nil {
-		helper.FormatResponse(c, "error", http.StatusInternalServerError, err.Error(), nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, err.Error(), nil, nil)
 		return
 	}
 
 	// Send the reset code via email
 	err = fpc.emailService.SendPasswordResetCode(request.Email, resetCode)
 	if err != nil {
-		helper.FormatResponse(c, "error", http.StatusInternalServerError, "failed to send reset code", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to send reset code", nil, nil)
 		return
 	}
 
 	// Respond with success
-	helper.FormatResponse(c, "success", http.StatusOK, "password reset code sent successfully", nil, nil)
+	helper.FormatResponse(ctx, "success", http.StatusOK, "password reset code sent successfully", nil, nil)
 }
