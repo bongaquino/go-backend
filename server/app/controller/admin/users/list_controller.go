@@ -9,7 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// ListController handles health-related endpoints
 type ListController struct {
 	userService *service.UserService
 }

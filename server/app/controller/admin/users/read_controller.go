@@ -9,7 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// ReadController handles health-related endpoints
 type ReadController struct {
 	userService *service.UserService
 }
