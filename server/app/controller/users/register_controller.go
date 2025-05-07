@@ -47,7 +47,7 @@ func (rc *RegisterController) Handle(ctx *gin.Context) {
 	request.IsVerified = false
 
 	// Register the user
-	user, profile, userRole, roleName, err := rc.userService.Create(ctx.Request.Context(), &request)
+	user, profile, userRole, roleName, err := rc.userService.CreateUser(ctx.Request.Context(), &request)
 	if err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, err.Error(), nil, nil)
 		return
