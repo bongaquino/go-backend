@@ -1,4 +1,4 @@
-package users
+package organizations
 
 import (
 	"koneksi/server/app/helper"
@@ -10,13 +10,13 @@ import (
 )
 
 type ListController struct {
-	userService *service.UserService
+	orgService *service.OrganizationService
 }
 
 // NewListController initializes a new ListController
-func NewListController(userService *service.UserService) *ListController {
+func NewListController(orgService *service.OrganizationService) *ListController {
 	return &ListController{
-		userService: userService,
+		orgService: orgService,
 	}
 }
 
@@ -38,16 +38,10 @@ func (lc *ListController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	users, err := lc.userService.ListUsers(ctx.Request.Context(), pageInt, limitInt)
+	users, err := lc.orgService.ListOrgs(ctx.Request.Context(), pageInt, limitInt)
 	if err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to fetch users", nil, err)
 		return
-	}
-
-	// Exclude sensitive fields from the response
-	for i := range users {
-		users[i].Password = "REDACTED"
-		users[i].OtpSecret = "REDACTED"
 	}
 
 	// Respond with success

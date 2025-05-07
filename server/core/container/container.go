@@ -1,6 +1,7 @@
 package container
 
 import (
+	"koneksi/server/app/controller/admin/organizations"
 	adminUsers "koneksi/server/app/controller/admin/users"
 	"koneksi/server/app/controller/health"
 	"koneksi/server/app/controller/network"
@@ -40,11 +41,12 @@ type Repositories struct {
 }
 
 type Services struct {
-	User  *service.UserService
-	Token *service.TokenService
-	MFA   *service.MFAService
-	Email *service.EmailService
-	IPFS  *service.IPFSService
+	User         *service.UserService
+	Token        *service.TokenService
+	MFA          *service.MFAService
+	Email        *service.EmailService
+	IPFS         *service.IPFSService
+	Organization *service.OrganizationService
 }
 
 type Middleware struct {
@@ -92,6 +94,9 @@ type Controllers struct {
 			Read   *adminUsers.ReadController
 			Update *adminUsers.UpdateController
 		}
+		Organizations struct {
+			List *organizations.ListController
+		}
 	}
 }
 
@@ -135,7 +140,8 @@ func initServices(p Providers, r Repositories) Services {
 	mfa := service.NewMFAService(r.User, p.Redis)
 	ipfs := service.NewIPFSService(p.IPFS)
 	token := service.NewTokenService(r.User, p.JWT, mfa, p.Redis)
-	return Services{user, token, mfa, email, ipfs}
+	organization := service.NewOrganizationService(r.Organization)
+	return Services{user, token, mfa, email, ipfs, organization}
 }
 
 func initMiddleware(p Providers, r Repositories) Middleware {
@@ -214,6 +220,9 @@ func initControllers(s Services) Controllers {
 				Read   *adminUsers.ReadController
 				Update *adminUsers.UpdateController
 			}
+			Organizations struct {
+				List *organizations.ListController
+			}
 		}{
 			Users: struct {
 				List   *adminUsers.ListController
@@ -225,6 +234,11 @@ func initControllers(s Services) Controllers {
 				Create: adminUsers.NewCreateController(s.User, s.Token, s.Email),
 				Read:   adminUsers.NewReadController(s.User),
 				Update: adminUsers.NewUpdateController(s.User),
+			},
+			Organizations: struct {
+				List *organizations.ListController
+			}{
+				List: organizations.NewListController(s.Organization),
 			},
 		},
 	}

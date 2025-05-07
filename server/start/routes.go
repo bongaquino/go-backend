@@ -63,10 +63,12 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 	adminGroup := engine.Group("/admin")
 	adminGroup.Use(container.Middleware.Authn.Handle, container.Middleware.Authz.Handle([]string{"admin"}))
 	{
+		// User Management Routes
 		adminGroup.GET("users/list", container.Controllers.Admin.Users.List.Handle)
 		adminGroup.POST("users/create", container.Controllers.Admin.Users.Create.Handle)
 		adminGroup.GET("users/:userID/read", container.Controllers.Admin.Users.Read.Handle)
 		adminGroup.PUT("users/:userID/update", container.Controllers.Admin.Users.Update.Handle)
-		// adminGroup.DELETE("users/:userID/delete", container.Controllers.Admin.Users.Delete.Handle)
+		// Organization Management Routes
+		adminGroup.GET("organizations/list", container.Controllers.Admin.Organizations.List.Handle)
 	}
 }

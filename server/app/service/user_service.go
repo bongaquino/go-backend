@@ -40,7 +40,7 @@ func NewUserService(userRepo *repository.UserRepository,
 	}
 }
 
-func (us *UserService) List(ctx context.Context, page, limit int) ([]*model.User, error) {
+func (us *UserService) ListUsers(ctx context.Context, page, limit int) ([]*model.User, error) {
 	// Fetch users from the repository
 	users, err := us.userRepo.List(ctx, page, limit)
 	if err != nil {

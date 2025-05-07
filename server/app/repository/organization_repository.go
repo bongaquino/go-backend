@@ -10,6 +10,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type OrganizationRepository struct {
@@ -20,6 +21,30 @@ func NewOrganizationRepository(mongoProvider *provider.MongoProvider) *Organizat
 	return &OrganizationRepository{
 		collection: mongoProvider.GetDB().Collection("organization"),
 	}
+}
+
+func (r *OrganizationRepository) List(ctx context.Context, page, limit int) ([]model.Organization, error) {
+	var orgs []model.Organization
+
+	// Calculate the number of documents to skip
+	skip := (page - 1) * limit
+
+	// Set options for pagination
+	opts := options.Find().SetSkip(int64(skip)).SetLimit(int64(limit))
+
+	cursor, err := r.collection.Find(ctx, bson.M{}, opts)
+	if err != nil {
+		logger.Log.Error("error fetching orgs", logger.Error(err))
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	if err = cursor.All(ctx, &orgs); err != nil {
+		logger.Log.Error("error decoding orgs", logger.Error(err))
+		return nil, err
+	}
+
+	return orgs, nil
 }
 
 func (r *OrganizationRepository) Create(ctx context.Context, organization *model.Organization) error {
