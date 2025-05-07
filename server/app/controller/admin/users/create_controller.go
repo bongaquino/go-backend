@@ -25,7 +25,7 @@ func NewCreateController(userService *service.UserService, tokenService *service
 }
 
 func (rc *CreateController) Handle(ctx *gin.Context) {
-	var request dto.Create
+	var request dto.CreateUserDTO
 
 	if err := rc.validatePayload(ctx, &request); err != nil {
 		return
@@ -67,7 +67,7 @@ func (rc *CreateController) Handle(ctx *gin.Context) {
 	}, nil)
 }
 
-func (rc *CreateController) validatePayload(ctx *gin.Context, request *dto.Create) error {
+func (rc *CreateController) validatePayload(ctx *gin.Context, request *dto.CreateUserDTO) error {
 	if err := ctx.ShouldBindJSON(request); err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
 		return err

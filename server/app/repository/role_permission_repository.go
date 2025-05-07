@@ -38,7 +38,7 @@ func (r *RolePermissionRepository) Create(ctx context.Context, rolePermission *m
 	return nil
 }
 
-func (r *RolePermissionRepository) ReadByRoleID(ctx context.Context, roleID string) ([]model.RolePermission, error) {
+func (r *RolePermissionRepository) ReadByRoleIDID(ctx context.Context, roleID string) ([]model.RolePermission, error) {
 	var results []model.RolePermission
 
 	cursor, err := r.collection.Find(ctx, bson.M{"role_id": roleID})

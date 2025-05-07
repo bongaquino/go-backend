@@ -68,7 +68,7 @@ func (us *UserService) UserExists(ctx context.Context, email string) (bool, erro
 }
 
 // Create registers a new user
-func (us *UserService) Create(ctx context.Context, request *dto.Create) (*model.User, *model.Profile, *model.UserRole, string, error) {
+func (us *UserService) Create(ctx context.Context, request *dto.CreateUserDTO) (*model.User, *model.Profile, *model.UserRole, string, error) {
 	user := &model.User{
 		Email:      request.Email,
 		Password:   request.Password,
@@ -104,7 +104,7 @@ func (us *UserService) Create(ctx context.Context, request *dto.Create) (*model.
 		UserID: user.ID,
 		RoleID: userRole.ID,
 	}
-	if err := us.userRoleRepo.CreateRole(ctx, userRoleAssignment); err != nil {
+	if err := us.userRoleRepo.Create(ctx, userRoleAssignment); err != nil {
 		logger.Log.Error("error assigning role", logger.Error(err))
 		return nil, nil, nil, "", errors.New("failed to assign role")
 	}
@@ -396,7 +396,7 @@ func (us *UserService) GenerateVerificationCode(ctx context.Context, userID stri
 }
 
 // Update updates an existing user
-func (us *UserService) Update(ctx context.Context, userID string, request *dto.Update) error {
+func (us *UserService) Update(ctx context.Context, userID string, request *dto.UpdateUserDTO) error {
 	// Prepare the update fields
 	update := bson.M{
 		"first_name":  request.FirstName,
@@ -427,6 +427,72 @@ func (us *UserService) Update(ctx context.Context, userID string, request *dto.U
 		logger.Log.Error("error updating user", logger.Error(err))
 		return errors.New("failed to update user")
 	}
+
+	return nil
+}
+
+// UpdateUser updates an existing user, their profile, and their role based on the provided UpdateUser
+func (us *UserService) UpdateUser(ctx context.Context, userID string, dto *dto.UpdateUserDTO) error {
+	// Update user fields
+	userUpdate := bson.M{
+		"email":       dto.Email,
+		"is_verified": dto.IsVerified,
+		"is_locked":   dto.IsLocked,
+		"is_deleted":  dto.IsDeleted,
+		"updated_at":  time.Now(),
+	}
+
+	// Hash the password if it is being updated
+	if dto.Password != "" {
+		hashedPassword, err := helper.Hash(dto.Password)
+		if err != nil {
+			logger.Log.Error("error hashing password", logger.Error(err))
+			return errors.New("failed to hash password")
+		}
+		userUpdate["password"] = hashedPassword
+	}
+	fmt.Println(userUpdate)
+
+	// if err := us.userRepo.Update(ctx, userID, userUpdate); err != nil {
+	// 	logger.Log.Error("error updating user", logger.Error(err))
+	// 	return errors.New("failed to update user")
+	// }
+
+	// Update profile fields
+	profileUpdate := bson.M{
+		"first_name":  dto.FirstName,
+		"middle_name": dto.MiddleName,
+		"last_name":   dto.LastName,
+		"suffix":      dto.Suffix,
+		"updated_at":  time.Now(),
+	}
+	fmt.Println(profileUpdate)
+
+	// if err := us.profileRepo.Update(ctx, userID, profileUpdate); err != nil {
+	// 	logger.Log.Error("error updating profile", logger.Error(err))
+	// 	return errors.New("failed to update profile")
+	// }
+
+	// // Update user role
+	// if dto.Role != "" {
+	// 	userRole, err := us.roleRepo.ReadByName(ctx, dto.Role)
+	// 	if err != nil {
+	// 		logger.Log.Error("error retrieving role", logger.Error(err))
+	// 		return errors.New("failed to retrieve role")
+	// 	}
+	// 	if userRole == nil {
+	// 		return errors.New("role not found")
+	// 	}
+
+	// 	userRoleUpdate := &model.UserRole{
+	// 		UserID: userID,
+	// 		RoleID: userRole.ID,
+	// 	}
+	// 	if err := us.userRoleRepo.Update(ctx, userRoleUpdate); err != nil {
+	// 		logger.Log.Error("error updating user role", logger.Error(err))
+	// 		return errors.New("failed to update user role")
+	// 	}
+	// }
 
 	return nil
 }

@@ -1,6 +1,7 @@
 package users
 
 import (
+	"koneksi/server/app/dto"
 	"koneksi/server/app/helper"
 	"koneksi/server/app/service"
 	"net/http"
@@ -28,15 +29,36 @@ func (lc *UpdateController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	user, profile, err := lc.userService.GetUserProfile(ctx.Request.Context(), userID)
+	// Get request body
+	var request dto.UpdateUserDTO
+
+	if err := lc.validatePayload(ctx, &request); err != nil {
+		return
+	}
+
+	err := lc.userService.UpdateUser(ctx, userID, &request)
 	if err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to fetch user", nil, err)
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to update user", nil, nil)
 		return
 	}
 
 	// Respond with success
-	helper.FormatResponse(ctx, "success", http.StatusOK, nil, gin.H{
-		"user":    user,
-		"profile": profile,
-	}, nil)
+	// helper.FormatResponse(ctx, "success", http.StatusOK, nil, gin.H{
+	// 	"user":    user,
+	// 	"profile": profile,
+	// }, nil)
+}
+
+func (rc *UpdateController) validatePayload(ctx *gin.Context, request *dto.UpdateUserDTO) error {
+	if err := ctx.ShouldBindJSON(request); err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
+		return err
+	}
+	// Check if new passwords pass validation
+	isValid, validationErr := helper.ValidatePassword(request.Password)
+	if !isValid || validationErr != nil {
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, validationErr.Error(), nil, nil)
+		return validationErr
+	}
+	return nil
 }

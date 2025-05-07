@@ -103,7 +103,7 @@ func seedRolePermissions(ctx context.Context, roleRepo *repository.RoleRepositor
 		}
 
 		// Check if the role-permission already exists
-		existingPermissions, err := rolePermissionRepo.ReadByRoleID(ctx, userRole.ID.Hex())
+		existingPermissions, err := rolePermissionRepo.ReadByRoleIDID(ctx, userRole.ID.Hex())
 		if err != nil {
 			return err
 		}
