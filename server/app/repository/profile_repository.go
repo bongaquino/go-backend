@@ -58,10 +58,18 @@ func (r *ProfileRepository) ReadByUserID(ctx context.Context, userID string) (*m
 	return &profile, nil
 }
 
-func (r *ProfileRepository) Update(ctx context.Context, userID string, update bson.M) error {
+func (r *ProfileRepository) UpdateByUserID(ctx context.Context, userID string, update bson.M) error {
+	// Convert userID to ObjectID
+	objectID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		logger.Log.Error("invalid ID format", logger.Error(err))
+		return err
+	}
+
+	// Set the updated_at field to the current time
 	update["updated_at"] = time.Now()
 
-	_, err := r.collection.UpdateOne(ctx, bson.M{"user_id": userID}, bson.M{"$set": update})
+	_, err = r.collection.UpdateOne(ctx, bson.M{"user_id": objectID}, bson.M{"$set": update})
 	if err != nil {
 		logger.Log.Error("error updating profile", logger.Error(err))
 		return err
