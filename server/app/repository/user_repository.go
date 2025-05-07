@@ -115,6 +115,9 @@ func (r *UserRepository) Update(ctx context.Context, id string, update bson.M) e
 		return err
 	}
 
+	// Set the updated_at field to the current time
+	update["updated_at"] = time.Now()
+
 	_, err = r.collection.UpdateOne(ctx, bson.M{"_id": objectID}, bson.M{"$set": update})
 	if err != nil {
 		logger.Log.Error("error updating user", logger.Error(err))
