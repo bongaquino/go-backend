@@ -228,7 +228,7 @@ func (us *UserService) ResetPassword(ctx context.Context, email, resetCode, newP
 		"is_locked": false,
 	}
 	if err := us.userRepo.UpdateByEmail(ctx, email, update); err != nil {
-		return fmt.Errorf("failed to update user lock status: %w", err)
+		return fmt.Errorf("failed to update user lock status")
 	}
 
 	// Hash the new password
@@ -490,14 +490,16 @@ func (us *UserService) UpdateUser(ctx context.Context, userID string, dto *dto.U
 			return errors.New("role not found")
 		}
 
-		// 	userRoleUpdate := &model.UserRole{
-		// 		UserID: userID,
-		// 		RoleID: userRole.ID,
-		// 	}
-		// 	if err := us.userRoleRepo.Update(ctx, userRoleUpdate); err != nil {
-		// 		logger.Log.Error("error updating user role", logger.Error(err))
-		// 		return errors.New("failed to update user role")
-		// 	}
+		// Set the user role ID in the update map
+		userRoleUpdateMap := bson.M{
+			"role_id": userRole.ID,
+		}
+
+		// Update the user role in the repository
+		if err := us.userRoleRepo.Update(ctx, userID, userRoleUpdateMap); err != nil {
+			logger.Log.Error("error updating user role", logger.Error(err))
+			return errors.New("failed to update user role")
+		}
 	}
 
 	return nil

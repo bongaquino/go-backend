@@ -83,10 +83,19 @@ func (r *UserRoleRepository) ReadByRoleID(ctx context.Context, roleID string) ([
 	return results, nil
 }
 
-func (r *UserRoleRepository) Update(ctx context.Context, userID, roleID string, update bson.M) error {
+func (r *UserRoleRepository) Update(ctx context.Context, userID string, update bson.M) error {
+	// Convert userID to ObjectID
+	userObjectID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		logger.Log.Error("invalid ID format", logger.Error(err))
+		return err
+	}
+
+	// Set the updated_at field to the current time
 	update["updated_at"] = time.Now()
 
-	_, err := r.collection.UpdateOne(ctx, bson.M{"user_id": userID, "role_id": roleID}, bson.M{"$set": update})
+	// Update the user role in the database
+	_, err = r.collection.UpdateOne(ctx, bson.M{"user_id": userObjectID}, bson.M{"$set": update})
 	if err != nil {
 		logger.Log.Error("error updating user role", logger.Error(err))
 		return err
