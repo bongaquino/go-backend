@@ -31,11 +31,11 @@ func (lc *UpdateController) Handle(ctx *gin.Context) {
 
 	// Get request body
 	var request dto.UpdateUserDTO
-
 	if err := lc.validatePayload(ctx, &request); err != nil {
 		return
 	}
 
+	// Update user
 	err := lc.userService.UpdateUser(ctx, userID, &request)
 	if err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to update user", nil, nil)
