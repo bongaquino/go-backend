@@ -88,8 +88,9 @@ type Controllers struct {
 	Admin struct {
 		Users struct {
 			List   *adminUsers.ListController
-			Read   *adminUsers.ReadController
 			Create *adminUsers.CreateController
+			Read   *adminUsers.ReadController
+			Update *adminUsers.UpdateController
 		}
 	}
 }
@@ -209,18 +210,21 @@ func initControllers(s Services) Controllers {
 		Admin: struct {
 			Users struct {
 				List   *adminUsers.ListController
-				Read   *adminUsers.ReadController
 				Create *adminUsers.CreateController
+				Read   *adminUsers.ReadController
+				Update *adminUsers.UpdateController
 			}
 		}{
 			Users: struct {
 				List   *adminUsers.ListController
-				Read   *adminUsers.ReadController
 				Create *adminUsers.CreateController
+				Read   *adminUsers.ReadController
+				Update *adminUsers.UpdateController
 			}{
 				List:   adminUsers.NewListController(s.User),
-				Read:   adminUsers.NewReadController(s.User),
 				Create: adminUsers.NewCreateController(s.User, s.Token, s.Email),
+				Read:   adminUsers.NewReadController(s.User),
+				Update: adminUsers.NewUpdateController(s.User),
 			},
 		},
 	}

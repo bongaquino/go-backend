@@ -12,6 +12,8 @@ import (
 	"koneksi/server/config"
 	"koneksi/server/core/logger"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type UserService struct {
@@ -391,4 +393,40 @@ func (us *UserService) GenerateVerificationCode(ctx context.Context, userID stri
 	}
 
 	return storedCode, nil
+}
+
+// UpdateUser updates an existing user
+func (us *UserService) UpdateUser(ctx context.Context, userID string, request *dto.UpdateUser) error {
+	// Prepare the update fields
+	update := bson.M{
+		"first_name":  request.FirstName,
+		"middle_name": request.MiddleName,
+		"last_name":   request.LastName,
+		"suffix":      request.Suffix,
+		"email":       request.Email,
+		"password":    request.Password,
+		"role":        request.Role,
+		"is_verified": request.IsVerified,
+		"is_locked":   request.IsLocked,
+		"is_deleted":  request.IsDeleted,
+		"updated_at":  time.Now(),
+	}
+
+	// Hash the password if it is being updated
+	if request.Password != "" {
+		hashedPassword, err := helper.Hash(request.Password)
+		if err != nil {
+			logger.Log.Error("error hashing password", logger.Error(err))
+			return errors.New("failed to hash password")
+		}
+		update["password"] = hashedPassword
+	}
+
+	// Call the repository to update the user
+	if err := us.userRepo.UpdateUser(ctx, userID, update); err != nil {
+		logger.Log.Error("error updating user", logger.Error(err))
+		return errors.New("failed to update user")
+	}
+
+	return nil
 }
