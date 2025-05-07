@@ -24,7 +24,7 @@ func NewRoleRepository(mongoProvider *provider.MongoProvider) *RoleRepository {
 	}
 }
 
-func (r *RoleRepository) CreateRole(ctx context.Context, role *model.Role) error {
+func (r *RoleRepository) Create(ctx context.Context, role *model.Role) error {
 	role.ID = primitive.NewObjectID()
 
 	role.CreatedAt = time.Now()
@@ -38,7 +38,7 @@ func (r *RoleRepository) CreateRole(ctx context.Context, role *model.Role) error
 	return nil
 }
 
-func (r *RoleRepository) ReadRoleByName(ctx context.Context, name string) (*model.Role, error) {
+func (r *RoleRepository) ReadByName(ctx context.Context, name string) (*model.Role, error) {
 	var role model.Role
 	err := r.collection.FindOne(ctx, bson.M{"name": name}).Decode(&role)
 	if err != nil {
@@ -51,7 +51,7 @@ func (r *RoleRepository) ReadRoleByName(ctx context.Context, name string) (*mode
 	return &role, nil
 }
 
-func (r *RoleRepository) ReadRoleByID(ctx context.Context, roleID string) (*model.Role, error) {
+func (r *RoleRepository) Read(ctx context.Context, roleID string) (*model.Role, error) {
 	var role model.Role
 	objectID, err := primitive.ObjectIDFromHex(roleID)
 	if err != nil {
@@ -70,7 +70,7 @@ func (r *RoleRepository) ReadRoleByID(ctx context.Context, roleID string) (*mode
 	return &role, nil
 }
 
-func (r *RoleRepository) UpdateRole(ctx context.Context, name string, update bson.M) error {
+func (r *RoleRepository) Update(ctx context.Context, name string, update bson.M) error {
 	_, err := r.collection.UpdateOne(ctx, bson.M{"name": name}, bson.M{"$set": update})
 	if err != nil {
 		logger.Log.Error("error updating role", logger.Error(err))
@@ -79,7 +79,7 @@ func (r *RoleRepository) UpdateRole(ctx context.Context, name string, update bso
 	return nil
 }
 
-func (r *RoleRepository) DeleteRole(ctx context.Context, name string) error {
+func (r *RoleRepository) Delete(ctx context.Context, name string) error {
 	_, err := r.collection.DeleteOne(ctx, bson.M{"name": name})
 	if err != nil {
 		logger.Log.Error("error deleting role", logger.Error(err))

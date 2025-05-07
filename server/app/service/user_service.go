@@ -39,9 +39,9 @@ func NewUserService(userRepo *repository.UserRepository,
 	}
 }
 
-func (us *UserService) ListUsers(ctx context.Context, page, limit int) ([]*model.User, error) {
+func (us *UserService) List(ctx context.Context, page, limit int) ([]*model.User, error) {
 	// Fetch users from the repository
-	users, err := us.userRepo.ListUsers(ctx, page, limit)
+	users, err := us.userRepo.List(ctx, page, limit)
 	if err != nil {
 		logger.Log.Error("error fetching users", logger.Error(err))
 		return nil, errors.New("internal server error")
@@ -57,7 +57,7 @@ func (us *UserService) ListUsers(ctx context.Context, page, limit int) ([]*model
 // UserExists checks if a user with the given email already exists
 func (us *UserService) UserExists(ctx context.Context, email string) (bool, error) {
 	// Query the repository to check if the user exists
-	user, err := us.userRepo.ReadUserByEmail(ctx, email)
+	user, err := us.userRepo.ReadByEmail(ctx, email)
 	if err != nil {
 		logger.Log.Error("error checking if user exists", logger.Error(err))
 		return false, errors.New("internal server error")
@@ -67,14 +67,14 @@ func (us *UserService) UserExists(ctx context.Context, email string) (bool, erro
 	return user != nil, nil
 }
 
-// CreateUser registers a new user
-func (us *UserService) CreateUser(ctx context.Context, request *dto.CreateUser) (*model.User, *model.Profile, *model.UserRole, string, error) {
+// Create registers a new user
+func (us *UserService) Create(ctx context.Context, request *dto.Create) (*model.User, *model.Profile, *model.UserRole, string, error) {
 	user := &model.User{
 		Email:      request.Email,
 		Password:   request.Password,
 		IsVerified: request.IsVerified,
 	}
-	if err := us.userRepo.CreateUser(ctx, user); err != nil {
+	if err := us.userRepo.Create(ctx, user); err != nil {
 		logger.Log.Error("error creating user", logger.Error(err))
 		return nil, nil, nil, "", errors.New("failed to create user")
 	}
@@ -86,12 +86,12 @@ func (us *UserService) CreateUser(ctx context.Context, request *dto.CreateUser) 
 		LastName:   request.LastName,
 		Suffix:     request.Suffix,
 	}
-	if err := us.profileRepo.CreateProfile(ctx, profile); err != nil {
+	if err := us.profileRepo.Create(ctx, profile); err != nil {
 		logger.Log.Error("error creating profile", logger.Error(err))
 		return nil, nil, nil, "", errors.New("failed to create profile")
 	}
 
-	userRole, err := us.roleRepo.ReadRoleByName(ctx, request.Role)
+	userRole, err := us.roleRepo.ReadByName(ctx, request.Role)
 	if err != nil {
 		logger.Log.Error("error retrieving role", logger.Error(err))
 		return nil, nil, nil, "", errors.New("failed to assign role")
@@ -104,7 +104,7 @@ func (us *UserService) CreateUser(ctx context.Context, request *dto.CreateUser) 
 		UserID: user.ID,
 		RoleID: userRole.ID,
 	}
-	if err := us.userRoleRepo.CreateUserRole(ctx, userRoleAssignment); err != nil {
+	if err := us.userRoleRepo.CreateRole(ctx, userRoleAssignment); err != nil {
 		logger.Log.Error("error assigning role", logger.Error(err))
 		return nil, nil, nil, "", errors.New("failed to assign role")
 	}
@@ -115,7 +115,7 @@ func (us *UserService) CreateUser(ctx context.Context, request *dto.CreateUser) 
 // ChangePassword changes the user's password
 func (us *UserService) ChangePassword(ctx context.Context, userID string, request *dto.ChangePasswordDTO) error {
 	// Fetch the user from the repository
-	user, err := us.userRepo.ReadUser(ctx, userID)
+	user, err := us.userRepo.Read(ctx, userID)
 	if err != nil {
 		logger.Log.Error("error fetching user by ID", logger.Error(err))
 		return errors.New("failed to retrieve user")
@@ -146,7 +146,7 @@ func (us *UserService) ChangePassword(ctx context.Context, userID string, reques
 		"password":  hashedPassword,
 		"updatedAt": time.Now(),
 	}
-	if err := us.userRepo.UpdateUser(ctx, user.ID.Hex(), update); err != nil {
+	if err := us.userRepo.Update(ctx, user.ID.Hex(), update); err != nil {
 		logger.Log.Error("error updating user password", logger.Error(err))
 		return errors.New("failed to update password")
 	}
@@ -159,7 +159,7 @@ func (us *UserService) GeneratePasswordResetCode(ctx context.Context, email stri
 	redisConfig := config.LoadRedisConfig()
 
 	// Check if the user exists
-	user, err := us.userRepo.ReadUserByEmail(ctx, email)
+	user, err := us.userRepo.ReadByEmail(ctx, email)
 	if err != nil || user == nil {
 		return "", fmt.Errorf("user not found")
 	}
@@ -190,7 +190,7 @@ func (us *UserService) GeneratePasswordResetCode(ctx context.Context, email stri
 
 func (us *UserService) ResetPassword(ctx context.Context, email, resetCode, newPassword string) error {
 	// Retrieve the user by email from the database
-	user, err := us.userRepo.ReadUserByEmail(ctx, email)
+	user, err := us.userRepo.ReadByEmail(ctx, email)
 	if err != nil {
 		return fmt.Errorf("failed to retrieve user: %w", err)
 	}
@@ -227,7 +227,7 @@ func (us *UserService) ResetPassword(ctx context.Context, email, resetCode, newP
 	update := map[string]any{
 		"is_locked": false,
 	}
-	if err := us.userRepo.UpdateUserByEmail(ctx, email, update); err != nil {
+	if err := us.userRepo.UpdateByEmail(ctx, email, update); err != nil {
 		return fmt.Errorf("failed to update user lock status: %w", err)
 	}
 
@@ -238,7 +238,7 @@ func (us *UserService) ResetPassword(ctx context.Context, email, resetCode, newP
 	}
 
 	// Update the user's password in the database
-	err = us.userRepo.UpdateUserByEmail(ctx, email, map[string]any{
+	err = us.userRepo.UpdateByEmail(ctx, email, map[string]any{
 		"password": hashedPassword,
 	})
 	if err != nil {
@@ -249,7 +249,7 @@ func (us *UserService) ResetPassword(ctx context.Context, email, resetCode, newP
 }
 
 func (us *UserService) GetUserProfile(ctx context.Context, userID string) (*model.User, *model.Profile, error) {
-	user, err := us.userRepo.ReadUser(ctx, userID)
+	user, err := us.userRepo.Read(ctx, userID)
 	if err != nil {
 		logger.Log.Error("error fetching user by ID", logger.Error(err))
 		return nil, nil, errors.New("failed to retrieve user")
@@ -258,7 +258,7 @@ func (us *UserService) GetUserProfile(ctx context.Context, userID string) (*mode
 		return nil, nil, errors.New("user not found")
 	}
 
-	profile, err := us.profileRepo.ReadProfileByUserID(ctx, userID)
+	profile, err := us.profileRepo.ReadByUserID(ctx, userID)
 	if err != nil {
 		logger.Log.Error("error fetching profile by user ID", logger.Error(err))
 		return nil, nil, errors.New("failed to retrieve profile")
@@ -271,7 +271,7 @@ func (us *UserService) GetUserProfile(ctx context.Context, userID string) (*mode
 }
 
 func (us *UserService) GetUserProfileByEmail(ctx context.Context, email string) (*model.User, *model.Profile, error) {
-	user, err := us.userRepo.ReadUserByEmail(ctx, email)
+	user, err := us.userRepo.ReadByEmail(ctx, email)
 	if err != nil {
 		logger.Log.Error("error fetching user by email", logger.Error(err))
 		return nil, nil, errors.New("failed to retrieve user")
@@ -280,7 +280,7 @@ func (us *UserService) GetUserProfileByEmail(ctx context.Context, email string) 
 		return nil, nil, errors.New("user not found")
 	}
 
-	profile, err := us.profileRepo.ReadProfileByUserID(ctx, user.ID.Hex())
+	profile, err := us.profileRepo.ReadByUserID(ctx, user.ID.Hex())
 	if err != nil {
 		logger.Log.Error("error fetching profile by user ID", logger.Error(err))
 		return nil, nil, errors.New("failed to retrieve profile")
@@ -294,7 +294,7 @@ func (us *UserService) GetUserProfileByEmail(ctx context.Context, email string) 
 
 func (us *UserService) ValidatePassword(ctx context.Context, userID string, password string) (bool, error) {
 	// Retrieve the user from the database
-	user, err := us.userRepo.ReadUser(ctx, userID)
+	user, err := us.userRepo.Read(ctx, userID)
 	if err != nil {
 		return false, fmt.Errorf("failed to retrieve user: %w", err)
 	}
@@ -308,7 +308,7 @@ func (us *UserService) ValidatePassword(ctx context.Context, userID string, pass
 }
 
 func (us *UserService) VerifyUserAccount(ctx context.Context, userID string, code string) error {
-	user, err := us.userRepo.ReadUser(ctx, userID)
+	user, err := us.userRepo.Read(ctx, userID)
 	if err != nil {
 		return fmt.Errorf("failed to retrieve user: %w", err)
 	}
@@ -345,7 +345,7 @@ func (us *UserService) VerifyUserAccount(ctx context.Context, userID string, cod
 		"updated_at":  time.Now(),
 	}
 
-	if err := us.userRepo.UpdateUser(ctx, userID, update); err != nil {
+	if err := us.userRepo.Update(ctx, userID, update); err != nil {
 		logger.Log.Error("error verifying user account", logger.Error(err))
 		return errors.New("failed to verify account")
 	}
@@ -359,7 +359,7 @@ func (us *UserService) GenerateVerificationCode(ctx context.Context, userID stri
 
 	// Check if the user exists and is not already verified
 	fmt.Println("User ID:", userID)
-	user, err := us.userRepo.ReadUser(ctx, userID)
+	user, err := us.userRepo.Read(ctx, userID)
 	if err != nil {
 		return "", fmt.Errorf("failed to retrieve user: %w", err)
 	}
@@ -395,8 +395,8 @@ func (us *UserService) GenerateVerificationCode(ctx context.Context, userID stri
 	return storedCode, nil
 }
 
-// UpdateUser updates an existing user
-func (us *UserService) UpdateUser(ctx context.Context, userID string, request *dto.UpdateUser) error {
+// Update updates an existing user
+func (us *UserService) Update(ctx context.Context, userID string, request *dto.Update) error {
 	// Prepare the update fields
 	update := bson.M{
 		"first_name":  request.FirstName,
@@ -423,7 +423,7 @@ func (us *UserService) UpdateUser(ctx context.Context, userID string, request *d
 	}
 
 	// Call the repository to update the user
-	if err := us.userRepo.UpdateUser(ctx, userID, update); err != nil {
+	if err := us.userRepo.Update(ctx, userID, update); err != nil {
 		logger.Log.Error("error updating user", logger.Error(err))
 		return errors.New("failed to update user")
 	}

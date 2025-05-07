@@ -24,7 +24,7 @@ func NewUserRoleRepository(mongoProvider *provider.MongoProvider) *UserRoleRepos
 	}
 }
 
-func (r *UserRoleRepository) CreateUserRole(ctx context.Context, userRole *model.UserRole) error {
+func (r *UserRoleRepository) CreateRole(ctx context.Context, userRole *model.UserRole) error {
 	userRole.ID = primitive.NewObjectID()
 
 	userRole.CreatedAt = time.Now()
@@ -38,7 +38,7 @@ func (r *UserRoleRepository) CreateUserRole(ctx context.Context, userRole *model
 	return nil
 }
 
-func (r *UserRoleRepository) ReadUserRoles(ctx context.Context, userID string) ([]model.UserRole, error) {
+func (r *UserRoleRepository) ReadRoles(ctx context.Context, userID string) ([]model.UserRole, error) {
 	// Convert id to ObjectID
 	objectID, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
@@ -65,7 +65,7 @@ func (r *UserRoleRepository) ReadUserRoles(ctx context.Context, userID string) (
 	return results, nil
 }
 
-func (r *UserRoleRepository) ReadUsersByRole(ctx context.Context, roleID string) ([]model.UserRole, error) {
+func (r *UserRoleRepository) ReadsByRole(ctx context.Context, roleID string) ([]model.UserRole, error) {
 	var results []model.UserRole
 
 	cursor, err := r.collection.Find(ctx, bson.M{"role_id": roleID})
@@ -83,7 +83,7 @@ func (r *UserRoleRepository) ReadUsersByRole(ctx context.Context, roleID string)
 	return results, nil
 }
 
-func (r *UserRoleRepository) DeleteUserRole(ctx context.Context, userID, roleID string) error {
+func (r *UserRoleRepository) DeleteRole(ctx context.Context, userID, roleID string) error {
 	_, err := r.collection.DeleteOne(ctx, bson.M{"user_id": userID, "role_id": roleID})
 	if err != nil {
 		logger.Log.Error("error deleting user role", logger.Error(err))

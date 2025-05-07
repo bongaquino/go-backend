@@ -24,7 +24,7 @@ func NewPermissionRepository(mongoProvider *provider.MongoProvider) *PermissionR
 	}
 }
 
-func (r *PermissionRepository) CreatePermission(ctx context.Context, permission *model.Permission) error {
+func (r *PermissionRepository) Create(ctx context.Context, permission *model.Permission) error {
 	permission.ID = primitive.NewObjectID()
 
 	permission.CreatedAt = time.Now()
@@ -38,7 +38,7 @@ func (r *PermissionRepository) CreatePermission(ctx context.Context, permission 
 	return nil
 }
 
-func (r *PermissionRepository) ReadPermissionByName(ctx context.Context, name string) (*model.Permission, error) {
+func (r *PermissionRepository) ReadByName(ctx context.Context, name string) (*model.Permission, error) {
 	var permission model.Permission
 	err := r.collection.FindOne(ctx, bson.M{"name": name}).Decode(&permission)
 	if err != nil {
@@ -51,7 +51,7 @@ func (r *PermissionRepository) ReadPermissionByName(ctx context.Context, name st
 	return &permission, nil
 }
 
-func (r *PermissionRepository) UpdatePermission(ctx context.Context, name string, update bson.M) error {
+func (r *PermissionRepository) Update(ctx context.Context, name string, update bson.M) error {
 	_, err := r.collection.UpdateOne(ctx, bson.M{"name": name}, bson.M{"$set": update})
 	if err != nil {
 		logger.Log.Error("error updating permission", logger.Error(err))
@@ -60,7 +60,7 @@ func (r *PermissionRepository) UpdatePermission(ctx context.Context, name string
 	return nil
 }
 
-func (r *PermissionRepository) DeletePermission(ctx context.Context, name string) error {
+func (r *PermissionRepository) Delete(ctx context.Context, name string) error {
 	_, err := r.collection.DeleteOne(ctx, bson.M{"name": name})
 	if err != nil {
 		logger.Log.Error("error deleting permission", logger.Error(err))

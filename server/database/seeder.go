@@ -41,12 +41,12 @@ func seedPermissions(ctx context.Context, permissionRepo *repository.PermissionR
 	}
 
 	for _, perm := range permissions {
-		existing, err := permissionRepo.ReadPermissionByName(ctx, perm.Name)
+		existing, err := permissionRepo.ReadByName(ctx, perm.Name)
 		if err != nil {
 			return err
 		}
 		if existing == nil {
-			if err := permissionRepo.CreatePermission(ctx, &perm); err != nil {
+			if err := permissionRepo.Create(ctx, &perm); err != nil {
 				return err
 			}
 		} else {
@@ -64,12 +64,12 @@ func seedRoles(ctx context.Context, roleRepo *repository.RoleRepository) error {
 	}
 
 	for _, role := range roles {
-		existing, err := roleRepo.ReadRoleByName(ctx, role.Name)
+		existing, err := roleRepo.ReadByName(ctx, role.Name)
 		if err != nil {
 			return err
 		}
 		if existing == nil {
-			if err := roleRepo.CreateRole(ctx, &role); err != nil {
+			if err := roleRepo.Create(ctx, &role); err != nil {
 				return err
 			}
 		} else {
@@ -82,7 +82,7 @@ func seedRoles(ctx context.Context, roleRepo *repository.RoleRepository) error {
 // seedRolePermissions assigns all permissions to the "user" role using repository
 func seedRolePermissions(ctx context.Context, roleRepo *repository.RoleRepository, permissionRepo *repository.PermissionRepository, rolePermissionRepo *repository.RolePermissionRepository) error {
 	// Find the "user" role
-	userRole, err := roleRepo.ReadRoleByName(ctx, "user")
+	userRole, err := roleRepo.ReadByName(ctx, "user")
 	if err != nil {
 		return err
 	}
@@ -93,7 +93,7 @@ func seedRolePermissions(ctx context.Context, roleRepo *repository.RoleRepositor
 	// Get all permissions
 	permissions := []string{"upload_files", "download_files", "list_files"}
 	for _, permName := range permissions {
-		perm, err := permissionRepo.ReadPermissionByName(ctx, permName)
+		perm, err := permissionRepo.ReadByName(ctx, permName)
 		if err != nil {
 			return err
 		}
@@ -103,7 +103,7 @@ func seedRolePermissions(ctx context.Context, roleRepo *repository.RoleRepositor
 		}
 
 		// Check if the role-permission already exists
-		existingPermissions, err := rolePermissionRepo.ReadRolePermissions(ctx, userRole.ID.Hex())
+		existingPermissions, err := rolePermissionRepo.ReadByRoleID(ctx, userRole.ID.Hex())
 		if err != nil {
 			return err
 		}
@@ -120,7 +120,7 @@ func seedRolePermissions(ctx context.Context, roleRepo *repository.RoleRepositor
 				RoleID:       userRole.ID,
 				PermissionID: perm.ID.Hex(),
 			}
-			if err := rolePermissionRepo.CreateRolePermission(ctx, &rolePermission); err != nil {
+			if err := rolePermissionRepo.Create(ctx, &rolePermission); err != nil {
 				return err
 			}
 		} else {

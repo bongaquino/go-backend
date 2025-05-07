@@ -24,7 +24,7 @@ func NewServiceAccountRepository(mongoProvider *provider.MongoProvider) *Service
 	}
 }
 
-func (r *ServiceAccountRepository) CreateServiceAccount(ctx context.Context, account *model.ServiceAccount) error {
+func (r *ServiceAccountRepository) Create(ctx context.Context, account *model.ServiceAccount) error {
 	account.ID = primitive.NewObjectID()
 
 	account.CreatedAt = time.Now()
@@ -38,7 +38,7 @@ func (r *ServiceAccountRepository) CreateServiceAccount(ctx context.Context, acc
 	return nil
 }
 
-func (r *ServiceAccountRepository) ReadServiceAccountByClientID(ctx context.Context, clientID string) (*model.ServiceAccount, error) {
+func (r *ServiceAccountRepository) ReadByClientID(ctx context.Context, clientID string) (*model.ServiceAccount, error) {
 	var account model.ServiceAccount
 	err := r.collection.FindOne(ctx, bson.M{"client_id": clientID}).Decode(&account)
 	if err != nil {
@@ -51,7 +51,7 @@ func (r *ServiceAccountRepository) ReadServiceAccountByClientID(ctx context.Cont
 	return &account, nil
 }
 
-func (r *ServiceAccountRepository) UpdateServiceAccount(ctx context.Context, clientID string, update bson.M) error {
+func (r *ServiceAccountRepository) Update(ctx context.Context, clientID string, update bson.M) error {
 	update["updated_at"] = time.Now()
 
 	_, err := r.collection.UpdateOne(ctx, bson.M{"client_id": clientID}, bson.M{"$set": update})
@@ -62,7 +62,7 @@ func (r *ServiceAccountRepository) UpdateServiceAccount(ctx context.Context, cli
 	return nil
 }
 
-func (r *ServiceAccountRepository) DeleteServiceAccount(ctx context.Context, clientID string) error {
+func (r *ServiceAccountRepository) Delete(ctx context.Context, clientID string) error {
 	_, err := r.collection.DeleteOne(ctx, bson.M{"client_id": clientID})
 	if err != nil {
 		logger.Log.Error("error deleting service account", logger.Error(err))

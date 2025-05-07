@@ -25,7 +25,7 @@ func NewRegisterController(userService *service.UserService, tokenService *servi
 }
 
 func (rc *RegisterController) Handle(ctx *gin.Context) {
-	var request dto.CreateUser
+	var request dto.Create
 
 	if err := rc.validatePayload(ctx, &request); err != nil {
 		return
@@ -47,7 +47,7 @@ func (rc *RegisterController) Handle(ctx *gin.Context) {
 	request.IsVerified = false
 
 	// Register the user
-	user, profile, userRole, roleName, err := rc.userService.CreateUser(ctx.Request.Context(), &request)
+	user, profile, userRole, roleName, err := rc.userService.Create(ctx.Request.Context(), &request)
 	if err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, err.Error(), nil, nil)
 		return
@@ -90,7 +90,7 @@ func (rc *RegisterController) Handle(ctx *gin.Context) {
 	}, nil)
 }
 
-func (rc *RegisterController) validatePayload(ctx *gin.Context, request *dto.CreateUser) error {
+func (rc *RegisterController) validatePayload(ctx *gin.Context, request *dto.Create) error {
 	if err := ctx.ShouldBindJSON(request); err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
 		return err

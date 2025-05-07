@@ -47,7 +47,7 @@ func (ms *MFAService) GenerateOTP(ctx context.Context, userID string) (string, s
 	}
 
 	// Save the encrypted OTP secret to the user's record in the database
-	err = ms.userRepo.UpdateUser(ctx, userID, bson.M{"otp_secret": encryptedOtpSecret})
+	err = ms.userRepo.Update(ctx, userID, bson.M{"otp_secret": encryptedOtpSecret})
 	if err != nil {
 		return "", "", fmt.Errorf("failed to save OTP secret: %w", err)
 	}
@@ -57,7 +57,7 @@ func (ms *MFAService) GenerateOTP(ctx context.Context, userID string) (string, s
 
 func (ms *MFAService) VerifyOTP(ctx context.Context, userID, otp string) (bool, error) {
 	// Retrieve the user from the database
-	user, err := ms.userRepo.ReadUser(ctx, userID)
+	user, err := ms.userRepo.Read(ctx, userID)
 	if err != nil {
 		return false, fmt.Errorf("failed to retrieve user: %w", err)
 	}
@@ -78,7 +78,7 @@ func (ms *MFAService) VerifyOTP(ctx context.Context, userID, otp string) (bool, 
 
 func (ms *MFAService) EnableMFA(ctx context.Context, userID string) error {
 	// Update the user's MFA status in the database
-	err := ms.userRepo.UpdateUser(ctx, userID, bson.M{"is_mfa_enabled": true})
+	err := ms.userRepo.Update(ctx, userID, bson.M{"is_mfa_enabled": true})
 	if err != nil {
 		return fmt.Errorf("failed to enable MFA: %w", err)
 	}
@@ -92,7 +92,7 @@ func (ms *MFAService) DisableMFA(ctx context.Context, userID string) error {
 		"is_mfa_enabled": false,
 		"otp_secret":     "",
 	}
-	err := ms.userRepo.UpdateUser(ctx, userID, update)
+	err := ms.userRepo.Update(ctx, userID, update)
 	if err != nil {
 		return fmt.Errorf("failed to disable MFA: %w", err)
 	}

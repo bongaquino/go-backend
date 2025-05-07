@@ -24,7 +24,7 @@ func NewRolePermissionRepository(mongoProvider *provider.MongoProvider) *RolePer
 	}
 }
 
-func (r *RolePermissionRepository) CreateRolePermission(ctx context.Context, rolePermission *model.RolePermission) error {
+func (r *RolePermissionRepository) Create(ctx context.Context, rolePermission *model.RolePermission) error {
 	rolePermission.ID = primitive.NewObjectID()
 
 	rolePermission.CreatedAt = time.Now()
@@ -38,7 +38,7 @@ func (r *RolePermissionRepository) CreateRolePermission(ctx context.Context, rol
 	return nil
 }
 
-func (r *RolePermissionRepository) ReadRolePermissions(ctx context.Context, roleID string) ([]model.RolePermission, error) {
+func (r *RolePermissionRepository) ReadByRoleID(ctx context.Context, roleID string) ([]model.RolePermission, error) {
 	var results []model.RolePermission
 
 	cursor, err := r.collection.Find(ctx, bson.M{"role_id": roleID})
@@ -56,7 +56,7 @@ func (r *RolePermissionRepository) ReadRolePermissions(ctx context.Context, role
 	return results, nil
 }
 
-func (r *RolePermissionRepository) ReadPermissionRoles(ctx context.Context, permissionID string) ([]model.RolePermission, error) {
+func (r *RolePermissionRepository) ReadByPermissionID(ctx context.Context, permissionID string) ([]model.RolePermission, error) {
 	var results []model.RolePermission
 
 	cursor, err := r.collection.Find(ctx, bson.M{"permission_id": permissionID})
@@ -74,7 +74,7 @@ func (r *RolePermissionRepository) ReadPermissionRoles(ctx context.Context, perm
 	return results, nil
 }
 
-func (r *RolePermissionRepository) DeleteRolePermission(ctx context.Context, roleID, permissionID string) error {
+func (r *RolePermissionRepository) Delete(ctx context.Context, roleID, permissionID string) error {
 	_, err := r.collection.DeleteOne(ctx, bson.M{"role_id": roleID, "permission_id": permissionID})
 	if err != nil {
 		logger.Log.Error("error deleting role permission", logger.Error(err))

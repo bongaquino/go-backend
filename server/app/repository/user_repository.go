@@ -26,7 +26,7 @@ func NewUserRepository(mongoProvider *provider.MongoProvider) *UserRepository {
 	}
 }
 
-func (r *UserRepository) ListUsers(ctx context.Context, page, limit int) ([]model.User, error) {
+func (r *UserRepository) List(ctx context.Context, page, limit int) ([]model.User, error) {
 	var users []model.User
 
 	// Calculate the number of documents to skip
@@ -50,7 +50,7 @@ func (r *UserRepository) ListUsers(ctx context.Context, page, limit int) ([]mode
 	return users, nil
 }
 
-func (r *UserRepository) CreateUser(ctx context.Context, user *model.User) error {
+func (r *UserRepository) Create(ctx context.Context, user *model.User) error {
 	user.ID = primitive.NewObjectID()
 
 	user.CreatedAt = time.Now()
@@ -74,7 +74,7 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *model.User) error
 	return nil
 }
 
-func (r *UserRepository) ReadUserByEmail(ctx context.Context, email string) (*model.User, error) {
+func (r *UserRepository) ReadByEmail(ctx context.Context, email string) (*model.User, error) {
 	var user model.User
 	err := r.collection.FindOne(ctx, bson.M{"email": email}).Decode(&user)
 	if err != nil {
@@ -87,7 +87,7 @@ func (r *UserRepository) ReadUserByEmail(ctx context.Context, email string) (*mo
 	return &user, nil
 }
 
-func (r *UserRepository) ReadUser(ctx context.Context, id string) (*model.User, error) {
+func (r *UserRepository) Read(ctx context.Context, id string) (*model.User, error) {
 	// Convert id to ObjectID
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -107,7 +107,7 @@ func (r *UserRepository) ReadUser(ctx context.Context, id string) (*model.User, 
 	return &user, nil
 }
 
-func (r *UserRepository) UpdateUser(ctx context.Context, id string, update bson.M) error {
+func (r *UserRepository) Update(ctx context.Context, id string, update bson.M) error {
 	// Convert userID to ObjectID
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -123,7 +123,7 @@ func (r *UserRepository) UpdateUser(ctx context.Context, id string, update bson.
 	return nil
 }
 
-func (r *UserRepository) UpdateUserByEmail(ctx context.Context, email string, update bson.M) error {
+func (r *UserRepository) UpdateByEmail(ctx context.Context, email string, update bson.M) error {
 	_, err := r.collection.UpdateOne(ctx, bson.M{"email": email}, bson.M{"$set": update})
 	if err != nil {
 		logger.Log.Error("error updating user", logger.Error(err))
@@ -132,7 +132,7 @@ func (r *UserRepository) UpdateUserByEmail(ctx context.Context, email string, up
 	return nil
 }
 
-func (r *UserRepository) DeleteUser(ctx context.Context, email string) error {
+func (r *UserRepository) Delete(ctx context.Context, email string) error {
 	_, err := r.collection.DeleteOne(ctx, bson.M{"email": email})
 	if err != nil {
 		logger.Log.Error("error deleting user", logger.Error(err))

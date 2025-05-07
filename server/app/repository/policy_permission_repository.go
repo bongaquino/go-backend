@@ -24,7 +24,7 @@ func NewPolicyPermissionRepository(mongoProvider *provider.MongoProvider) *Polic
 	}
 }
 
-func (r *PolicyPermissionRepository) CreatePolicyPermission(ctx context.Context, policyPermission *model.PolicyPermission) error {
+func (r *PolicyPermissionRepository) Create(ctx context.Context, policyPermission *model.PolicyPermission) error {
 	policyPermission.ID = primitive.NewObjectID()
 
 	policyPermission.CreatedAt = time.Now()
@@ -38,7 +38,7 @@ func (r *PolicyPermissionRepository) CreatePolicyPermission(ctx context.Context,
 	return nil
 }
 
-func (r *PolicyPermissionRepository) ReadPolicyPermissions(ctx context.Context, policyID string) ([]model.PolicyPermission, error) {
+func (r *PolicyPermissionRepository) ReadByPolicyID(ctx context.Context, policyID string) ([]model.PolicyPermission, error) {
 	var results []model.PolicyPermission
 
 	cursor, err := r.collection.Find(ctx, bson.M{"policy_id": policyID})
@@ -56,7 +56,7 @@ func (r *PolicyPermissionRepository) ReadPolicyPermissions(ctx context.Context, 
 	return results, nil
 }
 
-func (r *PolicyPermissionRepository) ReadPermissionPolicies(ctx context.Context, permissionID string) ([]model.PolicyPermission, error) {
+func (r *PolicyPermissionRepository) ReadByPermissionID(ctx context.Context, permissionID string) ([]model.PolicyPermission, error) {
 	var results []model.PolicyPermission
 
 	cursor, err := r.collection.Find(ctx, bson.M{"permission_id": permissionID})
@@ -74,7 +74,7 @@ func (r *PolicyPermissionRepository) ReadPermissionPolicies(ctx context.Context,
 	return results, nil
 }
 
-func (r *PolicyPermissionRepository) DeletePolicyPermission(ctx context.Context, policyID, permissionID string) error {
+func (r *PolicyPermissionRepository) Delete(ctx context.Context, policyID, permissionID string) error {
 	_, err := r.collection.DeleteOne(ctx, bson.M{"policy_id": policyID, "permission_id": permissionID})
 	if err != nil {
 		logger.Log.Error("error deleting policy permission", logger.Error(err))

@@ -67,7 +67,7 @@ func (m *AuthzMiddleware) Handle(requiredRoles []string) gin.HandlerFunc {
 // getUserRoles fetches roles for a given userID from the database
 func (m *AuthzMiddleware) getUserRoles(ctx context.Context, userID string) ([]string, error) {
 	// Fetch user roles from the UserRoleRepository
-	userRoles, err := m.userRoleRepository.ReadUserRoles(ctx, userID)
+	userRoles, err := m.userRoleRepository.ReadRoles(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +78,7 @@ func (m *AuthzMiddleware) getUserRoles(ctx context.Context, userID string) ([]st
 	// Iterate through user roles and fetch role names using RoleRepository
 	for _, userRole := range userRoles {
 		// Fetch the role by RoleID
-		role, err := m.roleRepository.ReadRoleByID(ctx, userRole.RoleID.Hex())
+		role, err := m.roleRepository.Read(ctx, userRole.RoleID.Hex())
 		if err != nil {
 			return nil, err
 		}

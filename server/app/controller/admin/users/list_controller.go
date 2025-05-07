@@ -38,7 +38,7 @@ func (lc *ListController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	users, err := lc.userService.ListUsers(ctx.Request.Context(), pageInt, limitInt)
+	users, err := lc.userService.List(ctx.Request.Context(), pageInt, limitInt)
 	if err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to fetch users", nil, err)
 		return

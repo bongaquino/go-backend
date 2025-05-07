@@ -24,7 +24,7 @@ func NewProfileRepository(mongoProvider *provider.MongoProvider) *ProfileReposit
 	}
 }
 
-func (r *ProfileRepository) CreateProfile(ctx context.Context, profile *model.Profile) error {
+func (r *ProfileRepository) Create(ctx context.Context, profile *model.Profile) error {
 	profile.ID = primitive.NewObjectID()
 
 	profile.CreatedAt = time.Now()
@@ -38,7 +38,7 @@ func (r *ProfileRepository) CreateProfile(ctx context.Context, profile *model.Pr
 	return nil
 }
 
-func (r *ProfileRepository) ReadProfileByUserID(ctx context.Context, userID string) (*model.Profile, error) {
+func (r *ProfileRepository) ReadByUserID(ctx context.Context, userID string) (*model.Profile, error) {
 	// Convert userID to ObjectID
 	objectID, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
@@ -58,7 +58,7 @@ func (r *ProfileRepository) ReadProfileByUserID(ctx context.Context, userID stri
 	return &profile, nil
 }
 
-func (r *ProfileRepository) UpdateProfile(ctx context.Context, userID string, update bson.M) error {
+func (r *ProfileRepository) Update(ctx context.Context, userID string, update bson.M) error {
 	update["updated_at"] = time.Now()
 
 	_, err := r.collection.UpdateOne(ctx, bson.M{"user_id": userID}, bson.M{"$set": update})
@@ -69,7 +69,7 @@ func (r *ProfileRepository) UpdateProfile(ctx context.Context, userID string, up
 	return nil
 }
 
-func (r *ProfileRepository) DeleteProfile(ctx context.Context, userID string) error {
+func (r *ProfileRepository) Delete(ctx context.Context, userID string) error {
 	_, err := r.collection.DeleteOne(ctx, bson.M{"user_id": userID})
 	if err != nil {
 		logger.Log.Error("error deleting profile", logger.Error(err))

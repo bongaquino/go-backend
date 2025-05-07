@@ -24,7 +24,7 @@ func NewPolicyRepository(mongoProvider *provider.MongoProvider) *PolicyRepositor
 	}
 }
 
-func (r *PolicyRepository) CreatePolicy(ctx context.Context, policy *model.Policy) error {
+func (r *PolicyRepository) Create(ctx context.Context, policy *model.Policy) error {
 	policy.ID = primitive.NewObjectID()
 
 	policy.CreatedAt = time.Now()
@@ -38,7 +38,7 @@ func (r *PolicyRepository) CreatePolicy(ctx context.Context, policy *model.Polic
 	return nil
 }
 
-func (r *PolicyRepository) ReadPolicyByName(ctx context.Context, name string) (*model.Policy, error) {
+func (r *PolicyRepository) ReadByName(ctx context.Context, name string) (*model.Policy, error) {
 	var policy model.Policy
 	err := r.collection.FindOne(ctx, bson.M{"name": name}).Decode(&policy)
 	if err != nil {
@@ -51,7 +51,7 @@ func (r *PolicyRepository) ReadPolicyByName(ctx context.Context, name string) (*
 	return &policy, nil
 }
 
-func (r *PolicyRepository) UpdatePolicy(ctx context.Context, name string, update bson.M) error {
+func (r *PolicyRepository) Update(ctx context.Context, name string, update bson.M) error {
 	_, err := r.collection.UpdateOne(ctx, bson.M{"name": name}, bson.M{"$set": update})
 	if err != nil {
 		logger.Log.Error("error updating policy", logger.Error(err))
@@ -60,7 +60,7 @@ func (r *PolicyRepository) UpdatePolicy(ctx context.Context, name string, update
 	return nil
 }
 
-func (r *PolicyRepository) DeletePolicy(ctx context.Context, name string) error {
+func (r *PolicyRepository) Delete(ctx context.Context, name string) error {
 	_, err := r.collection.DeleteOne(ctx, bson.M{"name": name})
 	if err != nil {
 		logger.Log.Error("error deleting policy", logger.Error(err))

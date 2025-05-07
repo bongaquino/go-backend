@@ -32,7 +32,7 @@ func NewTokenService(userRepo *repository.UserRepository, jwtProvider *provider.
 func (ts *TokenService) AuthenticateUser(ctx context.Context, email, password string) (accessToken string, refreshToken string, err error) {
 	failedLoginAttemptsKey := fmt.Sprintf("failed_login_attempts:%s", email)
 
-	user, err := ts.userRepo.ReadUserByEmail(ctx, email)
+	user, err := ts.userRepo.ReadByEmail(ctx, email)
 	if err != nil || user == nil {
 		return "", "", errors.New("invalid credentials")
 	}
@@ -63,7 +63,7 @@ func (ts *TokenService) AuthenticateUser(ctx context.Context, email, password st
 					"is_locked": true,
 				}
 
-				if err := ts.userRepo.UpdateUserByEmail(ctx, email, update); err != nil {
+				if err := ts.userRepo.UpdateByEmail(ctx, email, update); err != nil {
 					return "", "", fmt.Errorf("failed to update user lock status: %w", err)
 				}
 			} else {
@@ -102,7 +102,7 @@ func (ts *TokenService) RefreshTokens(ctx context.Context, refreshToken string) 
 		return "", "", errors.New("invalid or expired refresh token")
 	}
 
-	user, err := ts.userRepo.ReadUserByEmail(ctx, *claims.Email)
+	user, err := ts.userRepo.ReadByEmail(ctx, *claims.Email)
 	if err != nil || user == nil {
 		return "", "", errors.New("user no longer exists")
 	}
@@ -129,7 +129,7 @@ func (ts *TokenService) RevokeToken(ctx context.Context, refreshToken string) er
 	}
 
 	// Check if the user exists
-	user, err := ts.userRepo.ReadUserByEmail(ctx, *claims.Email)
+	user, err := ts.userRepo.ReadByEmail(ctx, *claims.Email)
 	if err != nil || user == nil {
 		return errors.New("user no longer exists")
 	}
@@ -151,7 +151,7 @@ func (ts *TokenService) AuthenticateLoginCode(ctx context.Context, loginCode, ot
 	}
 
 	// Check if user exists
-	user, err := ts.userRepo.ReadUser(ctx, userID)
+	user, err := ts.userRepo.Read(ctx, userID)
 	if err != nil || user == nil {
 		return "", "", errors.New("user no longer exists")
 	}
