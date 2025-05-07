@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type UserService struct {
@@ -432,15 +433,15 @@ func (us *UserService) Update(ctx context.Context, userID string, request *dto.U
 }
 
 // UpdateUser updates an existing user, their profile, and their role based on the provided UpdateUser
-func (us *UserService) UpdateUser(ctx context.Context, userID string, dto *dto.UpdateUserDTO) error {
+func (us *UserService) UpdateUser(ctx context.Context, userID string, dto *dto.UpdateUserDTO) (*model.User, *model.Profile, *model.UserRole, string, error) {
 	// Check if the user exists
 	user, err := us.userRepo.Read(ctx, userID)
 	if err != nil {
 		logger.Log.Error("error fetching user by ID", logger.Error(err))
-		return errors.New("failed to retrieve user")
+		return nil, nil, nil, "", errors.New("failed to retrieve user")
 	}
 	if user == nil {
-		return errors.New("user not found")
+		return nil, nil, nil, "", errors.New("user not found")
 	}
 
 	// Update user fields
@@ -456,14 +457,14 @@ func (us *UserService) UpdateUser(ctx context.Context, userID string, dto *dto.U
 		hashedPassword, err := helper.Hash(dto.Password)
 		if err != nil {
 			logger.Log.Error("error hashing password", logger.Error(err))
-			return errors.New("failed to hash password")
+			return nil, nil, nil, "", errors.New("failed to hash password")
 		}
 		userUpdate["password"] = hashedPassword
 	}
 
 	if err := us.userRepo.Update(ctx, userID, userUpdate); err != nil {
 		logger.Log.Error("error updating user", logger.Error(err))
-		return errors.New("failed to update user")
+		return nil, nil, nil, "", errors.New("failed to update user")
 	}
 
 	// Update profile fields
@@ -476,18 +477,19 @@ func (us *UserService) UpdateUser(ctx context.Context, userID string, dto *dto.U
 
 	if err := us.profileRepo.UpdateByUserID(ctx, userID, profileUpdate); err != nil {
 		logger.Log.Error("error updating profile", logger.Error(err))
-		return errors.New("failed to update profile")
+		return nil, nil, nil, "", errors.New("failed to update profile")
 	}
 
 	// Update user role
+	var userRole *model.Role
 	if dto.Role != "" {
-		userRole, err := us.roleRepo.ReadByName(ctx, dto.Role)
+		userRole, err = us.roleRepo.ReadByName(ctx, dto.Role)
 		if err != nil {
 			logger.Log.Error("error retrieving role", logger.Error(err))
-			return errors.New("failed to retrieve role")
+			return nil, nil, nil, "", errors.New("failed to retrieve role")
 		}
 		if userRole == nil {
-			return errors.New("role not found")
+			return nil, nil, nil, "", errors.New("role not found")
 		}
 
 		// Set the user role ID in the update map
@@ -498,9 +500,21 @@ func (us *UserService) UpdateUser(ctx context.Context, userID string, dto *dto.U
 		// Update the user role in the repository
 		if err := us.userRoleRepo.Update(ctx, userID, userRoleUpdateMap); err != nil {
 			logger.Log.Error("error updating user role", logger.Error(err))
-			return errors.New("failed to update user role")
+			return nil, nil, nil, "", errors.New("failed to update user role")
 		}
 	}
 
-	return nil
+	// Fetch updated profile
+	profile, err := us.profileRepo.ReadByUserID(ctx, userID)
+	if err != nil {
+		logger.Log.Error("error fetching updated profile", logger.Error(err))
+		return nil, nil, nil, "", errors.New("failed to fetch updated profile")
+	}
+
+	userObjectID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		logger.Log.Error("error converting userID to ObjectID", logger.Error(err))
+		return nil, nil, nil, "", errors.New("invalid user ID format")
+	}
+	return user, profile, &model.UserRole{UserID: userObjectID, RoleID: userRole.ID}, userRole.Name, nil
 }

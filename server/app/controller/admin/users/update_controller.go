@@ -36,17 +36,23 @@ func (lc *UpdateController) Handle(ctx *gin.Context) {
 	}
 
 	// Update user
-	err := lc.userService.UpdateUser(ctx, userID, &request)
+	user, profile, userRole, roleName, err := lc.userService.UpdateUser(ctx, userID, &request)
 	if err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to update user", nil, nil)
 		return
 	}
 
-	// Respond with success
-	// helper.FormatResponse(ctx, "success", http.StatusOK, nil, gin.H{
-	// 	"user":    user,
-	// 	"profile": profile,
-	// }, nil)
+	// Check if userRole is nil
+	helper.FormatResponse(ctx, "success", http.StatusOK, nil, gin.H{
+		"user": gin.H{
+			"email": user.Email,
+		},
+		"profile": profile,
+		"user_role": gin.H{
+			"role_id":   userRole.RoleID,
+			"role_name": roleName,
+		},
+	}, nil)
 }
 
 func (rc *UpdateController) validatePayload(ctx *gin.Context, request *dto.UpdateUserDTO) error {
