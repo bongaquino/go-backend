@@ -1,7 +1,6 @@
 package users
 
 import (
-	"fmt"
 	"koneksi/server/app/helper"
 	"koneksi/server/app/service"
 	"net/http"
@@ -28,8 +27,6 @@ func (lc *ReadController) Handle(ctx *gin.Context) {
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "userID is required", nil, nil)
 		return
 	}
-
-	fmt.Println("userID", userID)
 
 	user, profile, err := lc.userService.GetUserProfile(ctx.Request.Context(), userID)
 	if err != nil {
