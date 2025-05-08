@@ -121,6 +121,25 @@ func (r *OrganizationUserRoleRepository) Delete(ctx context.Context, id string) 
 	return nil
 }
 
+func (r *OrganizationUserRoleRepository) DeleteByOrganizationIDUserID(ctx context.Context, organizationID, userID string) error {
+	orgObjectID, err := primitive.ObjectIDFromHex(organizationID)
+	if err != nil {
+		return nil
+	}
+
+	userObjectID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return nil
+	}
+
+	_, err = r.collection.DeleteOne(ctx, bson.M{"organization_id": orgObjectID, "user_id": userObjectID})
+	if err != nil {
+		logger.Log.Error("error deleting organization user role by organization ID and user ID", logger.Error(err))
+		return err
+	}
+	return nil
+}
+
 func (r *OrganizationUserRoleRepository) UpdateByOrganizationIDUserID(ctx context.Context, organizationID, userID string, update bson.M) error {
 	orgObjectID, err := primitive.ObjectIDFromHex(organizationID)
 	if err != nil {

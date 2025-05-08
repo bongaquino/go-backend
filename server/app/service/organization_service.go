@@ -324,8 +324,59 @@ func (os *OrganizationService) UpdateMember(ctx context.Context, orgID string, u
 		return errors.New("role not found")
 	}
 
+	// Check if the user is a member of the organization
+	member, err := os.orgUserRoleRepo.ReadByUserIDOrganizationID(ctx, userID, orgID)
+	if err != nil {
+		logger.Log.Error("error checking existing member", logger.Error(err))
+		return errors.New("error checking existing member")
+	}
+	if member == nil {
+		return errors.New("user is not a member")
+	}
+
 	// Update the member's role in the organization
 	err = os.orgUserRoleRepo.UpdateByOrganizationIDUserID(ctx, orgID, userID, bson.M{"role_id": roleID})
+	if err != nil {
+		logger.Log.Error("error updating member in organization", logger.Error(err))
+		return errors.New("error updating member in organization")
+	}
+
+	return nil
+}
+
+func (os *OrganizationService) RemoveMember(ctx context.Context, orgID string, userID string) error {
+	// Check if the organization exists
+	org, err := os.orgRepo.Read(ctx, orgID)
+	if err != nil {
+		logger.Log.Error("error fetching organization", logger.Error(err))
+		return errors.New("error fetching organization")
+	}
+	if org == nil {
+		return errors.New("organization not found")
+	}
+
+	// Check if the user exists
+	user, err := os.userRepo.Read(ctx, userID)
+	if err != nil {
+		logger.Log.Error("error fetching user", logger.Error(err))
+		return errors.New("error fetching user")
+	}
+	if user == nil {
+		return errors.New("user not found")
+	}
+
+	// Check if the user is a member of the organization
+	member, err := os.orgUserRoleRepo.ReadByUserIDOrganizationID(ctx, userID, orgID)
+	if err != nil {
+		logger.Log.Error("error checking existing member", logger.Error(err))
+		return errors.New("error checking existing member")
+	}
+	if member == nil {
+		return errors.New("user is not a member")
+	}
+
+	// Remove m
+	err = os.orgUserRoleRepo.DeleteByOrganizationIDUserID(ctx, orgID, userID)
 	if err != nil {
 		logger.Log.Error("error updating member in organization", logger.Error(err))
 		return errors.New("error updating member in organization")

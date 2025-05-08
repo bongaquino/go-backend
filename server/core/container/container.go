@@ -107,6 +107,7 @@ type Controllers struct {
 			Members struct {
 				Add        *members.AddController
 				UpdateRole *members.UpdateRoleController
+				Remove     *members.RemoveController
 			}
 		}
 	}
@@ -246,6 +247,7 @@ func initControllers(s Services) Controllers {
 				Members struct {
 					Add        *members.AddController
 					UpdateRole *members.UpdateRoleController
+					Remove     *members.RemoveController
 				}
 			}
 		}{
@@ -270,6 +272,7 @@ func initControllers(s Services) Controllers {
 				Members struct {
 					Add        *members.AddController
 					UpdateRole *members.UpdateRoleController
+					Remove     *members.RemoveController
 				}
 			}{
 				List:   organizations.NewListController(s.Organization),
@@ -279,9 +282,11 @@ func initControllers(s Services) Controllers {
 				Members: struct {
 					Add        *members.AddController
 					UpdateRole *members.UpdateRoleController
+					Remove     *members.RemoveController
 				}{
 					Add:        members.NewAddController(s.Organization),
 					UpdateRole: members.NewUpdateRoleController(s.Organization),
+					Remove:     members.NewRemoveController(s.Organization),
 				},
 			},
 		},

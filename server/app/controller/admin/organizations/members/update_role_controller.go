@@ -60,6 +60,10 @@ func (ac *UpdateRoleController) Handle(ctx *gin.Context) {
 			helper.FormatResponse(ctx, "error", http.StatusNotFound, "role not found", nil, nil)
 			return
 		}
+		if err.Error() == "user is not a member" {
+			helper.FormatResponse(ctx, "error", http.StatusNotFound, "user is not a member", nil, nil)
+			return
+		}
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to update member role", nil, err)
 		return
 	}
