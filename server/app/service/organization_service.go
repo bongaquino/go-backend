@@ -3,9 +3,12 @@ package service
 import (
 	"context"
 	"errors"
+	"koneksi/server/app/dto"
 	"koneksi/server/app/model"
 	"koneksi/server/app/repository"
 	"koneksi/server/core/logger"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type OrganizationService struct {
@@ -64,4 +67,50 @@ func (os *OrganizationService) ListOrgs(ctx context.Context, page, limit int) ([
 		orgPointers[i] = &orgs[i]
 	}
 	return orgPointers, nil
+}
+
+func (os *OrganizationService) CreateOrg(ctx context.Context, request *dto.CreateOrgDTO) (*model.Organization, error) {
+	// Map the request to the organization model
+	org := &model.Organization{
+		Name:   request.Name,
+		Domain: request.Domain,
+		PolicyID: func() primitive.ObjectID {
+			policyID, err := primitive.ObjectIDFromHex(request.PolicyID)
+			if err != nil {
+				logger.Log.Error("invalid policy ID", logger.Error(err))
+				return primitive.NilObjectID
+			}
+			return policyID
+		}(),
+		ParentID: func() primitive.ObjectID {
+			if request.ParentID != nil {
+				parentID, err := primitive.ObjectIDFromHex(*request.ParentID)
+				if err == nil {
+					return parentID
+				}
+				logger.Log.Error("invalid parent ID", logger.Error(err))
+			}
+			return primitive.NilObjectID
+		}(),
+	}
+
+	// Check if policy exists
+	policy, err := os.policyRepo.Read(ctx, org.PolicyID.Hex())
+	if err != nil {
+		logger.Log.Error("error fetching policy", logger.Error(err))
+		return nil, errors.New("internal server error")
+	}
+	if policy == nil {
+		logger.Log.Error("policy not found", logger.Error(err))
+		return nil, errors.New("policy not found")
+	}
+
+	// Create the organization
+	err = os.orgRepo.Create(ctx, org)
+	if err != nil {
+		logger.Log.Error("error creating organization", logger.Error(err))
+		return nil, errors.New("internal server error")
+	}
+
+	return org, nil
 }

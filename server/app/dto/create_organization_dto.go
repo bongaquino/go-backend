@@ -1,9 +1,9 @@
 package dto
 
 type CreateOrgDTO struct {
-	Name     string  `bson:"name" binding:"required"`
-	Domain   string  `bson:"domain" binding:"required"`
-	Contact  string  `bson:"contact" binding:"required"`
-	PolicyID string  `bson:"policy_id" binding:"required"`
-	ParentID *string `bson:"parent_id"`
+	Name     string  `json:"name" binding:"required"`
+	Domain   string  `json:"domain" binding:"required"`
+	Contact  string  `json:"contact" binding:"required"`
+	PolicyID string  `json:"policy_id" binding:"required"`
+	ParentID *string `json:"parent_id"`
 }

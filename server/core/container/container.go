@@ -98,7 +98,8 @@ type Controllers struct {
 			Update *adminUsers.UpdateController
 		}
 		Organizations struct {
-			List *organizations.ListController
+			List   *organizations.ListController
+			Create *organizations.CreateController
 		}
 	}
 }
@@ -228,7 +229,8 @@ func initControllers(s Services) Controllers {
 				Update *adminUsers.UpdateController
 			}
 			Organizations struct {
-				List *organizations.ListController
+				List   *organizations.ListController
+				Create *organizations.CreateController
 			}
 		}{
 			Users: struct {
@@ -243,9 +245,11 @@ func initControllers(s Services) Controllers {
 				Update: adminUsers.NewUpdateController(s.User),
 			},
 			Organizations: struct {
-				List *organizations.ListController
+				List   *organizations.ListController
+				Create *organizations.CreateController
 			}{
-				List: organizations.NewListController(s.Organization),
+				List:   organizations.NewListController(s.Organization),
+				Create: organizations.NewCreateController(s.Organization),
 			},
 		},
 	}

@@ -63,6 +63,26 @@ func (r *PolicyRepository) Create(ctx context.Context, policy *model.Policy) err
 	return nil
 }
 
+func (r *PolicyRepository) Read(ctx context.Context, id string) (*model.Policy, error) {
+	// Convert id to ObjectID
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		logger.Log.Error("invalid ID format", logger.Error(err))
+		return nil, err
+	}
+
+	var policy model.Policy
+	err = r.collection.FindOne(ctx, bson.M{"_id": objectID}).Decode(&policy)
+	if err != nil {
+		if err == mongoDriver.ErrNoDocuments {
+			return nil, nil
+		}
+		logger.Log.Error("error reading policy", logger.Error(err))
+		return nil, err
+	}
+	return &policy, nil
+}
+
 func (r *PolicyRepository) ReadByName(ctx context.Context, name string) (*model.Policy, error) {
 	var policy model.Policy
 	err := r.collection.FindOne(ctx, bson.M{"name": name}).Decode(&policy)
