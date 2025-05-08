@@ -158,6 +158,7 @@ func (os *OrganizationService) ReadOrg(ctx context.Context, orgID string) (*mode
 		}
 		if user != nil {
 			members = append(members, map[string]string{
+				"ID":    user.ID.Hex(),
 				"email": user.Email,
 				"role":  roleMap[member.RoleID.Hex()],
 			})
@@ -287,6 +288,47 @@ func (os *OrganizationService) AddMember(ctx context.Context, orgID string, user
 	if err != nil {
 		logger.Log.Error("error adding member to organization", logger.Error(err))
 		return errors.New("error adding member to organization")
+	}
+
+	return nil
+}
+
+func (os *OrganizationService) UpdateMember(ctx context.Context, orgID string, userID string, roleID string) error {
+	// Check if the organization exists
+	org, err := os.orgRepo.Read(ctx, orgID)
+	if err != nil {
+		logger.Log.Error("error fetching organization", logger.Error(err))
+		return errors.New("error fetching organization")
+	}
+	if org == nil {
+		return errors.New("organization not found")
+	}
+
+	// Check if the user exists
+	user, err := os.userRepo.Read(ctx, userID)
+	if err != nil {
+		logger.Log.Error("error fetching user", logger.Error(err))
+		return errors.New("error fetching user")
+	}
+	if user == nil {
+		return errors.New("user not found")
+	}
+
+	// Check if the role exists
+	role, err := os.roleRepo.Read(ctx, roleID)
+	if err != nil {
+		logger.Log.Error("error fetching role", logger.Error(err))
+		return errors.New("error fetching role")
+	}
+	if role == nil {
+		return errors.New("role not found")
+	}
+
+	// Update the member's role in the organization
+	err = os.orgUserRoleRepo.UpdateByOrganizationIDUserID(ctx, orgID, userID, bson.M{"role_id": roleID})
+	if err != nil {
+		logger.Log.Error("error updating member in organization", logger.Error(err))
+		return errors.New("error updating member in organization")
 	}
 
 	return nil
