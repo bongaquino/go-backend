@@ -8,6 +8,7 @@ import (
 	"koneksi/server/app/repository"
 	"koneksi/server/core/logger"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -105,4 +106,62 @@ func (os *OrganizationService) CreateOrg(ctx context.Context, request *dto.Creat
 	}
 
 	return org, nil
+}
+
+func (os *OrganizationService) UpdateOrg(ctx context.Context, orgID string, dto *dto.UpdateOrgDTO) (*model.Organization, error) {
+	// Check if the organization exists
+	org, err := os.orgRepo.Read(ctx, orgID)
+	if err != nil {
+		logger.Log.Error("error fetching organization", logger.Error(err))
+		return nil, errors.New("error fetching organization")
+	}
+	if org == nil {
+		return nil, errors.New("organization not found")
+	}
+
+	// Precompute policyID and parentID
+	policyID, err := primitive.ObjectIDFromHex(dto.PolicyID)
+	if err != nil {
+		logger.Log.Error("invalid policy ID", logger.Error(err))
+		return nil, errors.New("invalid policy ID")
+	}
+
+	var parentID primitive.ObjectID
+	if dto.ParentID != nil {
+		parentID, err = primitive.ObjectIDFromHex(*dto.ParentID)
+		if err != nil {
+			logger.Log.Error("invalid parent ID", logger.Error(err))
+			return nil, errors.New("invalid parent ID")
+		}
+	}
+
+	// Update the organization fields
+	orgUpdate := bson.M{
+		"name":      dto.Name,
+		"domain":    dto.Domain,
+		"contact":   dto.Contact,
+		"policy_id": policyID,
+		"parent_id": parentID,
+	}
+
+	// Update the organization in the repository
+	err = os.orgRepo.Update(ctx, orgID, orgUpdate)
+	if err != nil {
+		logger.Log.Error("error updating organization", logger.Error(err))
+		return nil, errors.New("error updating organization")
+	}
+
+	// Fetch the updated organization
+	updatedOrg, err := os.orgRepo.Read(ctx, orgID)
+	if err != nil {
+		logger.Log.Error("error fetching updated organization", logger.Error(err))
+		return nil, errors.New("error fetching updated organization")
+	}
+	if updatedOrg == nil {
+		logger.Log.Error("organization not found after update", logger.Error(err))
+		return nil, errors.New("organization not found after update")
+	}
+
+	// Return the updated organization
+	return updatedOrg, nil
 }
