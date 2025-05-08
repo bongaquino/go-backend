@@ -9,16 +9,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// CheckHealthController handles health-related endpoints
-type CheckHealthController struct{}
+// CheckController handles health-related endpoints
+type CheckController struct{}
 
-// NewCheckHealthController initializes a new CheckHealthController
-func NewCheckHealthController() *CheckHealthController {
-	return &CheckHealthController{}
+// NewCheckController initializes a new CheckController
+func NewCheckController() *CheckController {
+	return &CheckController{}
 }
 
 // Handles the health check endpoint
-func (hc *CheckHealthController) Handle(ctx *gin.Context) {
+func (hc *CheckController) Handle(ctx *gin.Context) {
 	appConfig := config.LoadAppConfig()
 
 	// Respond with success

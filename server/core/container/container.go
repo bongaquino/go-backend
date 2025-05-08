@@ -57,7 +57,7 @@ type Middleware struct {
 
 type Controllers struct {
 	Health struct {
-		Check *health.CheckHealthController
+		Check *health.CheckController
 	}
 	Users struct {
 		Register               *users.RegisterController
@@ -154,9 +154,9 @@ func initMiddleware(p Providers, r Repositories) Middleware {
 func initControllers(s Services) Controllers {
 	return Controllers{
 		Health: struct {
-			Check *health.CheckHealthController
+			Check *health.CheckController
 		}{
-			Check: health.NewCheckHealthController(),
+			Check: health.NewCheckController(),
 		},
 		Users: struct {
 			Register               *users.RegisterController
