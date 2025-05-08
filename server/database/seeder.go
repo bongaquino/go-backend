@@ -9,7 +9,13 @@ import (
 )
 
 // SeedCollections seeds initial data into MongoDB collections
-func SeedCollections(permissionRepo *repository.PermissionRepository, roleRepo *repository.RoleRepository, rolePermissionRepo *repository.RolePermissionRepository) {
+func SeedCollections(
+	permissionRepo *repository.PermissionRepository,
+	roleRepo *repository.RoleRepository,
+	rolePermissionRepo *repository.RolePermissionRepository,
+	policyRepo *repository.PolicyRepository,
+	policyPermissionRepo *repository.PolicyPermissionRepository,
+) {
 	ctx := context.Background()
 
 	seeders := []struct {
@@ -21,6 +27,7 @@ func SeedCollections(permissionRepo *repository.PermissionRepository, roleRepo *
 		{"role_permissions", func(ctx context.Context) error {
 			return seedRolePermissions(ctx, roleRepo, permissionRepo, rolePermissionRepo)
 		}},
+		{"policies", func(ctx context.Context) error { return seedPolicies(ctx, policyRepo) }},
 	}
 
 	for _, seeder := range seeders {
@@ -135,7 +142,7 @@ func seedRolePermissions(
 
 		existingMap := make(map[string]bool)
 		for _, rp := range existingPermissions {
-			existingMap[rp.PermissionID] = true
+			existingMap[rp.PermissionID.Hex()] = true
 		}
 
 		for _, permName := range permissionNames {
@@ -151,7 +158,7 @@ func seedRolePermissions(
 			if !existingMap[perm.ID.Hex()] {
 				rolePermission := model.RolePermission{
 					RoleID:       role.ID,
-					PermissionID: perm.ID.Hex(),
+					PermissionID: perm.ID,
 				}
 				if err := rolePermissionRepo.Create(ctx, &rolePermission); err != nil {
 					return err
@@ -161,5 +168,77 @@ func seedRolePermissions(
 			}
 		}
 	}
+	return nil
+}
+
+// seedPolicies inserts a default organization-level policy
+func seedPolicies(ctx context.Context, policyRepo *repository.PolicyRepository) error {
+	defaultPolicy := model.Policy{
+		Name: "default_organization_access",
+	}
+
+	existing, err := policyRepo.ReadByName(ctx, defaultPolicy.Name)
+	if err != nil {
+		return err
+	}
+	if existing == nil {
+		if err := policyRepo.Create(ctx, &defaultPolicy); err != nil {
+			return err
+		}
+	} else {
+		logger.Log.Info(fmt.Sprintf("skipping policy: %s (already exists)", defaultPolicy.Name))
+	}
+
+	return nil
+}
+
+// seedPolicyPermissions assigns permissions to the default policy
+func seedPolicyPermissions(
+	ctx context.Context,
+	policyRepo *repository.PolicyRepository,
+	permissionRepo *repository.PermissionRepository,
+	policyPermissionRepo *repository.PolicyPermissionRepository,
+) error {
+	defaultPolicy, err := policyRepo.ReadByName(ctx, "default_organization_access")
+	if err != nil {
+		return err
+	}
+	if defaultPolicy == nil {
+		logger.Log.Warn("default policy not found, skipping policy permission seeding")
+		return nil
+	}
+
+	permissions := []string{
+		"list:users", "create:user", "read:user", "update:user",
+		"list:organizations", "create:organization", "read:organization", "update:organization",
+	}
+
+	for _, permName := range permissions {
+		perm, err := permissionRepo.ReadByName(ctx, permName)
+		if err != nil {
+			return err
+		}
+		if perm == nil {
+			logger.Log.Warn(fmt.Sprintf("skipping policy permission seeding: Permission %s not found", permName))
+			continue
+		}
+
+		existing, err := policyPermissionRepo.ReadByPolicyIDPermissionID(ctx, defaultPolicy.ID.Hex(), perm.ID.Hex())
+		if err != nil {
+			return err
+		}
+		if existing == nil {
+			policyPermission := model.PolicyPermission{
+				PolicyID:     defaultPolicy.ID,
+				PermissionID: perm.ID,
+			}
+			if err := policyPermissionRepo.Create(ctx, &policyPermission); err != nil {
+				return err
+			}
+		} else {
+			logger.Log.Info(fmt.Sprintf("skipping policy permission: %s -> %s (already exists)", defaultPolicy.Name, permName))
+		}
+	}
+
 	return nil
 }

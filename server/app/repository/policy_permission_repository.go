@@ -73,6 +73,20 @@ func (r *PolicyPermissionRepository) ReadByPermissionID(ctx context.Context, per
 	return results, nil
 }
 
+func (r *PolicyPermissionRepository) ReadByPolicyIDPermissionID(ctx context.Context, policyID, permissionID string) (*model.PolicyPermission, error) {
+	var result model.PolicyPermission
+
+	err := r.collection.FindOne(ctx, bson.M{"policy_id": policyID, "permission_id": permissionID}).Decode(&result)
+	if err != nil {
+		if err == mongoDriver.ErrNoDocuments {
+			return nil, nil
+		}
+		logger.Log.Error("error retrieving policy permission", logger.Error(err))
+		return nil, err
+	}
+	return &result, nil
+}
+
 func (r *PolicyPermissionRepository) Delete(ctx context.Context, policyID, permissionID string) error {
 	_, err := r.collection.DeleteOne(ctx, bson.M{"policy_id": policyID, "permission_id": permissionID})
 	if err != nil {
