@@ -89,7 +89,7 @@ func (us *UserService) CreateUser(ctx context.Context, request *dto.CreateUserDT
 		IsVerified: request.IsVerified,
 	}
 	if err := us.userRepo.Create(ctx, user); err != nil {
-		logger.Log.Error("error creating user", logger.Error(err))
+		logger.Log.Error("failed to create user", logger.Error(err))
 		return nil, nil, nil, "", errors.New("failed to create user")
 	}
 
@@ -101,13 +101,13 @@ func (us *UserService) CreateUser(ctx context.Context, request *dto.CreateUserDT
 		Suffix:     request.Suffix,
 	}
 	if err := us.profileRepo.Create(ctx, profile); err != nil {
-		logger.Log.Error("error creating profile", logger.Error(err))
+		logger.Log.Error("failed to create profile", logger.Error(err))
 		return nil, nil, nil, "", errors.New("failed to create profile")
 	}
 
 	userRole, err := us.roleRepo.ReadByName(ctx, request.Role)
 	if err != nil {
-		logger.Log.Error("error retrieving role", logger.Error(err))
+		logger.Log.Error("failed to assign role", logger.Error(err))
 		return nil, nil, nil, "", errors.New("failed to assign role")
 	}
 	if userRole == nil {
@@ -119,7 +119,7 @@ func (us *UserService) CreateUser(ctx context.Context, request *dto.CreateUserDT
 		RoleID: userRole.ID,
 	}
 	if err := us.userRoleRepo.Create(ctx, userRoleAssignment); err != nil {
-		logger.Log.Error("error assigning role", logger.Error(err))
+		logger.Log.Error("failed to assign role", logger.Error(err))
 		return nil, nil, nil, "", errors.New("failed to assign role")
 	}
 
@@ -131,10 +131,11 @@ func (us *UserService) ChangePassword(ctx context.Context, userID string, reques
 	// Fetch the user from the repository
 	user, err := us.userRepo.Read(ctx, userID)
 	if err != nil {
-		logger.Log.Error("error fetching user by ID", logger.Error(err))
+		logger.Log.Error("failed to retrieve user", logger.Error(err))
 		return errors.New("failed to retrieve user")
 	}
 	if user == nil {
+		logger.Log.Error("user not found", logger.Error(err))
 		return errors.New("user not found")
 	}
 
@@ -151,7 +152,7 @@ func (us *UserService) ChangePassword(ctx context.Context, userID string, reques
 	// Hash the new password
 	hashedPassword, err := helper.Hash(request.NewPassword)
 	if err != nil {
-		logger.Log.Error("error hashing new password", logger.Error(err))
+		logger.Log.Error("failed to hash new password", logger.Error(err))
 		return errors.New("failed to hash new password")
 	}
 
@@ -161,7 +162,7 @@ func (us *UserService) ChangePassword(ctx context.Context, userID string, reques
 		"updatedAt": time.Now(),
 	}
 	if err := us.userRepo.Update(ctx, user.ID.Hex(), update); err != nil {
-		logger.Log.Error("error updating user password", logger.Error(err))
+		logger.Log.Error("failed to update password", logger.Error(err))
 		return errors.New("failed to update password")
 	}
 
@@ -265,7 +266,7 @@ func (us *UserService) ResetPassword(ctx context.Context, email, resetCode, newP
 func (us *UserService) GetUserProfile(ctx context.Context, userID string) (*model.User, *model.Profile, error) {
 	user, err := us.userRepo.Read(ctx, userID)
 	if err != nil {
-		logger.Log.Error("error fetching user by ID", logger.Error(err))
+		logger.Log.Error("failed to retrieve user", logger.Error(err))
 		return nil, nil, errors.New("failed to retrieve user")
 	}
 	if user == nil {
@@ -274,7 +275,7 @@ func (us *UserService) GetUserProfile(ctx context.Context, userID string) (*mode
 
 	profile, err := us.profileRepo.ReadByUserID(ctx, userID)
 	if err != nil {
-		logger.Log.Error("error fetching profile by user ID", logger.Error(err))
+		logger.Log.Error("failed to retrieve profile", logger.Error(err))
 		return nil, nil, errors.New("failed to retrieve profile")
 	}
 	if profile == nil {
@@ -287,7 +288,7 @@ func (us *UserService) GetUserProfile(ctx context.Context, userID string) (*mode
 func (us *UserService) GetUserProfileByEmail(ctx context.Context, email string) (*model.User, *model.Profile, error) {
 	user, err := us.userRepo.ReadByEmail(ctx, email)
 	if err != nil {
-		logger.Log.Error("error fetching user by email", logger.Error(err))
+		logger.Log.Error("failed to retrieve user", logger.Error(err))
 		return nil, nil, errors.New("failed to retrieve user")
 	}
 	if user == nil {
@@ -296,7 +297,7 @@ func (us *UserService) GetUserProfileByEmail(ctx context.Context, email string) 
 
 	profile, err := us.profileRepo.ReadByUserID(ctx, user.ID.Hex())
 	if err != nil {
-		logger.Log.Error("error fetching profile by user ID", logger.Error(err))
+		logger.Log.Error("failed to retrieve profile", logger.Error(err))
 		return nil, nil, errors.New("failed to retrieve profile")
 	}
 	if profile == nil {
@@ -360,7 +361,7 @@ func (us *UserService) VerifyUserAccount(ctx context.Context, userID string, cod
 	}
 
 	if err := us.userRepo.Update(ctx, userID, update); err != nil {
-		logger.Log.Error("error verifying user account", logger.Error(err))
+		logger.Log.Error("failed to verify account", logger.Error(err))
 		return errors.New("failed to verify account")
 	}
 
@@ -429,7 +430,7 @@ func (us *UserService) Update(ctx context.Context, userID string, request *dto.U
 	if request.Password != "" {
 		hashedPassword, err := helper.Hash(request.Password)
 		if err != nil {
-			logger.Log.Error("error hashing password", logger.Error(err))
+			logger.Log.Error("failed to hash password", logger.Error(err))
 			return errors.New("failed to hash password")
 		}
 		update["password"] = hashedPassword
@@ -437,7 +438,7 @@ func (us *UserService) Update(ctx context.Context, userID string, request *dto.U
 
 	// Call the repository to update the user
 	if err := us.userRepo.Update(ctx, userID, update); err != nil {
-		logger.Log.Error("error updating user", logger.Error(err))
+		logger.Log.Error("failed to update user", logger.Error(err))
 		return errors.New("failed to update user")
 	}
 
@@ -449,10 +450,11 @@ func (us *UserService) UpdateUser(ctx context.Context, userID string, dto *dto.U
 	// Check if the user exists
 	user, err := us.userRepo.Read(ctx, userID)
 	if err != nil {
-		logger.Log.Error("error fetching user by ID", logger.Error(err))
+		logger.Log.Error("failed to retrieve user", logger.Error(err))
 		return nil, nil, nil, "", errors.New("failed to retrieve user")
 	}
 	if user == nil {
+		logger.Log.Error("user not found", logger.Error(err))
 		return nil, nil, nil, "", errors.New("user not found")
 	}
 
@@ -468,14 +470,14 @@ func (us *UserService) UpdateUser(ctx context.Context, userID string, dto *dto.U
 	if dto.Password != "" {
 		hashedPassword, err := helper.Hash(dto.Password)
 		if err != nil {
-			logger.Log.Error("error hashing password", logger.Error(err))
+			logger.Log.Error("failed to hash password", logger.Error(err))
 			return nil, nil, nil, "", errors.New("failed to hash password")
 		}
 		userUpdate["password"] = hashedPassword
 	}
 
 	if err := us.userRepo.Update(ctx, userID, userUpdate); err != nil {
-		logger.Log.Error("error updating user", logger.Error(err))
+		logger.Log.Error("failed to update user", logger.Error(err))
 		return nil, nil, nil, "", errors.New("failed to update user")
 	}
 
@@ -488,7 +490,7 @@ func (us *UserService) UpdateUser(ctx context.Context, userID string, dto *dto.U
 	}
 
 	if err := us.profileRepo.UpdateByUserID(ctx, userID, profileUpdate); err != nil {
-		logger.Log.Error("error updating profile", logger.Error(err))
+		logger.Log.Error("failed to update profile", logger.Error(err))
 		return nil, nil, nil, "", errors.New("failed to update profile")
 	}
 
@@ -497,10 +499,11 @@ func (us *UserService) UpdateUser(ctx context.Context, userID string, dto *dto.U
 	if dto.Role != "" {
 		userRole, err = us.roleRepo.ReadByName(ctx, dto.Role)
 		if err != nil {
-			logger.Log.Error("error retrieving role", logger.Error(err))
+			logger.Log.Error("failed to retrieve role", logger.Error(err))
 			return nil, nil, nil, "", errors.New("failed to retrieve role")
 		}
 		if userRole == nil {
+			logger.Log.Error("role not found", logger.Error(err))
 			return nil, nil, nil, "", errors.New("role not found")
 		}
 
@@ -519,13 +522,13 @@ func (us *UserService) UpdateUser(ctx context.Context, userID string, dto *dto.U
 	// Fetch updated profile
 	profile, err := us.profileRepo.ReadByUserID(ctx, userID)
 	if err != nil {
-		logger.Log.Error("error fetching updated profile", logger.Error(err))
+		logger.Log.Error("failed to fetch updated profile", logger.Error(err))
 		return nil, nil, nil, "", errors.New("failed to fetch updated profile")
 	}
 
 	userObjectID, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
-		logger.Log.Error("error converting userID to ObjectID", logger.Error(err))
+		logger.Log.Error("invalid user ID format", logger.Error(err))
 		return nil, nil, nil, "", errors.New("invalid user ID format")
 	}
 	return user, profile, &model.UserRole{UserID: userObjectID, RoleID: userRole.ID}, userRole.Name, nil

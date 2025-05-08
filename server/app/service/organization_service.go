@@ -33,7 +33,7 @@ func (os *OrganizationService) ListPermissions(ctx context.Context) ([]*model.Pe
 	permissions, err := os.permissionRepo.List(ctx)
 	if err != nil {
 		logger.Log.Error("error fetching permissions", logger.Error(err))
-		return nil, errors.New("internal server error")
+		return nil, errors.New("error fetching permissions")
 	}
 	// Convert []model.Permission to []*model.Permission
 	permissionPointers := make([]*model.Permission, len(permissions))
@@ -46,7 +46,7 @@ func (os *OrganizationService) ListPolicies(ctx context.Context) ([]*model.Polic
 	policies, err := os.policyRepo.List(ctx)
 	if err != nil {
 		logger.Log.Error("error fetching policies", logger.Error(err))
-		return nil, errors.New("internal server error")
+		return nil, errors.New("error fetching policies")
 	}
 	// Convert []model.Policy to []*model.Policy
 	policyPointers := make([]*model.Policy, len(policies))
@@ -59,7 +59,7 @@ func (os *OrganizationService) ListOrgs(ctx context.Context, page, limit int) ([
 	orgs, err := os.orgRepo.List(ctx, page, limit)
 	if err != nil {
 		logger.Log.Error("error fetching orgs", logger.Error(err))
-		return nil, errors.New("internal server error")
+		return nil, errors.New("error fetching orgs")
 	}
 	// Convert []model.Organization to []*model.Organization
 	orgPointers := make([]*model.Organization, len(orgs))
@@ -101,7 +101,7 @@ func (os *OrganizationService) CreateOrg(ctx context.Context, request *dto.Creat
 	policy, err := os.policyRepo.Read(ctx, org.PolicyID.Hex())
 	if err != nil {
 		logger.Log.Error("error fetching policy", logger.Error(err))
-		return nil, errors.New("internal server error")
+		return nil, errors.New("error fetching policy")
 	}
 	if policy == nil {
 		logger.Log.Error("policy not found", logger.Error(err))

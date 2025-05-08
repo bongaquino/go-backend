@@ -31,7 +31,7 @@ func (lc *CreateController) Handle(ctx *gin.Context) {
 
 	// Create the organization using the service
 	if org, err := lc.orgService.CreateOrg(ctx, &request); err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to create organization", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, err.Error(), nil, nil)
 		return
 	} else {
 		// Respond with success and include the org
