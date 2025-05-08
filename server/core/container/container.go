@@ -142,7 +142,7 @@ func initServices(p Providers, r Repositories) Services {
 	mfa := service.NewMFAService(r.User, p.Redis)
 	ipfs := service.NewIPFSService(p.IPFS)
 	token := service.NewTokenService(r.User, p.JWT, mfa, p.Redis)
-	organization := service.NewOrganizationService(r.Organization)
+	organization := service.NewOrganizationService(r.Organization, r.Policy)
 	return Services{user, token, mfa, email, ipfs, organization}
 }
 
@@ -165,7 +165,7 @@ func initControllers(s Services) Controllers {
 		Constants: struct {
 			Fetch *constants.FetchController
 		}{
-			Fetch: constants.NewFetchController(s.User),
+			Fetch: constants.NewFetchController(s.User, s.Organization),
 		},
 		Users: struct {
 			Register               *users.RegisterController

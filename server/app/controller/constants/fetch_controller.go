@@ -12,12 +12,14 @@ import (
 // FetchController handles health-related endpoints
 type FetchController struct {
 	userService *service.UserService
+	orgService  *service.OrganizationService
 }
 
 // NewFetchController initializes a new FetchController
-func NewFetchController(userService *service.UserService) *FetchController {
+func NewFetchController(userService *service.UserService, orgService *service.OrganizationService) *FetchController {
 	return &FetchController{
 		userService: userService,
+		orgService:  orgService,
 	}
 }
 
@@ -30,10 +32,16 @@ func (fc *FetchController) Handle(ctx *gin.Context) {
 		return
 	}
 
+	policies, err := fc.orgService.ListPolicies(ctx)
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, err.Error(), nil, nil)
+		return
+	}
+
 	// Respond with success
 	helper.FormatResponse(ctx, "success", http.StatusOK, nil, gin.H{
 		"roles":       roles,
-		"policies":    "policies",
+		"policies":    policies,
 		"permissions": "permissions",
 	}, nil)
 }

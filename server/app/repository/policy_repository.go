@@ -24,6 +24,32 @@ func NewPolicyRepository(mongoProvider *provider.MongoProvider) *PolicyRepositor
 	}
 }
 
+func (r *PolicyRepository) List(ctx context.Context) ([]*model.Policy, error) {
+	cursor, err := r.collection.Find(ctx, bson.M{})
+	if err != nil {
+		logger.Log.Error("error listing policies", logger.Error(err))
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var policies []*model.Policy
+	for cursor.Next(ctx) {
+		var policy model.Policy
+		if err := cursor.Decode(&policy); err != nil {
+			logger.Log.Error("error decoding policy", logger.Error(err))
+			return nil, err
+		}
+		policies = append(policies, &policy)
+	}
+
+	if err := cursor.Err(); err != nil {
+		logger.Log.Error("error iterating over policies", logger.Error(err))
+		return nil, err
+	}
+
+	return policies, nil
+}
+
 func (r *PolicyRepository) Create(ctx context.Context, policy *model.Policy) error {
 	policy.ID = primitive.NewObjectID()
 	policy.CreatedAt = time.Now()
