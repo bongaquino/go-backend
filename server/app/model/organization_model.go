@@ -3,7 +3,6 @@ package model
 import (
 	"time"
 
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -20,9 +19,7 @@ type Organization struct {
 	UpdatedAt            time.Time          `bson:"updated_at"`
 }
 
-func (Organization) GetIndexes() []bson.D {
-	return []bson.D{
-		{{Key: "name", Value: 1}},
-		{{Key: "parent_id", Value: 1}},
-	}
+// Indexes are handled manually in migration
+func (Organization) GetIndexes() []primitive.D {
+	return nil
 }

@@ -97,19 +97,8 @@ func (os *OrganizationService) CreateOrg(ctx context.Context, request *dto.Creat
 		}(),
 	}
 
-	// Check if policy exists
-	policy, err := os.policyRepo.Read(ctx, org.PolicyID.Hex())
-	if err != nil {
-		logger.Log.Error("error fetching policy", logger.Error(err))
-		return nil, errors.New("error fetching policy")
-	}
-	if policy == nil {
-		logger.Log.Error("policy not found", logger.Error(err))
-		return nil, errors.New("policy not found")
-	}
-
 	// Create the organization
-	err = os.orgRepo.Create(ctx, org)
+	err := os.orgRepo.Create(ctx, org)
 	if err != nil {
 		logger.Log.Error("error creating organization", logger.Error(err))
 		return nil, errors.New("internal server error")
