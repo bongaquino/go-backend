@@ -21,15 +21,15 @@ func NewCreateController(orgService *service.OrganizationService) *CreateControl
 }
 
 // Handle handles the health check request
-func (lc *CreateController) Handle(ctx *gin.Context) {
+func (cc *CreateController) Handle(ctx *gin.Context) {
 	var request dto.CreateOrgDTO
 	// Bind the request body to the CreateOrgDTO struct
-	if err := lc.validatePayload(ctx, &request); err != nil {
+	if err := cc.validatePayload(ctx, &request); err != nil {
 		return
 	}
 
 	// Create the organization using the service
-	if org, err := lc.orgService.CreateOrg(ctx, &request); err != nil {
+	if org, err := cc.orgService.CreateOrg(ctx, &request); err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, err.Error(), nil, nil)
 		return
 	} else {
@@ -38,7 +38,7 @@ func (lc *CreateController) Handle(ctx *gin.Context) {
 	}
 }
 
-func (rc *CreateController) validatePayload(ctx *gin.Context, request *dto.CreateOrgDTO) error {
+func (cc *CreateController) validatePayload(ctx *gin.Context, request *dto.CreateOrgDTO) error {
 	if err := ctx.ShouldBindJSON(request); err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
 		return err

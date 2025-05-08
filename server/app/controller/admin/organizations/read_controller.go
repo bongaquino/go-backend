@@ -20,7 +20,7 @@ func NewReadController(orgService *service.OrganizationService) *ReadController 
 }
 
 // Handle handles the health check request
-func (lc *ReadController) Handle(ctx *gin.Context) {
+func (rc *ReadController) Handle(ctx *gin.Context) {
 	// Get orgID from path parameters
 	orgID := ctx.Param("orgID")
 	if orgID == "" {
@@ -29,7 +29,7 @@ func (lc *ReadController) Handle(ctx *gin.Context) {
 	}
 
 	// Read the organization using the service
-	org, members, err := lc.orgService.ReadOrg(ctx, orgID)
+	org, members, err := rc.orgService.ReadOrg(ctx, orgID)
 
 	// If err is not found, return a 404 error
 	if err != nil {

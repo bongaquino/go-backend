@@ -21,7 +21,7 @@ func NewUpdateController(orgService *service.OrganizationService) *UpdateControl
 }
 
 // Handle handles the health check request
-func (lc *UpdateController) Handle(ctx *gin.Context) {
+func (uc *UpdateController) Handle(ctx *gin.Context) {
 	// Get orgID from path parameters
 	orgID := ctx.Param("orgID")
 	if orgID == "" {
@@ -31,12 +31,12 @@ func (lc *UpdateController) Handle(ctx *gin.Context) {
 
 	// Get request body
 	var request dto.UpdateOrgDTO
-	if err := lc.validatePayload(ctx, &request); err != nil {
+	if err := uc.validatePayload(ctx, &request); err != nil {
 		return
 	}
 
 	// Update the organization using the service
-	updatedOrg, err := lc.orgService.UpdateOrg(ctx, orgID, &request)
+	updatedOrg, err := uc.orgService.UpdateOrg(ctx, orgID, &request)
 	if err != nil {
 		if err.Error() == "organization not found" {
 			helper.FormatResponse(ctx, "error", http.StatusNotFound, err.Error(), nil, nil)
@@ -49,7 +49,7 @@ func (lc *UpdateController) Handle(ctx *gin.Context) {
 	helper.FormatResponse(ctx, "success", http.StatusOK, "organization updated successfully", updatedOrg, nil)
 }
 
-func (rc *UpdateController) validatePayload(ctx *gin.Context, request *dto.UpdateOrgDTO) error {
+func (uc *UpdateController) validatePayload(ctx *gin.Context, request *dto.UpdateOrgDTO) error {
 	if err := ctx.ShouldBindJSON(request); err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
 		return err
