@@ -108,6 +108,20 @@ func (os *OrganizationService) CreateOrg(ctx context.Context, request *dto.Creat
 	return org, nil
 }
 
+func (os *OrganizationService) ReadOrg(ctx context.Context, orgID string) (*model.Organization, error) {
+	// Fetch the organization from the repository
+	org, err := os.orgRepo.Read(ctx, orgID)
+	if err != nil {
+		logger.Log.Error("error fetching organization", logger.Error(err))
+		return nil, errors.New("error fetching organization")
+	}
+	if org == nil {
+		return nil, errors.New("organization not found")
+	}
+
+	return org, nil
+}
+
 func (os *OrganizationService) UpdateOrg(ctx context.Context, orgID string, dto *dto.UpdateOrgDTO) (*model.Organization, error) {
 	// Check if the organization exists
 	org, err := os.orgRepo.Read(ctx, orgID)

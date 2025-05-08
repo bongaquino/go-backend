@@ -75,6 +75,7 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 		// Organization Management Routes
 		adminGroup.GET("organizations/list", container.Controllers.Admin.Organizations.List.Handle)
 		adminGroup.POST("organizations/create", container.Controllers.Admin.Organizations.Create.Handle)
+		adminGroup.GET("organizations/:orgID/read", container.Controllers.Admin.Organizations.Read.Handle)
 		adminGroup.PUT("organizations/:orgID/update", container.Controllers.Admin.Organizations.Update.Handle)
 	}
 }
