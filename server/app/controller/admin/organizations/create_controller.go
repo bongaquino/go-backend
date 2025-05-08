@@ -35,7 +35,7 @@ func (lc *CreateController) Handle(ctx *gin.Context) {
 		return
 	} else {
 		// Respond with success and include the org
-		helper.FormatResponse(ctx, "success", http.StatusOK, nil, org, nil)
+		helper.FormatResponse(ctx, "success", http.StatusOK, "organization created successfully", org, nil)
 	}
 }
 
