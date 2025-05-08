@@ -15,6 +15,7 @@ type Organization struct {
 	PolicyID             primitive.ObjectID `bson:"policy_id"`
 	SubscriptionPlanID   primitive.ObjectID `bson:"subscription_plan_id"`
 	SubscriptionStatusID primitive.ObjectID `bson:"subscription_status_id"`
+	ParentID             primitive.ObjectID `bson:"parent_id"`
 	CreatedAt            time.Time          `bson:"created_at"`
 	UpdatedAt            time.Time          `bson:"updated_at"`
 }
@@ -22,5 +23,6 @@ type Organization struct {
 func (Organization) GetIndexes() []bson.D {
 	return []bson.D{
 		{{Key: "name", Value: 1}},
+		{{Key: "parent_id", Value: 1}},
 	}
 }

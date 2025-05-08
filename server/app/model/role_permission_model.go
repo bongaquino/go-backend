@@ -17,6 +17,6 @@ type RolePermission struct {
 
 func (RolePermission) GetIndexes() []bson.D {
 	return []bson.D{
-		{{Key: "user_id", Value: 1}, {Key: "role_id", Value: 1}},
+		{{Key: "role_id", Value: 1}, {Key: "permission_id", Value: 1}},
 	}
 }
