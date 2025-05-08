@@ -136,6 +136,7 @@ func seedAccesses(ctx context.Context, accessRepo *repository.AccessRepository) 
 	accesses := []model.Access{
 		{Name: "admin"},
 		{Name: "user"},
+		{Name: "viewer"},
 	}
 
 	for _, access := range accesses {
