@@ -9,7 +9,7 @@ import (
 )
 
 // SeedCollections seeds initial data into MongoDB collections
-func SeedCollections(permissionRepo *repository.PermissionRepository, roleRepo *repository.RoleRepository, rolePermissionRepo *repository.RolePermissionRepository) {
+func SeedCollections(permissionRepo *repository.PermissionRepository, roleRepo *repository.RoleRepository, rolePermissionRepo *repository.RolePermissionRepository, accessRepo *repository.AccessRepository) {
 	ctx := context.Background()
 
 	seeders := []struct {
@@ -21,6 +21,7 @@ func SeedCollections(permissionRepo *repository.PermissionRepository, roleRepo *
 		{"role_permissions", func(ctx context.Context) error {
 			return seedRolePermissions(ctx, roleRepo, permissionRepo, rolePermissionRepo)
 		}},
+		{"accesses", func(ctx context.Context) error { return seedAccesses(ctx, accessRepo) }},
 	}
 
 	for _, seeder := range seeders {
