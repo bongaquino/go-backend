@@ -20,7 +20,7 @@ func NewSearchController(userService *service.UserService) *SearchController {
 }
 
 // Handle handles the health check request
-func (lc *SearchController) Handle(ctx *gin.Context) {
+func (sc *SearchController) Handle(ctx *gin.Context) {
 	// Get email from query params
 	email := ctx.Query("email")
 
@@ -30,7 +30,7 @@ func (lc *SearchController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	users, err := lc.userService.SearchUsers(ctx, email)
+	users, err := sc.userService.SearchUsers(ctx, email)
 	if err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to fetch users", nil, err)
 		return

@@ -21,7 +21,7 @@ func NewUpdateController(userService *service.UserService) *UpdateController {
 }
 
 // Handle handles the health check request
-func (lc *UpdateController) Handle(ctx *gin.Context) {
+func (uc *UpdateController) Handle(ctx *gin.Context) {
 	// Get userID from path parameters
 	userID := ctx.Param("userID")
 	if userID == "" {
@@ -31,12 +31,12 @@ func (lc *UpdateController) Handle(ctx *gin.Context) {
 
 	// Get request body
 	var request dto.UpdateUserDTO
-	if err := lc.validatePayload(ctx, &request); err != nil {
+	if err := uc.validatePayload(ctx, &request); err != nil {
 		return
 	}
 
 	// Update user
-	user, profile, userRole, roleName, err := lc.userService.UpdateUser(ctx, userID, &request)
+	user, profile, userRole, roleName, err := uc.userService.UpdateUser(ctx, userID, &request)
 	if err != nil {
 		if err.Error() == "role not found" {
 			helper.FormatResponse(ctx, "error", http.StatusNotFound, "role not found", nil, nil)

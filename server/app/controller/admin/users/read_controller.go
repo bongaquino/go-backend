@@ -20,7 +20,7 @@ func NewReadController(userService *service.UserService) *ReadController {
 }
 
 // Handle handles the health check request
-func (lc *ReadController) Handle(ctx *gin.Context) {
+func (rc *ReadController) Handle(ctx *gin.Context) {
 	// Get userID from path parameters
 	userID := ctx.Param("userID")
 	if userID == "" {
@@ -28,7 +28,7 @@ func (lc *ReadController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	user, profile, err := lc.userService.GetUserProfile(ctx.Request.Context(), userID)
+	user, profile, err := rc.userService.GetUserProfile(ctx.Request.Context(), userID)
 
 	// if err is not found, return a 404 error
 	if err != nil {

@@ -24,15 +24,15 @@ func NewCreateController(userService *service.UserService, tokenService *service
 	}
 }
 
-func (rc *CreateController) Handle(ctx *gin.Context) {
+func (cc *CreateController) Handle(ctx *gin.Context) {
 	var request dto.CreateUserDTO
 
-	if err := rc.validatePayload(ctx, &request); err != nil {
+	if err := cc.validatePayload(ctx, &request); err != nil {
 		return
 	}
 
 	// Check if user already exists
-	exists, err := rc.userService.UserExists(ctx.Request.Context(), request.Email)
+	exists, err := cc.userService.UserExists(ctx.Request.Context(), request.Email)
 	if err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, err.Error(), nil, nil)
 		return
@@ -49,7 +49,7 @@ func (rc *CreateController) Handle(ctx *gin.Context) {
 	request.IsVerified = true
 
 	// Create the user
-	user, profile, userRole, roleName, err := rc.userService.CreateUser(ctx.Request.Context(), &request)
+	user, profile, userRole, roleName, err := cc.userService.CreateUser(ctx.Request.Context(), &request)
 
 	// If err is "role not found", return 404
 	if err != nil {
@@ -73,7 +73,7 @@ func (rc *CreateController) Handle(ctx *gin.Context) {
 	}, nil)
 }
 
-func (rc *CreateController) validatePayload(ctx *gin.Context, request *dto.CreateUserDTO) error {
+func (cc *CreateController) validatePayload(ctx *gin.Context, request *dto.CreateUserDTO) error {
 	if err := ctx.ShouldBindJSON(request); err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
 		return err
