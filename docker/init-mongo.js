@@ -13,7 +13,7 @@ if (db.system.users.find({ user: 'root' }).count() === 0) {
 db = db.getSiblingDB('koneksi');
 
 if (db.system.users.find({ user: 'koneksi_user' }).count() === 0) {
-  db.Create({
+  db.createUser({
     user: 'koneksi_user',
     pwd: 'koneksi_password',
     roles: [{ role: 'readWrite', db: 'koneksi' }]
