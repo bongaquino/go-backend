@@ -25,9 +25,9 @@ func SeedCollections(permissionRepo *repository.PermissionRepository, roleRepo *
 
 	for _, seeder := range seeders {
 		if err := seeder.Seeder(ctx); err != nil {
-			logger.Log.Error(fmt.Sprintf("Failed to seed collection: %s", seeder.Name), logger.Error(err))
+			logger.Log.Error(fmt.Sprintf("failed to seed collection: %s", seeder.Name), logger.Error(err))
 		} else {
-			logger.Log.Info(fmt.Sprintf("Seeded collection: %s", seeder.Name))
+			logger.Log.Info(fmt.Sprintf("seeded collection: %s", seeder.Name))
 		}
 	}
 }
@@ -50,7 +50,7 @@ func seedPermissions(ctx context.Context, permissionRepo *repository.PermissionR
 				return err
 			}
 		} else {
-			logger.Log.Info(fmt.Sprintf("Skipping permission: %s (already exists)", perm.Name))
+			logger.Log.Info(fmt.Sprintf("skipping permission: %s (already exists)", perm.Name))
 		}
 	}
 	return nil
@@ -59,8 +59,8 @@ func seedPermissions(ctx context.Context, permissionRepo *repository.PermissionR
 // seedRoles inserts initial roles using the repository
 func seedRoles(ctx context.Context, roleRepo *repository.RoleRepository) error {
 	roles := []model.Role{
-		{Name: "user"},
 		{Name: "admin"},
+		{Name: "user"},
 	}
 
 	for _, role := range roles {
@@ -73,7 +73,7 @@ func seedRoles(ctx context.Context, roleRepo *repository.RoleRepository) error {
 				return err
 			}
 		} else {
-			logger.Log.Info(fmt.Sprintf("Skipping role: %s (already exists)", role.Name))
+			logger.Log.Info(fmt.Sprintf("skipping role: %s (already exists)", role.Name))
 		}
 	}
 	return nil
@@ -98,12 +98,12 @@ func seedRolePermissions(ctx context.Context, roleRepo *repository.RoleRepositor
 			return err
 		}
 		if perm == nil {
-			logger.Log.Warn(fmt.Sprintf("Skipping role permission seeding: Permission %s not found", permName))
+			logger.Log.Warn(fmt.Sprintf("skipping role permission seeding: Permission %s not found", permName))
 			continue
 		}
 
 		// Check if the role-permission already exists
-		existingPermissions, err := rolePermissionRepo.ReadByRoleIDID(ctx, userRole.ID.Hex())
+		existingPermissions, err := rolePermissionRepo.ReadByRoleID(ctx, userRole.ID.Hex())
 		if err != nil {
 			return err
 		}
@@ -124,7 +124,30 @@ func seedRolePermissions(ctx context.Context, roleRepo *repository.RoleRepositor
 				return err
 			}
 		} else {
-			logger.Log.Info(fmt.Sprintf("Skipping role permission: %s -> %s (already exists)", userRole.Name, perm.Name))
+			logger.Log.Info(fmt.Sprintf("skipping role permission: %s -> %s (already exists)", userRole.Name, perm.Name))
+		}
+	}
+	return nil
+}
+
+// seedAccesses inserts initial accesses using the repository
+func seedAccesses(ctx context.Context, accessRepo *repository.AccessRepository) error {
+	accesses := []model.Access{
+		{Name: "admin"},
+		{Name: "user"},
+	}
+
+	for _, access := range accesses {
+		existing, err := accessRepo.ReadByName(ctx, access.Name)
+		if err != nil {
+			return err
+		}
+		if existing == nil {
+			if err := accessRepo.Create(ctx, &access); err != nil {
+				return err
+			}
+		} else {
+			logger.Log.Info(fmt.Sprintf("skipping role: %s (already exists)", access.Name))
 		}
 	}
 	return nil

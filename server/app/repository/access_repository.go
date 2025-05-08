@@ -36,7 +36,7 @@ func (r *AccessRepository) Create(ctx context.Context, access *model.Access) err
 	return nil
 }
 
-func (r *AccessRepository) FindByName(ctx context.Context, name string) (*model.Access, error) {
+func (r *AccessRepository) ReadByName(ctx context.Context, name string) (*model.Access, error) {
 	var access model.Access
 	err := r.collection.FindOne(ctx, bson.M{"name": name}).Decode(&access)
 	if err != nil {
