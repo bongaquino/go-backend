@@ -7,7 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type OrganizationUserAccess struct {
+type OrganizationUserRole struct {
 	ID             primitive.ObjectID `bson:"_id,omitempty"`
 	OrganizationID primitive.ObjectID `bson:"organization_id"`
 	UserID         primitive.ObjectID `bson:"user_id"`
@@ -16,7 +16,7 @@ type OrganizationUserAccess struct {
 	UpdatedAt      time.Time          `bson:"updated_at"`
 }
 
-func (OrganizationUserAccess) GetIndexes() []bson.D {
+func (OrganizationUserRole) GetIndexes() []bson.D {
 	return []bson.D{
 		{{Key: "name", Value: 1}},
 	}

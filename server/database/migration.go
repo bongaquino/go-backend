@@ -30,9 +30,8 @@ func MigrateCollections(mongoProvider *provider.MongoProvider) {
 		{"role_permissions", []mongoDriver.IndexModel{{Keys: bson.D{{Key: "role_id", Value: 1}, {Key: "permission_id", Value: 1}}, Options: mongoOptions.Index().SetUnique(true).SetName("unique_role_permission")}}},
 		{"user_roles", generateIndexes(model.UserRole{}.GetIndexes(), "unique_user_role")},
 		{"service_accounts", generateIndexes(model.ServiceAccount{}.GetIndexes(), "unique_client_id")},
-		{"accesses", generateIndexes(model.Access{}.GetIndexes(), "unique_access_name")},
 		{"organizations", generateIndexes(model.Organization{}.GetIndexes(), "unique_organization_name")},
-		{"organization_user_access", generateIndexes(model.OrganizationUserAccess{}.GetIndexes(), "unique_organization_user_access")},
+		{"organization_user_role", generateIndexes(model.OrganizationUserRole{}.GetIndexes(), "unique_organization_user_access")},
 	}
 
 	for _, collection := range collections {

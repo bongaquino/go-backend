@@ -26,18 +26,17 @@ type Providers struct {
 }
 
 type Repositories struct {
-	Permission             *repository.PermissionRepository
-	Policy                 *repository.PolicyRepository
-	PolicyPermission       *repository.PolicyPermissionRepository
-	Profile                *repository.ProfileRepository
-	Role                   *repository.RoleRepository
-	RolePermission         *repository.RolePermissionRepository
-	ServiceAccount         *repository.ServiceAccountRepository
-	User                   *repository.UserRepository
-	UserRole               *repository.UserRoleRepository
-	Access                 *repository.AccessRepository
-	Organization           *repository.OrganizationRepository
-	OrganizationUserAccess *repository.OrganizationUserAccessRepository
+	Permission           *repository.PermissionRepository
+	Policy               *repository.PolicyRepository
+	PolicyPermission     *repository.PolicyPermissionRepository
+	Profile              *repository.ProfileRepository
+	Role                 *repository.RoleRepository
+	RolePermission       *repository.RolePermissionRepository
+	ServiceAccount       *repository.ServiceAccountRepository
+	User                 *repository.UserRepository
+	UserRole             *repository.UserRoleRepository
+	Organization         *repository.OrganizationRepository
+	OrganizationUserRole *repository.OrganizationUserRoleRepository
 }
 
 type Services struct {
@@ -119,18 +118,17 @@ func initProviders() Providers {
 
 func initRepositories(p Providers) Repositories {
 	return Repositories{
-		Permission:             repository.NewPermissionRepository(p.Mongo),
-		Policy:                 repository.NewPolicyRepository(p.Mongo),
-		PolicyPermission:       repository.NewPolicyPermissionRepository(p.Mongo),
-		Profile:                repository.NewProfileRepository(p.Mongo),
-		Role:                   repository.NewRoleRepository(p.Mongo),
-		RolePermission:         repository.NewRolePermissionRepository(p.Mongo),
-		ServiceAccount:         repository.NewServiceAccountRepository(p.Mongo),
-		User:                   repository.NewUserRepository(p.Mongo),
-		UserRole:               repository.NewUserRoleRepository(p.Mongo),
-		Access:                 repository.NewAccessRepository(p.Mongo),
-		Organization:           repository.NewOrganizationRepository(p.Mongo),
-		OrganizationUserAccess: repository.NewOrganizationUserAccessRepository(p.Mongo),
+		Permission:           repository.NewPermissionRepository(p.Mongo),
+		Policy:               repository.NewPolicyRepository(p.Mongo),
+		PolicyPermission:     repository.NewPolicyPermissionRepository(p.Mongo),
+		Profile:              repository.NewProfileRepository(p.Mongo),
+		Role:                 repository.NewRoleRepository(p.Mongo),
+		RolePermission:       repository.NewRolePermissionRepository(p.Mongo),
+		ServiceAccount:       repository.NewServiceAccountRepository(p.Mongo),
+		User:                 repository.NewUserRepository(p.Mongo),
+		UserRole:             repository.NewUserRoleRepository(p.Mongo),
+		Organization:         repository.NewOrganizationRepository(p.Mongo),
+		OrganizationUserRole: repository.NewOrganizationUserRoleRepository(p.Mongo),
 	}
 }
 
@@ -257,7 +255,6 @@ func NewContainer() *Container {
 		repositories.Permission,
 		repositories.Role,
 		repositories.RolePermission,
-		repositories.Access,
 	)
 
 	return &Container{

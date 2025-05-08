@@ -9,7 +9,7 @@ import (
 )
 
 // SeedCollections seeds initial data into MongoDB collections
-func SeedCollections(permissionRepo *repository.PermissionRepository, roleRepo *repository.RoleRepository, rolePermissionRepo *repository.RolePermissionRepository, accessRepo *repository.AccessRepository) {
+func SeedCollections(permissionRepo *repository.PermissionRepository, roleRepo *repository.RoleRepository, rolePermissionRepo *repository.RolePermissionRepository) {
 	ctx := context.Background()
 
 	seeders := []struct {
@@ -21,7 +21,6 @@ func SeedCollections(permissionRepo *repository.PermissionRepository, roleRepo *
 		{"role_permissions", func(ctx context.Context) error {
 			return seedRolePermissions(ctx, roleRepo, permissionRepo, rolePermissionRepo)
 		}},
-		{"accesses", func(ctx context.Context) error { return seedAccesses(ctx, accessRepo) }},
 	}
 
 	for _, seeder := range seeders {
@@ -126,30 +125,6 @@ func seedRolePermissions(ctx context.Context, roleRepo *repository.RoleRepositor
 			}
 		} else {
 			logger.Log.Info(fmt.Sprintf("skipping role permission: %s -> %s (already exists)", userRole.Name, perm.Name))
-		}
-	}
-	return nil
-}
-
-// seedAccesses inserts initial accesses using the repository
-func seedAccesses(ctx context.Context, accessRepo *repository.AccessRepository) error {
-	accesses := []model.Access{
-		{Name: "admin"},
-		{Name: "user"},
-		{Name: "viewer"},
-	}
-
-	for _, access := range accesses {
-		existing, err := accessRepo.ReadByName(ctx, access.Name)
-		if err != nil {
-			return err
-		}
-		if existing == nil {
-			if err := accessRepo.Create(ctx, &access); err != nil {
-				return err
-			}
-		} else {
-			logger.Log.Info(fmt.Sprintf("skipping role: %s (already exists)", access.Name))
 		}
 	}
 	return nil
