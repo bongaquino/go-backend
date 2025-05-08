@@ -96,6 +96,7 @@ type Controllers struct {
 			Create *adminUsers.CreateController
 			Read   *adminUsers.ReadController
 			Update *adminUsers.UpdateController
+			Search *adminUsers.SearchController
 		}
 		Organizations struct {
 			List   *organizations.ListController
@@ -228,6 +229,7 @@ func initControllers(s Services) Controllers {
 				Create *adminUsers.CreateController
 				Read   *adminUsers.ReadController
 				Update *adminUsers.UpdateController
+				Search *adminUsers.SearchController
 			}
 			Organizations struct {
 				List   *organizations.ListController
@@ -240,11 +242,13 @@ func initControllers(s Services) Controllers {
 				Create *adminUsers.CreateController
 				Read   *adminUsers.ReadController
 				Update *adminUsers.UpdateController
+				Search *adminUsers.SearchController
 			}{
 				List:   adminUsers.NewListController(s.User),
 				Create: adminUsers.NewCreateController(s.User, s.Token, s.Email),
 				Read:   adminUsers.NewReadController(s.User),
 				Update: adminUsers.NewUpdateController(s.User),
+				Search: adminUsers.NewSearchController(s.User),
 			},
 			Organizations: struct {
 				List   *organizations.ListController

@@ -142,3 +142,27 @@ func (r *UserRepository) Delete(ctx context.Context, email string) error {
 	}
 	return nil
 }
+
+func (r *UserRepository) SearchByEmail(ctx context.Context, email string) ([]model.User, error) {
+	var users []model.User
+
+	// Create a filter to search for users by email
+	filter := bson.M{"email": bson.M{"$regex": email, "$options": "i"}}
+
+	// Set options for pagination
+	opts := options.Find().SetLimit(10)
+
+	cursor, err := r.collection.Find(ctx, filter, opts)
+	if err != nil {
+		logger.Log.Error("error searching users by email", logger.Error(err))
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	if err = cursor.All(ctx, &users); err != nil {
+		logger.Log.Error("error decoding users", logger.Error(err))
+		return nil, err
+	}
+
+	return users, nil
+}
