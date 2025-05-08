@@ -1,7 +1,6 @@
 package organizations
 
 import (
-	"fmt"
 	"koneksi/server/app/dto"
 	"koneksi/server/app/helper"
 	"koneksi/server/app/service"
@@ -52,7 +51,6 @@ func (lc *UpdateController) Handle(ctx *gin.Context) {
 
 func (rc *UpdateController) validatePayload(ctx *gin.Context, request *dto.UpdateOrgDTO) error {
 	if err := ctx.ShouldBindJSON(request); err != nil {
-		fmt.Println("error", err)
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
 		return err
 	}
