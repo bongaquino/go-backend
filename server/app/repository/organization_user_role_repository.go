@@ -36,12 +36,14 @@ func (r *OrganizationUserRoleRepository) Create(ctx context.Context, orgUserRole
 	return nil
 }
 
-func (r *OrganizationUserRoleRepository) FindByOrganizationID(ctx context.Context, organizationID string) ([]model.OrganizationUserRole, error) {
+func (r *OrganizationUserRoleRepository) ReadByOrganizationID(ctx context.Context, organizationID string) ([]model.OrganizationUserRole, error) {
 	cursor, err := r.collection.Find(ctx, bson.M{"organization_id": organizationID})
 	if err != nil {
 		logger.Log.Error("error finding organization user access by organization ID", logger.Error(err))
 		return nil, err
 	}
+	defer cursor.Close(ctx)
+
 	var orgUserRole []model.OrganizationUserRole
 	if err := cursor.All(ctx, &orgUserRole); err != nil {
 		logger.Log.Error("error decoding organization user access", logger.Error(err))

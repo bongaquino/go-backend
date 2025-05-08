@@ -29,7 +29,7 @@ func (lc *ReadController) Handle(ctx *gin.Context) {
 	}
 
 	// Read the organization using the service
-	org, err := lc.orgService.ReadOrg(ctx, orgID)
+	org, members, err := lc.orgService.ReadOrg(ctx, orgID)
 
 	// If err is not found, return a 404 error
 	if err != nil {
@@ -41,5 +41,8 @@ func (lc *ReadController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	helper.FormatResponse(ctx, "success", http.StatusOK, "organization updated successfully", org, nil)
+	helper.FormatResponse(ctx, "success", http.StatusOK, "organization updated successfully", gin.H{
+		"organization": org,
+		"members":      members,
+	}, nil)
 }

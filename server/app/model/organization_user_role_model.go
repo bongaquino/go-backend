@@ -11,7 +11,7 @@ type OrganizationUserRole struct {
 	ID             primitive.ObjectID `bson:"_id,omitempty"`
 	OrganizationID primitive.ObjectID `bson:"organization_id"`
 	UserID         primitive.ObjectID `bson:"user_id"`
-	AccessID       primitive.ObjectID `bson:"access_id"`
+	RoleID         primitive.ObjectID `bson:"access_id"`
 	CreatedAt      time.Time          `bson:"created_at"`
 	UpdatedAt      time.Time          `bson:"updated_at"`
 }

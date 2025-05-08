@@ -117,18 +117,54 @@ func (os *OrganizationService) CreateOrg(ctx context.Context, request *dto.Creat
 	return org, nil
 }
 
-func (os *OrganizationService) ReadOrg(ctx context.Context, orgID string) (*model.Organization, error) {
+func (os *OrganizationService) ReadOrg(ctx context.Context, orgID string) (*model.Organization, []map[string]string, error) {
 	// Fetch the organization from the repository
 	org, err := os.orgRepo.Read(ctx, orgID)
 	if err != nil {
 		logger.Log.Error("error fetching organization", logger.Error(err))
-		return nil, errors.New("error fetching organization")
+		return nil, nil, errors.New("error fetching organization")
 	}
 	if org == nil {
-		return nil, errors.New("organization not found")
+		return nil, nil, errors.New("organization not found")
 	}
 
-	return org, nil
+	// Fetch organization members
+	orgMembers, err := os.orgUserRoleRepo.ReadByOrganizationID(ctx, orgID)
+	if err != nil {
+		logger.Log.Error("error fetching organization members", logger.Error(err))
+		return nil, nil, errors.New("error fetching organization members")
+	}
+
+	// Fetch roles and map to ID => Name
+	roles, err := os.roleRepo.List(ctx)
+	if err != nil {
+		logger.Log.Error("error fetching roles", logger.Error(err))
+		return nil, nil, errors.New("error fetching roles")
+	}
+	roleMap := make(map[string]string, len(roles))
+	for _, role := range roles {
+		roleMap[role.ID.Hex()] = role.Name
+	}
+
+	// Pre-allocate members slice
+	members := make([]map[string]string, 0, len(orgMembers))
+
+	// Loop through members and populate user info and role name
+	for _, member := range orgMembers {
+		user, err := os.userRepo.Read(ctx, member.UserID.Hex())
+		if err != nil {
+			logger.Log.Error("error fetching user details", logger.Error(err))
+			return nil, nil, errors.New("error fetching user details")
+		}
+		if user != nil {
+			members = append(members, map[string]string{
+				"email": user.Email,
+				"role":  roleMap[member.RoleID.Hex()],
+			})
+		}
+	}
+
+	return org, members, nil
 }
 
 func (os *OrganizationService) UpdateOrg(ctx context.Context, orgID string, dto *dto.UpdateOrgDTO) (*model.Organization, error) {
