@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"koneksi/server/app/helper"
@@ -90,7 +89,6 @@ func (r *UserRepository) ReadByEmail(ctx context.Context, email string) (*model.
 func (r *UserRepository) Read(ctx context.Context, id string) (*model.User, error) {
 	// Convert id to ObjectID
 	objectID, err := primitive.ObjectIDFromHex(id)
-	fmt.Println("err", err)
 	if err != nil {
 		logger.Log.Error("invalid ID format", logger.Error(err))
 		return nil, err

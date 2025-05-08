@@ -1,7 +1,6 @@
 package members
 
 import (
-	"fmt"
 	"koneksi/server/app/helper"
 	"koneksi/server/app/service"
 	"net/http"
@@ -77,7 +76,6 @@ func (ac *AddController) Handle(ctx *gin.Context) {
 
 func (rc *AddController) validatePayload(ctx *gin.Context, request *AddMemberRequest) error {
 	if err := ctx.ShouldBindJSON(request); err != nil {
-		fmt.Println("error binding JSON:", err)
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
 		return err
 	}

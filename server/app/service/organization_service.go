@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"fmt"
 	"koneksi/server/app/dto"
 	"koneksi/server/app/model"
 	"koneksi/server/app/repository"
@@ -263,7 +262,6 @@ func (os *OrganizationService) AddMember(ctx context.Context, orgID string, user
 		logger.Log.Error("error checking existing member", logger.Error(err))
 		return errors.New("error checking existing member")
 	}
-	fmt.Println("existingMember", existingMember)
 	if existingMember != nil {
 		return errors.New("user is already a member")
 	}
