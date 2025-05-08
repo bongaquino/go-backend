@@ -30,12 +30,6 @@ func (lc *SearchController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	// Validate userService
-	if lc.userService == nil {
-		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "user service is not initialized", nil, nil)
-		return
-	}
-
 	users, err := lc.userService.SearchUsers(ctx, email)
 	if err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to fetch users", nil, err)
