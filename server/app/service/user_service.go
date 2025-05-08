@@ -100,6 +100,15 @@ func (us *UserService) UserExists(ctx context.Context, email string) (bool, erro
 
 // Create registers a new user
 func (us *UserService) CreateUser(ctx context.Context, request *dto.CreateUserDTO) (*model.User, *model.Profile, *model.UserRole, string, error) {
+	userRole, err := us.roleRepo.ReadByName(ctx, request.Role)
+	if err != nil {
+		logger.Log.Error("failed to assign role", logger.Error(err))
+		return nil, nil, nil, "", errors.New("failed to assign role")
+	}
+	if userRole == nil {
+		return nil, nil, nil, "", errors.New("role not found")
+	}
+
 	user := &model.User{
 		Email:      request.Email,
 		Password:   request.Password,
@@ -120,15 +129,6 @@ func (us *UserService) CreateUser(ctx context.Context, request *dto.CreateUserDT
 	if err := us.profileRepo.Create(ctx, profile); err != nil {
 		logger.Log.Error("failed to create profile", logger.Error(err))
 		return nil, nil, nil, "", errors.New("failed to create profile")
-	}
-
-	userRole, err := us.roleRepo.ReadByName(ctx, request.Role)
-	if err != nil {
-		logger.Log.Error("failed to assign role", logger.Error(err))
-		return nil, nil, nil, "", errors.New("failed to assign role")
-	}
-	if userRole == nil {
-		return nil, nil, nil, "", errors.New("role not found")
 	}
 
 	userRoleAssignment := &model.UserRole{

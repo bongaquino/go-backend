@@ -50,7 +50,13 @@ func (rc *CreateController) Handle(ctx *gin.Context) {
 
 	// Create the user
 	user, profile, userRole, roleName, err := rc.userService.CreateUser(ctx.Request.Context(), &request)
+
+	// If err is "role not found", return 404
 	if err != nil {
+		if err.Error() == "role not found" {
+			helper.FormatResponse(ctx, "error", http.StatusNotFound, err.Error(), nil, nil)
+			return
+		}
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, err.Error(), nil, nil)
 		return
 	}
