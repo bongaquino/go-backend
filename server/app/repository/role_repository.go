@@ -24,6 +24,32 @@ func NewRoleRepository(mongoProvider *provider.MongoProvider) *RoleRepository {
 	}
 }
 
+func (r *RoleRepository) List(ctx context.Context) ([]*model.Role, error) {
+	var roles []*model.Role
+	cursor, err := r.collection.Find(ctx, bson.M{})
+	if err != nil {
+		logger.Log.Error("error fetching roles", logger.Error(err))
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var role model.Role
+		if err := cursor.Decode(&role); err != nil {
+			logger.Log.Error("error decoding role", logger.Error(err))
+			return nil, err
+		}
+		roles = append(roles, &role)
+	}
+
+	if err := cursor.Err(); err != nil {
+		logger.Log.Error("error iterating roles", logger.Error(err))
+		return nil, err
+	}
+
+	return roles, nil
+}
+
 func (r *RoleRepository) Create(ctx context.Context, role *model.Role) error {
 	role.ID = primitive.NewObjectID()
 	role.CreatedAt = time.Now()

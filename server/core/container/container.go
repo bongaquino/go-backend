@@ -165,7 +165,7 @@ func initControllers(s Services) Controllers {
 		Constants: struct {
 			Fetch *constants.FetchController
 		}{
-			Fetch: constants.NewFetchController(),
+			Fetch: constants.NewFetchController(s.User),
 		},
 		Users: struct {
 			Register               *users.RegisterController

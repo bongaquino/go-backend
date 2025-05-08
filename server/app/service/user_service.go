@@ -55,6 +55,19 @@ func (us *UserService) ListUsers(ctx context.Context, page, limit int) ([]*model
 	return userPointers, nil
 }
 
+func (us *UserService) ListRoles(ctx context.Context) ([]*model.Role, error) {
+	// Fetch roles from the repository
+	roles, err := us.roleRepo.List(ctx)
+	if err != nil {
+		logger.Log.Error("error fetching roles", logger.Error(err))
+		return nil, errors.New("internal server error")
+	}
+	// Convert []model.Role to []*model.Role
+	rolePointers := make([]*model.Role, len(roles))
+	copy(rolePointers, roles)
+	return rolePointers, nil
+}
+
 // UserExists checks if a user with the given email already exists
 func (us *UserService) UserExists(ctx context.Context, email string) (bool, error) {
 	// Query the repository to check if the user exists

@@ -10,6 +10,7 @@ import (
 
 type OrganizationService struct {
 	orgRepo *repository.OrganizationRepository
+	// policiesRepo *repository.PolicyRepository
 }
 
 func NewOrganizationService(orgRepo *repository.OrganizationRepository,
