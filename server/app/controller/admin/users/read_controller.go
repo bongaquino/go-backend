@@ -29,9 +29,14 @@ func (lc *ReadController) Handle(ctx *gin.Context) {
 	}
 
 	user, profile, err := lc.userService.GetUserProfile(ctx.Request.Context(), userID)
+
+	// if err is not found, return a 404 error
 	if err != nil {
+		if err.Error() == "user not found" || err.Error() == "profile not found" {
+			helper.FormatResponse(ctx, "error", http.StatusNotFound, "user not found", nil, nil)
+			return
+		}
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to fetch user", nil, err)
-		return
 	}
 
 	// Exclude sensitive fields from the response
