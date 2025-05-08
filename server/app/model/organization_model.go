@@ -12,6 +12,7 @@ type Organization struct {
 	Name                 string             `bson:"name"`
 	Domain               string             `bson:"domain"`
 	Contact              string             `bson:"contact"`
+	PolicyID             primitive.ObjectID `bson:"policy_id"`
 	SubscriptionPlanID   primitive.ObjectID `bson:"subscription_plan_id"`
 	SubscriptionStatusID primitive.ObjectID `bson:"subscription_status_id"`
 	CreatedAt            time.Time          `bson:"created_at"`

@@ -35,9 +35,9 @@ func SeedCollections(permissionRepo *repository.PermissionRepository, roleRepo *
 // seedPermissions inserts initial permissions using the repository
 func seedPermissions(ctx context.Context, permissionRepo *repository.PermissionRepository) error {
 	permissions := []model.Permission{
-		{Name: "upload_files"},
-		{Name: "download_files"},
-		{Name: "list_files"},
+		{Name: "upload:file"},
+		{Name: "download:file"},
+		{Name: "list:files"},
 	}
 
 	for _, perm := range permissions {
