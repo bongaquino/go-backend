@@ -72,8 +72,9 @@ func (os *OrganizationService) ListOrgs(ctx context.Context, page, limit int) ([
 func (os *OrganizationService) CreateOrg(ctx context.Context, request *dto.CreateOrgDTO) (*model.Organization, error) {
 	// Map the request to the organization model
 	org := &model.Organization{
-		Name:   request.Name,
-		Domain: request.Domain,
+		Name:    request.Name,
+		Domain:  request.Domain,
+		Contact: request.Contact,
 		PolicyID: func() primitive.ObjectID {
 			policyID, err := primitive.ObjectIDFromHex(request.PolicyID)
 			if err != nil {
@@ -82,6 +83,8 @@ func (os *OrganizationService) CreateOrg(ctx context.Context, request *dto.Creat
 			}
 			return policyID
 		}(),
+		SubscriptionPlanID:   primitive.NilObjectID,
+		SubscriptionStatusID: primitive.NilObjectID,
 		ParentID: func() primitive.ObjectID {
 			if request.ParentID != nil {
 				parentID, err := primitive.ObjectIDFromHex(*request.ParentID)
