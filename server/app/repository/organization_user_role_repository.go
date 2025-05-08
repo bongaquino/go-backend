@@ -19,7 +19,7 @@ type OrganizationUserRoleRepository struct {
 
 func NewOrganizationUserRoleRepository(mongoProvider *provider.MongoProvider) *OrganizationUserRoleRepository {
 	return &OrganizationUserRoleRepository{
-		collection: mongoProvider.GetDB().Collection("organization_user_access"),
+		collection: mongoProvider.GetDB().Collection("organization_user_role"),
 	}
 }
 

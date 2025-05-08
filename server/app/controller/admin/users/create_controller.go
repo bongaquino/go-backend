@@ -44,7 +44,7 @@ func (rc *CreateController) Handle(ctx *gin.Context) {
 
 	// Add user role to the request
 	if request.Role == "" {
-		request.Role = "user"
+		request.Role = "system_user"
 	}
 	request.IsVerified = true
 

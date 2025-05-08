@@ -20,7 +20,7 @@ type OrganizationRepository struct {
 
 func NewOrganizationRepository(mongoProvider *provider.MongoProvider) *OrganizationRepository {
 	return &OrganizationRepository{
-		collection: mongoProvider.GetDB().Collection("organization"),
+		collection: mongoProvider.GetDB().Collection("organizations"),
 	}
 }
 

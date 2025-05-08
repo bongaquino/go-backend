@@ -20,7 +20,7 @@ type RolePermissionRepository struct {
 func NewRolePermissionRepository(mongoProvider *provider.MongoProvider) *RolePermissionRepository {
 	db := mongoProvider.GetDB()
 	return &RolePermissionRepository{
-		collection: db.Collection("role_permissions"),
+		collection: db.Collection("role_permission"),
 	}
 }
 

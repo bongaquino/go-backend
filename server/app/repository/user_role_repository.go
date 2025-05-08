@@ -20,7 +20,7 @@ type UserRoleRepository struct {
 func NewUserRoleRepository(mongoProvider *provider.MongoProvider) *UserRoleRepository {
 	db := mongoProvider.GetDB()
 	return &UserRoleRepository{
-		collection: db.Collection("user_roles"),
+		collection: db.Collection("user_role"),
 	}
 }
 

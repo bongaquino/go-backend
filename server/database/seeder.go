@@ -35,9 +35,17 @@ func SeedCollections(permissionRepo *repository.PermissionRepository, roleRepo *
 // seedPermissions inserts initial permissions using the repository
 func seedPermissions(ctx context.Context, permissionRepo *repository.PermissionRepository) error {
 	permissions := []model.Permission{
+		{Name: "list:users"},
+		{Name: "create:user"},
+		{Name: "read:user"},
+		{Name: "update:user"},
+		{Name: "list:organizations"},
+		{Name: "create:organization"},
+		{Name: "read:organization"},
+		{Name: "update:organization"},
+		{Name: "list:files"},
 		{Name: "upload:file"},
 		{Name: "download:file"},
-		{Name: "list:files"},
 	}
 
 	for _, perm := range permissions {
@@ -59,11 +67,11 @@ func seedPermissions(ctx context.Context, permissionRepo *repository.PermissionR
 // seedRoles inserts initial roles using the repository
 func seedRoles(ctx context.Context, roleRepo *repository.RoleRepository) error {
 	roles := []model.Role{
-		{Name: "admin", Scope: "system"},
-		{Name: "user", Scope: "system"},
-		{Name: "admin", Scope: "organization"},
-		{Name: "user", Scope: "organization"},
-		{Name: "viewer", Scope: "organization"},
+		{Name: "system_admin"},
+		{Name: "system_user"},
+		{Name: "organization_admin"},
+		{Name: "organization_user"},
+		{Name: "organization_viewer"},
 	}
 
 	for _, role := range roles {
@@ -82,52 +90,75 @@ func seedRoles(ctx context.Context, roleRepo *repository.RoleRepository) error {
 	return nil
 }
 
-// seedRolePermissions assigns all permissions to the "user" role using repository
-func seedRolePermissions(ctx context.Context, roleRepo *repository.RoleRepository, permissionRepo *repository.PermissionRepository, rolePermissionRepo *repository.RolePermissionRepository) error {
-	// Find the "user" role
-	userRole, err := roleRepo.ReadByName(ctx, "user")
-	if err != nil {
-		return err
-	}
-	if userRole == nil {
-		return fmt.Errorf("user role not found")
+// seedRolePermissions assigns specific permissions to roles using a role-permission map
+func seedRolePermissions(
+	ctx context.Context,
+	roleRepo *repository.RoleRepository,
+	permissionRepo *repository.PermissionRepository,
+	rolePermissionRepo *repository.RolePermissionRepository,
+) error {
+	rolePermissionsMap := map[string][]string{
+		"system_admin": {
+			"list:users", "create:user", "read:user", "update:user",
+			"list:organizations", "create:organization", "read:organization", "update:organization",
+			"list:files", "upload:file", "download:file",
+		},
+		"system_user": {
+			"list:files", "upload:file", "download:file",
+		},
+		"organization_admin": {
+			"read:organization", "update:organization",
+			"list:files", "upload:file", "download:file",
+		},
+		"organization_user": {
+			"list:files", "upload:file", "download:file",
+		},
+		"organization_viewer": {
+			"list:files", "download:file",
+		},
 	}
 
-	// Get all permissions
-	permissions := []string{"upload_files", "download_files", "list_files"}
-	for _, permName := range permissions {
-		perm, err := permissionRepo.ReadByName(ctx, permName)
+	for roleName, permissionNames := range rolePermissionsMap {
+		role, err := roleRepo.ReadByName(ctx, roleName)
 		if err != nil {
 			return err
 		}
-		if perm == nil {
-			logger.Log.Warn(fmt.Sprintf("skipping role permission seeding: Permission %s not found", permName))
+		if role == nil {
+			logger.Log.Warn(fmt.Sprintf("role %s not found, skipping permission seeding", roleName))
 			continue
 		}
 
-		// Check if the role-permission already exists
-		existingPermissions, err := rolePermissionRepo.ReadByRoleID(ctx, userRole.ID.Hex())
+		existingPermissions, err := rolePermissionRepo.ReadByRoleID(ctx, role.ID.Hex())
 		if err != nil {
 			return err
 		}
-		alreadyExists := false
+
+		existingMap := make(map[string]bool)
 		for _, rp := range existingPermissions {
-			if rp.PermissionID == perm.ID.Hex() {
-				alreadyExists = true
-				break
-			}
+			existingMap[rp.PermissionID] = true
 		}
 
-		if !alreadyExists {
-			rolePermission := model.RolePermission{
-				RoleID:       userRole.ID,
-				PermissionID: perm.ID.Hex(),
-			}
-			if err := rolePermissionRepo.Create(ctx, &rolePermission); err != nil {
+		for _, permName := range permissionNames {
+			perm, err := permissionRepo.ReadByName(ctx, permName)
+			if err != nil {
 				return err
 			}
-		} else {
-			logger.Log.Info(fmt.Sprintf("skipping role permission: %s -> %s (already exists)", userRole.Name, perm.Name))
+			if perm == nil {
+				logger.Log.Warn(fmt.Sprintf("skipping role permission seeding: Permission %s not found", permName))
+				continue
+			}
+
+			if !existingMap[perm.ID.Hex()] {
+				rolePermission := model.RolePermission{
+					RoleID:       role.ID,
+					PermissionID: perm.ID.Hex(),
+				}
+				if err := rolePermissionRepo.Create(ctx, &rolePermission); err != nil {
+					return err
+				}
+			} else {
+				logger.Log.Info(fmt.Sprintf("skipping role permission: %s -> %s (already exists)", roleName, permName))
+			}
 		}
 	}
 	return nil

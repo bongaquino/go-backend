@@ -20,7 +20,7 @@ type PolicyPermissionRepository struct {
 func NewPolicyPermissionRepository(mongoProvider *provider.MongoProvider) *PolicyPermissionRepository {
 	db := mongoProvider.GetDB()
 	return &PolicyPermissionRepository{
-		collection: db.Collection("policy_permissions"),
+		collection: db.Collection("policy_permission"),
 	}
 }
 

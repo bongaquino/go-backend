@@ -43,7 +43,7 @@ func (rc *RegisterController) Handle(ctx *gin.Context) {
 	}
 
 	// Add user role to the request
-	request.Role = "user"
+	request.Role = "system_user"
 	request.IsVerified = false
 
 	// Register the user
