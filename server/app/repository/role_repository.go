@@ -26,7 +26,6 @@ func NewRoleRepository(mongoProvider *provider.MongoProvider) *RoleRepository {
 
 func (r *RoleRepository) Create(ctx context.Context, role *model.Role) error {
 	role.ID = primitive.NewObjectID()
-
 	role.CreatedAt = time.Now()
 	role.UpdatedAt = time.Now()
 

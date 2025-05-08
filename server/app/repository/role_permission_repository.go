@@ -26,7 +26,6 @@ func NewRolePermissionRepository(mongoProvider *provider.MongoProvider) *RolePer
 
 func (r *RolePermissionRepository) Create(ctx context.Context, rolePermission *model.RolePermission) error {
 	rolePermission.ID = primitive.NewObjectID()
-
 	rolePermission.CreatedAt = time.Now()
 	rolePermission.UpdatedAt = time.Now()
 

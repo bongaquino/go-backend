@@ -26,7 +26,6 @@ func NewPolicyRepository(mongoProvider *provider.MongoProvider) *PolicyRepositor
 
 func (r *PolicyRepository) Create(ctx context.Context, policy *model.Policy) error {
 	policy.ID = primitive.NewObjectID()
-
 	policy.CreatedAt = time.Now()
 	policy.UpdatedAt = time.Now()
 

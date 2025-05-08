@@ -26,7 +26,6 @@ func NewProfileRepository(mongoProvider *provider.MongoProvider) *ProfileReposit
 
 func (r *ProfileRepository) Create(ctx context.Context, profile *model.Profile) error {
 	profile.ID = primitive.NewObjectID()
-
 	profile.CreatedAt = time.Now()
 	profile.UpdatedAt = time.Now()
 

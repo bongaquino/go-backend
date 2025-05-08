@@ -9,6 +9,7 @@ import (
 	"koneksi/server/core/logger"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -23,6 +24,7 @@ func NewAccessRepository(mongoProvider *provider.MongoProvider) *AccessRepositor
 }
 
 func (r *AccessRepository) Create(ctx context.Context, access *model.Access) error {
+	access.ID = primitive.NewObjectID()
 	access.CreatedAt = time.Now()
 	access.UpdatedAt = time.Now()
 

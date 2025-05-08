@@ -26,7 +26,6 @@ func NewServiceAccountRepository(mongoProvider *provider.MongoProvider) *Service
 
 func (r *ServiceAccountRepository) Create(ctx context.Context, account *model.ServiceAccount) error {
 	account.ID = primitive.NewObjectID()
-
 	account.CreatedAt = time.Now()
 	account.UpdatedAt = time.Now()
 

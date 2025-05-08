@@ -26,7 +26,6 @@ func NewUserRoleRepository(mongoProvider *provider.MongoProvider) *UserRoleRepos
 
 func (r *UserRoleRepository) Create(ctx context.Context, userRole *model.UserRole) error {
 	userRole.ID = primitive.NewObjectID()
-
 	userRole.CreatedAt = time.Now()
 	userRole.UpdatedAt = time.Now()
 

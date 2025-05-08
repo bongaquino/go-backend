@@ -9,6 +9,7 @@ import (
 	"koneksi/server/core/logger"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -48,6 +49,7 @@ func (r *OrganizationRepository) List(ctx context.Context, page, limit int) ([]m
 }
 
 func (r *OrganizationRepository) Create(ctx context.Context, organization *model.Organization) error {
+	organization.ID = primitive.NewObjectID()
 	organization.CreatedAt = time.Now()
 	organization.UpdatedAt = time.Now()
 
@@ -59,9 +61,16 @@ func (r *OrganizationRepository) Create(ctx context.Context, organization *model
 	return nil
 }
 
-func (r *OrganizationRepository) FindByID(ctx context.Context, id string) (*model.Organization, error) {
+func (r *OrganizationRepository) Read(ctx context.Context, id string) (*model.Organization, error) {
+	// Convert id to ObjectID
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		logger.Log.Error("invalid ID format", logger.Error(err))
+		return nil, err
+	}
+
 	var organization model.Organization
-	err := r.collection.FindOne(ctx, bson.M{"_id": id}).Decode(&organization)
+	err = r.collection.FindOne(ctx, bson.M{"_id": objectID}).Decode(&organization)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, nil
@@ -73,20 +82,20 @@ func (r *OrganizationRepository) FindByID(ctx context.Context, id string) (*mode
 }
 
 func (r *OrganizationRepository) Update(ctx context.Context, id string, update bson.M) error {
-	update["updated_at"] = time.Now()
-
-	_, err := r.collection.UpdateByID(ctx, id, bson.M{"$set": update})
+	// Convert userID to ObjectID
+	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		logger.Log.Error("error updating organization", logger.Error(err))
+		logger.Log.Error("invalid ID format", logger.Error(err))
 		return err
 	}
-	return nil
-}
 
-func (r *OrganizationRepository) Delete(ctx context.Context, id string) error {
-	_, err := r.collection.DeleteOne(ctx, bson.M{"_id": id})
+	// Set the ID in the update map
+	update["updated_at"] = time.Now()
+
+	// Update the organization in the database
+	_, err = r.collection.UpdateOne(ctx, bson.M{"_id": objectID}, bson.M{"$set": update})
 	if err != nil {
-		logger.Log.Error("error deleting organization", logger.Error(err))
+		logger.Log.Error("error updating organization", logger.Error(err))
 		return err
 	}
 	return nil

@@ -26,7 +26,6 @@ func NewPermissionRepository(mongoProvider *provider.MongoProvider) *PermissionR
 
 func (r *PermissionRepository) Create(ctx context.Context, permission *model.Permission) error {
 	permission.ID = primitive.NewObjectID()
-
 	permission.CreatedAt = time.Now()
 	permission.UpdatedAt = time.Now()
 

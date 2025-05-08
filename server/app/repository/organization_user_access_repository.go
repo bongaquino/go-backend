@@ -9,6 +9,7 @@ import (
 	"koneksi/server/core/logger"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -22,11 +23,12 @@ func NewOrganizationUserAccessRepository(mongoProvider *provider.MongoProvider) 
 	}
 }
 
-func (r *OrganizationUserAccessRepository) Create(ctx context.Context, access *model.OrganizationUserAccess) error {
-	access.CreatedAt = time.Now()
-	access.UpdatedAt = time.Now()
+func (r *OrganizationUserAccessRepository) Create(ctx context.Context, orgUserAccess *model.OrganizationUserAccess) error {
+	orgUserAccess.ID = primitive.NewObjectID()
+	orgUserAccess.CreatedAt = time.Now()
+	orgUserAccess.UpdatedAt = time.Now()
 
-	_, err := r.collection.InsertOne(ctx, access)
+	_, err := r.collection.InsertOne(ctx, orgUserAccess)
 	if err != nil {
 		logger.Log.Error("error creating organization user access", logger.Error(err))
 		return err

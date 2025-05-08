@@ -52,7 +52,6 @@ func (r *UserRepository) List(ctx context.Context, page, limit int) ([]model.Use
 
 func (r *UserRepository) Create(ctx context.Context, user *model.User) error {
 	user.ID = primitive.NewObjectID()
-
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
 
