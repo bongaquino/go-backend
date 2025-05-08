@@ -59,8 +59,11 @@ func seedPermissions(ctx context.Context, permissionRepo *repository.PermissionR
 // seedRoles inserts initial roles using the repository
 func seedRoles(ctx context.Context, roleRepo *repository.RoleRepository) error {
 	roles := []model.Role{
-		{Name: "admin"},
-		{Name: "user"},
+		{Name: "admin", Scope: "system"},
+		{Name: "user", Scope: "system"},
+		{Name: "admin", Scope: "organization"},
+		{Name: "user", Scope: "organization"},
+		{Name: "viewer", Scope: "organization"},
 	}
 
 	for _, role := range roles {

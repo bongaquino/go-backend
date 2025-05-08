@@ -42,12 +42,12 @@ func (r *OrganizationUserRoleRepository) FindByOrganizationID(ctx context.Contex
 		logger.Log.Error("error finding organization user access by organization ID", logger.Error(err))
 		return nil, err
 	}
-	var accesses []model.OrganizationUserRole
-	if err := cursor.All(ctx, &accesses); err != nil {
+	var orgUserRole []model.OrganizationUserRole
+	if err := cursor.All(ctx, &orgUserRole); err != nil {
 		logger.Log.Error("error decoding organization user access", logger.Error(err))
 		return nil, err
 	}
-	return accesses, nil
+	return orgUserRole, nil
 }
 
 func (r *OrganizationUserRoleRepository) Update(ctx context.Context, id string, update bson.M) error {
