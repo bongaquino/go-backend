@@ -3,6 +3,7 @@ package container
 import (
 	"koneksi/server/app/controller/admin/organizations"
 	adminUsers "koneksi/server/app/controller/admin/users"
+	"koneksi/server/app/controller/constants"
 	"koneksi/server/app/controller/health"
 	"koneksi/server/app/controller/network"
 	"koneksi/server/app/controller/profile"
@@ -58,6 +59,9 @@ type Middleware struct {
 type Controllers struct {
 	Health struct {
 		Check *health.CheckController
+	}
+	Constants struct {
+		Fetch *constants.FetchController
 	}
 	Users struct {
 		Register               *users.RegisterController
@@ -157,6 +161,11 @@ func initControllers(s Services) Controllers {
 			Check *health.CheckController
 		}{
 			Check: health.NewCheckController(),
+		},
+		Constants: struct {
+			Fetch *constants.FetchController
+		}{
+			Fetch: constants.NewFetchController(),
 		},
 		Users: struct {
 			Register               *users.RegisterController

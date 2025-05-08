@@ -12,6 +12,9 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 	engine.GET("/", container.Controllers.Health.Check.Handle)
 	engine.GET("/check-health", container.Controllers.Health.Check.Handle)
 
+	// Fetch Constants Route
+	engine.GET("/fetch-constants", container.Controllers.Constants.Fetch.Handle)
+
 	// User Routes
 	userGroup := engine.Group("/users")
 	{
