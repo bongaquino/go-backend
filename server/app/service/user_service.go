@@ -475,6 +475,31 @@ func (us *UserService) UpdateUser(ctx context.Context, userID string, dto *dto.U
 		return nil, nil, nil, "", errors.New("user not found")
 	}
 
+	// Update user role
+	var userRole *model.Role
+	if dto.Role != "" {
+		userRole, err = us.roleRepo.ReadByName(ctx, dto.Role)
+		if err != nil {
+			logger.Log.Error("failed to retrieve role", logger.Error(err))
+			return nil, nil, nil, "", errors.New("failed to retrieve role")
+		}
+		if userRole == nil {
+			logger.Log.Error("role not found", logger.Error(err))
+			return nil, nil, nil, "", errors.New("role not found")
+		}
+
+		// Set the user role ID in the update map
+		userRoleUpdateMap := bson.M{
+			"role_id": userRole.ID,
+		}
+
+		// Update the user role in the repository
+		if err := us.userRoleRepo.Update(ctx, userID, userRoleUpdateMap); err != nil {
+			logger.Log.Error("error updating user role", logger.Error(err))
+			return nil, nil, nil, "", errors.New("failed to update user role")
+		}
+	}
+
 	// Update user fields
 	userUpdate := bson.M{
 		"email":       dto.Email,
@@ -509,31 +534,6 @@ func (us *UserService) UpdateUser(ctx context.Context, userID string, dto *dto.U
 	if err := us.profileRepo.UpdateByUserID(ctx, userID, profileUpdate); err != nil {
 		logger.Log.Error("failed to update profile", logger.Error(err))
 		return nil, nil, nil, "", errors.New("failed to update profile")
-	}
-
-	// Update user role
-	var userRole *model.Role
-	if dto.Role != "" {
-		userRole, err = us.roleRepo.ReadByName(ctx, dto.Role)
-		if err != nil {
-			logger.Log.Error("failed to retrieve role", logger.Error(err))
-			return nil, nil, nil, "", errors.New("failed to retrieve role")
-		}
-		if userRole == nil {
-			logger.Log.Error("role not found", logger.Error(err))
-			return nil, nil, nil, "", errors.New("role not found")
-		}
-
-		// Set the user role ID in the update map
-		userRoleUpdateMap := bson.M{
-			"role_id": userRole.ID,
-		}
-
-		// Update the user role in the repository
-		if err := us.userRoleRepo.Update(ctx, userID, userRoleUpdateMap); err != nil {
-			logger.Log.Error("error updating user role", logger.Error(err))
-			return nil, nil, nil, "", errors.New("failed to update user role")
-		}
 	}
 
 	// Fetch updated profile

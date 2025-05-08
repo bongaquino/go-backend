@@ -38,6 +38,14 @@ func (lc *UpdateController) Handle(ctx *gin.Context) {
 	// Update user
 	user, profile, userRole, roleName, err := lc.userService.UpdateUser(ctx, userID, &request)
 	if err != nil {
+		if err.Error() == "role not found" {
+			helper.FormatResponse(ctx, "error", http.StatusNotFound, "role not found", nil, nil)
+			return
+		}
+		if err.Error() == "user not found" {
+			helper.FormatResponse(ctx, "error", http.StatusNotFound, "user not found", nil, nil)
+			return
+		}
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to update user", nil, nil)
 		return
 	}
