@@ -67,7 +67,7 @@ func (ac *AddController) Handle(ctx *gin.Context) {
 	}
 
 	// Return the response
-	helper.FormatResponse(ctx, "success", http.StatusOK, "user added successfully", gin.H{
+	helper.FormatResponse(ctx, "success", http.StatusOK, "member added successfully", gin.H{
 		"org_id":  orgID,
 		"user_id": request.UserID,
 		"role_id": request.RoleID,
