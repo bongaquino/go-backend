@@ -13,19 +13,28 @@ import (
 )
 
 type OrganizationService struct {
-	orgRepo        *repository.OrganizationRepository
-	policyRepo     *repository.PolicyRepository
-	permissionRepo *repository.PermissionRepository
+	orgRepo         *repository.OrganizationRepository
+	policyRepo      *repository.PolicyRepository
+	permissionRepo  *repository.PermissionRepository
+	orgUserRoleRepo *repository.OrganizationUserRoleRepository
+	userRepo        *repository.UserRepository
+	roleRepo        *repository.RoleRepository
 }
 
 func NewOrganizationService(orgRepo *repository.OrganizationRepository,
 	policyRepo *repository.PolicyRepository,
 	permissionRepo *repository.PermissionRepository,
+	orgUserRoleRepo *repository.OrganizationUserRoleRepository,
+	userRepo *repository.UserRepository,
+	roleRepo *repository.RoleRepository,
 ) *OrganizationService {
 	return &OrganizationService{
-		orgRepo:        orgRepo,
-		policyRepo:     policyRepo,
-		permissionRepo: permissionRepo,
+		orgRepo:         orgRepo,
+		policyRepo:      policyRepo,
+		permissionRepo:  permissionRepo,
+		orgUserRoleRepo: orgUserRoleRepo,
+		userRepo:        userRepo,
+		roleRepo:        roleRepo,
 	}
 }
 
