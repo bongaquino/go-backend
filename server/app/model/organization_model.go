@@ -19,7 +19,6 @@ type Organization struct {
 	UpdatedAt            time.Time          `bson:"updated_at"`
 }
 
-// Indexes are handled manually in migration
 func (Organization) GetIndexes() []primitive.D {
 	return nil
 }

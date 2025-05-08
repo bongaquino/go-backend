@@ -37,7 +37,12 @@ func (r *OrganizationUserRoleRepository) Create(ctx context.Context, orgUserRole
 }
 
 func (r *OrganizationUserRoleRepository) ReadByUserID(ctx context.Context, userID string) ([]model.OrganizationUserRole, error) {
-	cursor, err := r.collection.Find(ctx, bson.M{"user_id": userID})
+	objectID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	cursor, err := r.collection.Find(ctx, bson.M{"user_id": objectID})
 	if err != nil {
 		logger.Log.Error("error finding organization user role by user ID", logger.Error(err))
 		return nil, err
@@ -53,7 +58,12 @@ func (r *OrganizationUserRoleRepository) ReadByUserID(ctx context.Context, userI
 }
 
 func (r *OrganizationUserRoleRepository) ReadByOrganizationID(ctx context.Context, organizationID string) ([]model.OrganizationUserRole, error) {
-	cursor, err := r.collection.Find(ctx, bson.M{"organization_id": organizationID})
+	objectID, err := primitive.ObjectIDFromHex(organizationID)
+	if err != nil {
+		return nil, err
+	}
+
+	cursor, err := r.collection.Find(ctx, bson.M{"organization_id": objectID})
 	if err != nil {
 		logger.Log.Error("error finding organization user role by organization ID", logger.Error(err))
 		return nil, err
@@ -69,8 +79,18 @@ func (r *OrganizationUserRoleRepository) ReadByOrganizationID(ctx context.Contex
 }
 
 func (r *OrganizationUserRoleRepository) ReadByUserIDOrganizationID(ctx context.Context, userID, organizationID string) (*model.OrganizationUserRole, error) {
+	userObjectID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	organizationObjectID, err := primitive.ObjectIDFromHex(organizationID)
+	if err != nil {
+		return nil, err
+	}
+
 	var orgUserRole model.OrganizationUserRole
-	err := r.collection.FindOne(ctx, bson.M{"user_id": userID, "organization_id": organizationID}).Decode(&orgUserRole)
+	err = r.collection.FindOne(ctx, bson.M{"user_id": userObjectID, "organization_id": organizationObjectID}).Decode(&orgUserRole)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, nil

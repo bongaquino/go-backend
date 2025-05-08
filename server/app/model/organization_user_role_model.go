@@ -3,7 +3,6 @@ package model
 import (
 	"time"
 
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -16,8 +15,6 @@ type OrganizationUserRole struct {
 	UpdatedAt      time.Time          `bson:"updated_at"`
 }
 
-func (OrganizationUserRole) GetIndexes() []bson.D {
-	return []bson.D{
-		{{Key: "name", Value: 1}},
-	}
+func (OrganizationUserRole) GetIndexes() []primitive.D {
+	return nil
 }
