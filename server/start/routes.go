@@ -61,7 +61,7 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 
 	// Admin Routes
 	adminGroup := engine.Group("/admin")
-	adminGroup.Use(container.Middleware.Authn.Handle, container.Middleware.Authz.Handle([]string{"admin"}))
+	adminGroup.Use(container.Middleware.Authn.Handle, container.Middleware.Authz.Handle([]string{"system_admin"}))
 	{
 		// User Management Routes
 		adminGroup.GET("users/list", container.Controllers.Admin.Users.List.Handle)
