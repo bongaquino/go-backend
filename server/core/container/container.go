@@ -264,6 +264,8 @@ func NewContainer() *Container {
 		repositories.Permission,
 		repositories.Role,
 		repositories.RolePermission,
+		repositories.Policy,
+		repositories.PolicyPermission,
 	)
 
 	return &Container{

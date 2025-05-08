@@ -28,6 +28,9 @@ func SeedCollections(
 			return seedRolePermissions(ctx, roleRepo, permissionRepo, rolePermissionRepo)
 		}},
 		{"policies", func(ctx context.Context) error { return seedPolicies(ctx, policyRepo) }},
+		{"policy_permissions", func(ctx context.Context) error {
+			return seedPolicyPermissions(ctx, policyRepo, permissionRepo, policyPermissionRepo)
+		}},
 	}
 
 	for _, seeder := range seeders {
@@ -174,7 +177,7 @@ func seedRolePermissions(
 // seedPolicies inserts a default organization-level policy
 func seedPolicies(ctx context.Context, policyRepo *repository.PolicyRepository) error {
 	defaultPolicy := model.Policy{
-		Name: "default_organization_access",
+		Name: "default_org_access",
 	}
 
 	existing, err := policyRepo.ReadByName(ctx, defaultPolicy.Name)
@@ -199,7 +202,7 @@ func seedPolicyPermissions(
 	permissionRepo *repository.PermissionRepository,
 	policyPermissionRepo *repository.PolicyPermissionRepository,
 ) error {
-	defaultPolicy, err := policyRepo.ReadByName(ctx, "default_organization_access")
+	defaultPolicy, err := policyRepo.ReadByName(ctx, "default_org_access")
 	if err != nil {
 		return err
 	}
