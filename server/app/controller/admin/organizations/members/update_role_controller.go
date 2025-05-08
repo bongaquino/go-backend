@@ -9,23 +9,23 @@ import (
 )
 
 // Request structure for adding an organization
-type UpdateMemberRoleRequest struct {
+type UpdateRoleMemberRoleRequest struct {
 	RoleID string `json:"role_id" binding:"required"`
 }
 
-type UpdateController struct {
+type UpdateRoleController struct {
 	orgService *service.OrganizationService
 }
 
-// NewUpdateController initializes a new UpdateController
-func NewUpdateController(orgService *service.OrganizationService) *UpdateController {
-	return &UpdateController{
+// NewUpdateRoleController initializes a new UpdateRoleController
+func NewUpdateRoleController(orgService *service.OrganizationService) *UpdateRoleController {
+	return &UpdateRoleController{
 		orgService: orgService,
 	}
 }
 
 // Handle handles the health check request
-func (ac *UpdateController) Handle(ctx *gin.Context) {
+func (ac *UpdateRoleController) Handle(ctx *gin.Context) {
 	// Get orgID from path parameters
 	orgID := ctx.Param("orgID")
 	if orgID == "" {
@@ -40,13 +40,13 @@ func (ac *UpdateController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	// Bind the request body to the UpdateMemberRoleRequest struct
-	var request UpdateMemberRoleRequest
+	// Bind the request body to the UpdateRoleMemberRoleRequest struct
+	var request UpdateRoleMemberRoleRequest
 	if err := ac.validatePayload(ctx, &request); err != nil {
 		return
 	}
 
-	// Update the user to the organization using the service
+	// UpdateRole the user to the organization using the service
 	if err := ac.orgService.UpdateMember(ctx, orgID, userID, request.RoleID); err != nil {
 		if err.Error() == "organization not found" {
 			helper.FormatResponse(ctx, "error", http.StatusNotFound, "organization not found", nil, nil)
@@ -72,7 +72,7 @@ func (ac *UpdateController) Handle(ctx *gin.Context) {
 	}, nil)
 }
 
-func (rc *UpdateController) validatePayload(ctx *gin.Context, request *UpdateMemberRoleRequest) error {
+func (rc *UpdateRoleController) validatePayload(ctx *gin.Context, request *UpdateRoleMemberRoleRequest) error {
 	if err := ctx.ShouldBindJSON(request); err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
 		return err

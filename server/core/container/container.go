@@ -105,8 +105,8 @@ type Controllers struct {
 			Read    *organizations.ReadController
 			Update  *organizations.UpdateController
 			Members struct {
-				Add    *members.AddController
-				Update *members.UpdateController
+				Add        *members.AddController
+				UpdateRole *members.UpdateRoleController
 			}
 		}
 	}
@@ -244,8 +244,8 @@ func initControllers(s Services) Controllers {
 				Read    *organizations.ReadController
 				Update  *organizations.UpdateController
 				Members struct {
-					Add    *members.AddController
-					Update *members.UpdateController
+					Add        *members.AddController
+					UpdateRole *members.UpdateRoleController
 				}
 			}
 		}{
@@ -268,8 +268,8 @@ func initControllers(s Services) Controllers {
 				Read    *organizations.ReadController
 				Update  *organizations.UpdateController
 				Members struct {
-					Add    *members.AddController
-					Update *members.UpdateController
+					Add        *members.AddController
+					UpdateRole *members.UpdateRoleController
 				}
 			}{
 				List:   organizations.NewListController(s.Organization),
@@ -277,11 +277,11 @@ func initControllers(s Services) Controllers {
 				Read:   organizations.NewReadController(s.Organization),
 				Update: organizations.NewUpdateController(s.Organization),
 				Members: struct {
-					Add    *members.AddController
-					Update *members.UpdateController
+					Add        *members.AddController
+					UpdateRole *members.UpdateRoleController
 				}{
-					Add:    members.NewAddController(s.Organization),
-					Update: members.NewUpdateController(s.Organization),
+					Add:        members.NewAddController(s.Organization),
+					UpdateRole: members.NewUpdateRoleController(s.Organization),
 				},
 			},
 		},
