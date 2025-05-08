@@ -9,21 +9,38 @@ import (
 )
 
 type OrganizationService struct {
-	orgRepo      *repository.OrganizationRepository
-	policiesRepo *repository.PolicyRepository
+	orgRepo        *repository.OrganizationRepository
+	policyRepo     *repository.PolicyRepository
+	permissionRepo *repository.PermissionRepository
 }
 
-func NewOrganizationService(orgRepo *repository.OrganizationRepository, policiesRepo *repository.PolicyRepository,
+func NewOrganizationService(orgRepo *repository.OrganizationRepository,
+	policyRepo *repository.PolicyRepository,
+	permissionRepo *repository.PermissionRepository,
 ) *OrganizationService {
 	return &OrganizationService{
-		orgRepo:      orgRepo,
-		policiesRepo: policiesRepo,
+		orgRepo:        orgRepo,
+		policyRepo:     policyRepo,
+		permissionRepo: permissionRepo,
 	}
+}
+
+func (os *OrganizationService) ListPermissions(ctx context.Context) ([]*model.Permission, error) {
+	// Fetch permissions from the repository
+	permissions, err := os.permissionRepo.List(ctx)
+	if err != nil {
+		logger.Log.Error("error fetching permissions", logger.Error(err))
+		return nil, errors.New("internal server error")
+	}
+	// Convert []model.Permission to []*model.Permission
+	permissionPointers := make([]*model.Permission, len(permissions))
+	copy(permissionPointers, permissions)
+	return permissionPointers, nil
 }
 
 func (os *OrganizationService) ListPolicies(ctx context.Context) ([]*model.Policy, error) {
 	// Fetch policies from the repository
-	policies, err := os.policiesRepo.List(ctx)
+	policies, err := os.policyRepo.List(ctx)
 	if err != nil {
 		logger.Log.Error("error fetching policies", logger.Error(err))
 		return nil, errors.New("internal server error")

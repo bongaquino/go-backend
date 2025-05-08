@@ -24,6 +24,32 @@ func NewPermissionRepository(mongoProvider *provider.MongoProvider) *PermissionR
 	}
 }
 
+func (r *PermissionRepository) List(ctx context.Context) ([]*model.Permission, error) {
+	cursor, err := r.collection.Find(ctx, bson.M{})
+	if err != nil {
+		logger.Log.Error("error listing permissions", logger.Error(err))
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var permissions []*model.Permission
+	for cursor.Next(ctx) {
+		var policy model.Permission
+		if err := cursor.Decode(&policy); err != nil {
+			logger.Log.Error("error decoding policy", logger.Error(err))
+			return nil, err
+		}
+		permissions = append(permissions, &policy)
+	}
+
+	if err := cursor.Err(); err != nil {
+		logger.Log.Error("error iterating over permissions", logger.Error(err))
+		return nil, err
+	}
+
+	return permissions, nil
+}
+
 func (r *PermissionRepository) Create(ctx context.Context, permission *model.Permission) error {
 	permission.ID = primitive.NewObjectID()
 	permission.CreatedAt = time.Now()

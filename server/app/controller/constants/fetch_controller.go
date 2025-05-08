@@ -38,10 +38,16 @@ func (fc *FetchController) Handle(ctx *gin.Context) {
 		return
 	}
 
+	permissions, err := fc.orgService.ListPermissions(ctx)
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, err.Error(), nil, nil)
+		return
+	}
+
 	// Respond with success
 	helper.FormatResponse(ctx, "success", http.StatusOK, nil, gin.H{
 		"roles":       roles,
 		"policies":    policies,
-		"permissions": "permissions",
+		"permissions": permissions,
 	}, nil)
 }
