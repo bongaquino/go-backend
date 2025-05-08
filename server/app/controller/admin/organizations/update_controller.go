@@ -39,6 +39,10 @@ func (lc *UpdateController) Handle(ctx *gin.Context) {
 	// Update the organization using the service
 	updatedOrg, err := lc.orgService.UpdateOrg(ctx, orgID, &request)
 	if err != nil {
+		if err.Error() == "organization not found" {
+			helper.FormatResponse(ctx, "error", http.StatusNotFound, err.Error(), nil, nil)
+			return
+		}
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, err.Error(), nil, nil)
 		return
 	}
