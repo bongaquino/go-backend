@@ -30,26 +30,55 @@ func (r *OrganizationUserRoleRepository) Create(ctx context.Context, orgUserRole
 
 	_, err := r.collection.InsertOne(ctx, orgUserRole)
 	if err != nil {
-		logger.Log.Error("error creating organization user access", logger.Error(err))
+		logger.Log.Error("error creating organization user role", logger.Error(err))
 		return err
 	}
 	return nil
 }
 
-func (r *OrganizationUserRoleRepository) ReadByOrganizationID(ctx context.Context, organizationID string) ([]model.OrganizationUserRole, error) {
-	cursor, err := r.collection.Find(ctx, bson.M{"organization_id": organizationID})
+func (r *OrganizationUserRoleRepository) ReadByUserID(ctx context.Context, userID string) ([]model.OrganizationUserRole, error) {
+	cursor, err := r.collection.Find(ctx, bson.M{"user_id": userID})
 	if err != nil {
-		logger.Log.Error("error finding organization user access by organization ID", logger.Error(err))
+		logger.Log.Error("error finding organization user role by user ID", logger.Error(err))
 		return nil, err
 	}
 	defer cursor.Close(ctx)
 
 	var orgUserRole []model.OrganizationUserRole
 	if err := cursor.All(ctx, &orgUserRole); err != nil {
-		logger.Log.Error("error decoding organization user access", logger.Error(err))
+		logger.Log.Error("error decoding organization user role", logger.Error(err))
 		return nil, err
 	}
 	return orgUserRole, nil
+}
+
+func (r *OrganizationUserRoleRepository) ReadByOrganizationID(ctx context.Context, organizationID string) ([]model.OrganizationUserRole, error) {
+	cursor, err := r.collection.Find(ctx, bson.M{"organization_id": organizationID})
+	if err != nil {
+		logger.Log.Error("error finding organization user role by organization ID", logger.Error(err))
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var orgUserRole []model.OrganizationUserRole
+	if err := cursor.All(ctx, &orgUserRole); err != nil {
+		logger.Log.Error("error decoding organization user role", logger.Error(err))
+		return nil, err
+	}
+	return orgUserRole, nil
+}
+
+func (r *OrganizationUserRoleRepository) ReadByUserIDOrganizationID(ctx context.Context, userID, organizationID string) (*model.OrganizationUserRole, error) {
+	var orgUserRole model.OrganizationUserRole
+	err := r.collection.FindOne(ctx, bson.M{"user_id": userID, "organization_id": organizationID}).Decode(&orgUserRole)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, nil
+		}
+		logger.Log.Error("error finding organization user role by user ID and organization ID", logger.Error(err))
+		return nil, err
+	}
+	return &orgUserRole, nil
 }
 
 func (r *OrganizationUserRoleRepository) Update(ctx context.Context, id string, update bson.M) error {
@@ -57,7 +86,7 @@ func (r *OrganizationUserRoleRepository) Update(ctx context.Context, id string, 
 
 	_, err := r.collection.UpdateByID(ctx, id, bson.M{"$set": update})
 	if err != nil {
-		logger.Log.Error("error updating organization user access", logger.Error(err))
+		logger.Log.Error("error updating organization user role", logger.Error(err))
 		return err
 	}
 	return nil
@@ -66,7 +95,7 @@ func (r *OrganizationUserRoleRepository) Update(ctx context.Context, id string, 
 func (r *OrganizationUserRoleRepository) Delete(ctx context.Context, id string) error {
 	_, err := r.collection.DeleteOne(ctx, bson.M{"_id": id})
 	if err != nil {
-		logger.Log.Error("error deleting organization user access", logger.Error(err))
+		logger.Log.Error("error deleting organization user role", logger.Error(err))
 		return err
 	}
 	return nil

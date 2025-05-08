@@ -224,3 +224,70 @@ func (os *OrganizationService) UpdateOrg(ctx context.Context, orgID string, dto 
 	// Return the updated organization
 	return updatedOrg, nil
 }
+
+func (os *OrganizationService) AddMember(ctx context.Context, orgID string, userID string, roleID string) error {
+	// Check if the organization exists
+	org, err := os.orgRepo.Read(ctx, orgID)
+	if err != nil {
+		logger.Log.Error("error fetching organization", logger.Error(err))
+		return errors.New("error fetching organization")
+	}
+	if org == nil {
+		return errors.New("organization not found")
+	}
+
+	// Check if the user exists
+	user, err := os.userRepo.Read(ctx, userID)
+	if err != nil {
+		logger.Log.Error("error fetching user", logger.Error(err))
+		return errors.New("error fetching user")
+	}
+	if user == nil {
+		return errors.New("user not found")
+	}
+
+	// Check if the role exists
+	role, err := os.roleRepo.Read(ctx, roleID)
+	if err != nil {
+		logger.Log.Error("error fetching role", logger.Error(err))
+		return errors.New("error fetching role")
+	}
+	if role == nil {
+		return errors.New("role not found")
+	}
+
+	// Check if the user is already a member of the organization with the same role
+	existingMember, err := os.orgUserRoleRepo.ReadByUserIDOrganizationID(ctx, userID, orgID)
+	if err != nil {
+		logger.Log.Error("error checking existing member", logger.Error(err))
+		return errors.New("error checking existing member")
+	}
+	if existingMember != nil && existingMember.RoleID == role.ID {
+		return errors.New("user is already a member")
+	}
+
+	// Check if the user is already a member of another organization
+	orgUserRoles, err := os.orgUserRoleRepo.ReadByUserID(ctx, userID)
+	if err != nil {
+		logger.Log.Error("error checking existing member", logger.Error(err))
+		return errors.New("error checking existing member")
+	}
+	for _, orgUserRole := range orgUserRoles {
+		if orgUserRole.OrganizationID != org.ID {
+			return errors.New("user is already a member of another organization")
+		}
+	}
+
+	// Add the member to the organization
+	err = os.orgUserRoleRepo.Create(ctx, &model.OrganizationUserRole{
+		OrganizationID: org.ID,
+		UserID:         user.ID,
+		RoleID:         role.ID,
+	})
+	if err != nil {
+		logger.Log.Error("error adding member to organization", logger.Error(err))
+		return errors.New("error adding member to organization")
+	}
+
+	return nil
+}

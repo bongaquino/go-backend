@@ -2,6 +2,7 @@ package container
 
 import (
 	"koneksi/server/app/controller/admin/organizations"
+	"koneksi/server/app/controller/admin/organizations/members"
 	adminUsers "koneksi/server/app/controller/admin/users"
 	"koneksi/server/app/controller/constants"
 	"koneksi/server/app/controller/health"
@@ -99,10 +100,13 @@ type Controllers struct {
 			Search *adminUsers.SearchController
 		}
 		Organizations struct {
-			List   *organizations.ListController
-			Create *organizations.CreateController
-			Read   *organizations.ReadController
-			Update *organizations.UpdateController
+			List    *organizations.ListController
+			Create  *organizations.CreateController
+			Read    *organizations.ReadController
+			Update  *organizations.UpdateController
+			Members struct {
+				Add *members.AddController
+			}
 		}
 	}
 }
@@ -234,10 +238,13 @@ func initControllers(s Services) Controllers {
 				Search *adminUsers.SearchController
 			}
 			Organizations struct {
-				List   *organizations.ListController
-				Create *organizations.CreateController
-				Read   *organizations.ReadController
-				Update *organizations.UpdateController
+				List    *organizations.ListController
+				Create  *organizations.CreateController
+				Read    *organizations.ReadController
+				Update  *organizations.UpdateController
+				Members struct {
+					Add *members.AddController
+				}
 			}
 		}{
 			Users: struct {
@@ -254,15 +261,23 @@ func initControllers(s Services) Controllers {
 				Search: adminUsers.NewSearchController(s.User),
 			},
 			Organizations: struct {
-				List   *organizations.ListController
-				Create *organizations.CreateController
-				Read   *organizations.ReadController
-				Update *organizations.UpdateController
+				List    *organizations.ListController
+				Create  *organizations.CreateController
+				Read    *organizations.ReadController
+				Update  *organizations.UpdateController
+				Members struct {
+					Add *members.AddController
+				}
 			}{
 				List:   organizations.NewListController(s.Organization),
 				Create: organizations.NewCreateController(s.Organization),
 				Read:   organizations.NewReadController(s.Organization),
 				Update: organizations.NewUpdateController(s.Organization),
+				Members: struct {
+					Add *members.AddController
+				}{
+					Add: members.NewAddController(s.Organization),
+				},
 			},
 		},
 	}
