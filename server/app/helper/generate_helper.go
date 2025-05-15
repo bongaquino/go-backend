@@ -3,7 +3,7 @@ package helper
 import (
 	"crypto/hmac"
 	"crypto/rand"
-	"crypto/sha512"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
@@ -19,7 +19,7 @@ func GenerateClientID() (string, error) {
 	}
 
 	appConfig := config.LoadAppConfig()
-	h := hmac.New(sha512.New, []byte(appConfig.AppKey))
+	h := hmac.New(sha256.New, []byte(appConfig.AppKey))
 	h.Write(randomBytes)
 	hashed := h.Sum(nil)
 
@@ -30,13 +30,13 @@ func GenerateClientID() (string, error) {
 
 // GenerateClientSecret creates a secure client secret in the format: sk_<clean_base64>
 func GenerateClientSecret() (string, error) {
-	randomBytes, err := generateRandomBytes(64)
+	randomBytes, err := generateRandomBytes(32)
 	if err != nil {
 		return "", err
 	}
 
 	appConfig := config.LoadAppConfig()
-	h := hmac.New(sha512.New, []byte(appConfig.AppKey))
+	h := hmac.New(sha256.New, []byte(appConfig.AppKey))
 	h.Write(randomBytes)
 	hashed := h.Sum(nil)
 
