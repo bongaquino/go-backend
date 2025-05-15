@@ -35,11 +35,12 @@ func NewUserService(
 	redisProvider *provider.RedisProvider,
 ) *UserService {
 	return &UserService{
-		userRepo:      userRepo,
-		profileRepo:   profileRepo,
-		roleRepo:      roleRepo,
-		userRoleRepo:  userRoleRepo,
-		redisProvider: redisProvider,
+		userRepo:         userRepo,
+		profileRepo:      profileRepo,
+		roleRepo:         roleRepo,
+		userRoleRepo:     userRoleRepo,
+		subscriptionRepo: subscriptionRepo,
+		redisProvider:    redisProvider,
 	}
 }
 
