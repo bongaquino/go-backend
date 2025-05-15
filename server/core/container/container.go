@@ -8,6 +8,7 @@ import (
 	"koneksi/server/app/controller/health"
 	"koneksi/server/app/controller/network"
 	"koneksi/server/app/controller/profile"
+	"koneksi/server/app/controller/serviceaccounts"
 	"koneksi/server/app/controller/settings"
 	"koneksi/server/app/controller/settings/mfa"
 	"koneksi/server/app/controller/tokens"
@@ -90,6 +91,11 @@ type Controllers struct {
 	}
 	Network struct {
 		GetSwarmAddress *network.GetSwarmAddressController
+	}
+	ServiceAccounts struct {
+		Browse   *serviceaccounts.BrowseController
+		Generate *serviceaccounts.GenerateController
+		Revoke   *serviceaccounts.RevokeController
 	}
 	Admin struct {
 		Users struct {
@@ -230,6 +236,15 @@ func initControllers(s Services) Controllers {
 			GetSwarmAddress *network.GetSwarmAddressController
 		}{
 			GetSwarmAddress: network.NewGetSwarmAddressController(s.IPFS),
+		},
+		ServiceAccounts: struct {
+			Browse   *serviceaccounts.BrowseController
+			Generate *serviceaccounts.GenerateController
+			Revoke   *serviceaccounts.RevokeController
+		}{
+			Browse:   serviceaccounts.NewBrowseController(),
+			Generate: serviceaccounts.NewGenerateController(),
+			Revoke:   serviceaccounts.NewRevokeController(),
 		},
 		Admin: struct {
 			Users struct {

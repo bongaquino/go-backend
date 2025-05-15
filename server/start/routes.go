@@ -62,6 +62,15 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 		networkGroup.GET("/get-swarm-address", container.Controllers.Network.GetSwarmAddress.Handle)
 	}
 
+	// Service Accounts Routes
+	serviceAccountGroup := engine.Group("/service-accounts")
+	serviceAccountGroup.Use(container.Middleware.Authn.Handle, container.Middleware.Verified.Handle)
+	{
+		serviceAccountGroup.GET("/browse", container.Controllers.ServiceAccounts.Browse.Handle)
+		serviceAccountGroup.POST("/generate", container.Controllers.ServiceAccounts.Generate.Handle)
+		serviceAccountGroup.DELETE("/revoke", container.Controllers.ServiceAccounts.Revoke.Handle)
+	}
+
 	// Admin Routes
 	adminGroup := engine.Group("/admin")
 	adminGroup.Use(container.Middleware.Authn.Handle, container.Middleware.Authz.Handle([]string{"system_admin"}))
