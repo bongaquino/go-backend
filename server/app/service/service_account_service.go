@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"koneksi/server/app/dto"
 	"koneksi/server/app/helper"
 	"koneksi/server/app/model"
 	"koneksi/server/app/repository"
@@ -41,24 +42,35 @@ func GenerateClientCredentials() (string, string, error) {
 	return clientID, clientSecret, nil
 }
 
-func (s *ServiceAccountService) CreateServiceAccount(ctx context.Context, userID, clientID, clientSecret string) (string, string, error) {
+func (s *ServiceAccountService) CreateServiceAccount(ctx context.Context, request *dto.GenerateServiceAccountDTO) (*model.ServiceAccount, error) {
 	// Convert userID string to primitive.ObjectID
-	objectID, err := primitive.ObjectIDFromHex(userID)
+	objectID, err := primitive.ObjectIDFromHex(*request.UserID)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
 	// Create service account
 	serviceAccount := &model.ServiceAccount{
 		UserID:       objectID,
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
+		Name:         request.Name,
+		ClientID:     *request.ClientID,
+		ClientSecret: *request.ClientSecret,
 	}
 
 	err = s.serviceAccountRepo.Create(ctx, serviceAccount)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
-	return clientID, clientSecret, nil
+	return serviceAccount, nil
+}
+
+func (s *ServiceAccountService) ListServiceAccounts(ctx context.Context, userID string) ([]*model.ServiceAccount, error) {
+	// List service accounts by user ID
+	serviceAccounts, err := s.serviceAccountRepo.ListByUserID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return serviceAccounts, nil
 }

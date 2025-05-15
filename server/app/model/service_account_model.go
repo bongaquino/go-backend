@@ -12,7 +12,6 @@ type ServiceAccount struct {
 	UserID         primitive.ObjectID `bson:"user_id"`
 	OrganizationID primitive.ObjectID `bson:"organization_id"`
 	Name           string             `bson:"name"`
-	Description    string             `bson:"description"`
 	ClientID       string             `bson:"client_id"`
 	ClientSecret   string             `bson:"client_secret"`
 	PolicyID       primitive.ObjectID `bson:"policy_id"`

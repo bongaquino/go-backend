@@ -3,6 +3,7 @@ package serviceaccounts
 import (
 	"net/http"
 
+	"koneksi/server/app/dto"
 	"koneksi/server/app/helper"
 	"koneksi/server/app/service"
 
@@ -19,7 +20,13 @@ func NewGenerateController(serviceAccountService *service.ServiceAccountService)
 	}
 }
 
-func (hc *GenerateController) Handle(ctx *gin.Context) {
+func (gc *GenerateController) Handle(ctx *gin.Context) {
+	var request dto.GenerateServiceAccountDTO
+
+	if err := gc.validatePayload(ctx, &request); err != nil {
+		return
+	}
+
 	// Extract user ID from the context
 	userID, exists := ctx.Get("userID")
 	if !exists {
@@ -34,8 +41,14 @@ func (hc *GenerateController) Handle(ctx *gin.Context) {
 		return
 	}
 
+	// Set other request fields
+	userIDStr := userID.(string)
+	request.UserID = &userIDStr
+	request.ClientID = &clientID
+	request.ClientSecret = &clientSecret
+
 	// Create a new service account
-	_, _, err = hc.serviceAccountService.CreateServiceAccount(ctx, userID.(string), clientID, clientSecret)
+	_, err = gc.serviceAccountService.CreateServiceAccount(ctx, &request)
 	if err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to create service account", nil, nil)
 		return
@@ -46,4 +59,12 @@ func (hc *GenerateController) Handle(ctx *gin.Context) {
 		"client_id":     clientID,
 		"client_secret": clientSecret,
 	}, nil)
+}
+
+func (rc *GenerateController) validatePayload(ctx *gin.Context, request *dto.GenerateServiceAccountDTO) error {
+	if err := ctx.ShouldBindJSON(request); err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
+		return err
+	}
+	return nil
 }
