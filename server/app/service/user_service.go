@@ -304,32 +304,33 @@ func (us *UserService) ResetPassword(ctx context.Context, email, resetCode, newP
 
 	return nil
 }
-func (us *UserService) GetUserProfile(ctx context.Context, userID string) (*model.User, *model.Profile, *model.Role, error) {
+func (us *UserService) GetUserProfile(ctx context.Context, userID string) (
+	*model.User, *model.Profile, *model.Role, *model.Limit, error) {
 	user, err := us.userRepo.Read(ctx, userID)
 	if err != nil {
 		logger.Log.Error("failed to retrieve user", logger.Error(err))
-		return nil, nil, nil, errors.New("failed to retrieve user")
+		return nil, nil, nil, nil, errors.New("failed to retrieve user")
 	}
 	if user == nil {
-		return nil, nil, nil, errors.New("user not found")
+		return nil, nil, nil, nil, errors.New("user not found")
 	}
 
 	profile, err := us.profileRepo.ReadByUserID(ctx, userID)
 	if err != nil {
 		logger.Log.Error("failed to retrieve profile", logger.Error(err))
-		return nil, nil, nil, errors.New("failed to retrieve profile")
+		return nil, nil, nil, nil, errors.New("failed to retrieve profile")
 	}
 	if profile == nil {
-		return nil, nil, nil, errors.New("profile not found")
+		return nil, nil, nil, nil, errors.New("profile not found")
 	}
 
 	userRole, err := us.userRoleRepo.ReadByUserID(ctx, userID)
 	if err != nil {
 		logger.Log.Error("failed to retrieve user role", logger.Error(err))
-		return nil, nil, nil, errors.New("failed to retrieve user role")
+		return nil, nil, nil, nil, errors.New("failed to retrieve user role")
 	}
 	if userRole == nil {
-		return nil, nil, nil, errors.New("user role not found")
+		return nil, nil, nil, nil, errors.New("user role not found")
 	}
 
 	var role *model.Role
@@ -337,10 +338,20 @@ func (us *UserService) GetUserProfile(ctx context.Context, userID string) (*mode
 		role, err = us.roleRepo.Read(ctx, userRole[0].RoleID.Hex())
 		if err != nil {
 			logger.Log.Error("failed to retrieve role", logger.Error(err))
-			return nil, nil, nil, errors.New("failed to retrieve role")
+			return nil, nil, nil, nil, errors.New("failed to retrieve role")
 		}
 	}
-	return user, profile, role, nil
+
+	limit, err := us.limitRepo.ReadByUserID(ctx, userID)
+	if err != nil {
+		logger.Log.Error("failed to retrieve limit", logger.Error(err))
+		return nil, nil, nil, nil, errors.New("failed to retrieve limit")
+	}
+	if limit == nil {
+		return nil, nil, nil, nil, errors.New("limit not found")
+	}
+
+	return user, profile, role, limit, nil
 }
 
 func (us *UserService) GetUserProfileByEmail(ctx context.Context, email string) (*model.User, *model.Profile, error) {

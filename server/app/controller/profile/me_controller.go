@@ -30,7 +30,7 @@ func (hc *MeController) Handle(ctx *gin.Context) {
 	}
 
 	// Fetch the user profile
-	user, profile, role, err := hc.userService.GetUserProfile(ctx.Request.Context(), userID.(string))
+	user, profile, role, limit, err := hc.userService.GetUserProfile(ctx.Request.Context(), userID.(string))
 	if err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, err.Error(), nil, nil)
 		return
@@ -56,10 +56,17 @@ func (hc *MeController) Handle(ctx *gin.Context) {
 		"name": role.Name,
 	}
 
+	// Sanitize the limit object by removing sensitive fields
+	sanitizedLimit := gin.H{
+		"limit": limit.BytesLimit,
+		"used":  limit.BytesUsage,
+	}
+
 	// Return the user profile
 	helper.FormatResponse(ctx, "success", http.StatusOK, "user profile retrieved successfully", gin.H{
 		"user":    sanitizedUser,
 		"profile": sanitizedProfile,
 		"role":    sanitizedRole,
+		"limit":   sanitizedLimit,
 	}, nil)
 }
