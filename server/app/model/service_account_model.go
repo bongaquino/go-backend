@@ -14,6 +14,7 @@ type ServiceAccount struct {
 	ClientID         string             `bson:"client_id"`
 	ClientSecretHash string             `bson:"client_secret_hash"`
 	PolicyID         primitive.ObjectID `bson:"policy_id"`
+	LastUsedAt       time.Time          `bson:"last_used_at"`
 	CreatedAt        time.Time          `bson:"created_at"`
 	UpdatedAt        time.Time          `bson:"updated_at"`
 }
