@@ -32,7 +32,7 @@ func MigrateCollections(mongoProvider *provider.MongoProvider) {
 		{"service_accounts", generateIndexes(model.ServiceAccount{}.GetIndexes(), "unique_client_id")},
 		{"organizations", generateIndexes(nil, "")},
 		{"organization_user_role", generateIndexes(nil, "")},
-		{"limits", generateIndexes(model.Limit{}.GetIndexes(), "unique_user_id")},
+		{"subscriptions", generateIndexes(model.Subscription{}.GetIndexes(), "unique_user_id")},
 	}
 
 	for _, collection := range collections {

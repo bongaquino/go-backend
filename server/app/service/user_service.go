@@ -18,19 +18,20 @@ import (
 )
 
 type UserService struct {
-	userRepo      *repository.UserRepository
-	profileRepo   *repository.ProfileRepository
-	roleRepo      *repository.RoleRepository
-	userRoleRepo  *repository.UserRoleRepository
-	limitRepo     *repository.LimitRepository
-	redisProvider *provider.RedisProvider
+	userRepo         *repository.UserRepository
+	profileRepo      *repository.ProfileRepository
+	roleRepo         *repository.RoleRepository
+	userRoleRepo     *repository.UserRoleRepository
+	subscriptionRepo *repository.SubscriptionRepository
+	redisProvider    *provider.RedisProvider
 }
 
-func NewUserService(userRepo *repository.UserRepository,
+func NewUserService(
+	userRepo *repository.UserRepository,
 	profileRepo *repository.ProfileRepository,
 	roleRepo *repository.RoleRepository,
 	userRoleRepo *repository.UserRoleRepository,
-	limitRepo *repository.LimitRepository,
+	subscriptionRepo *repository.SubscriptionRepository,
 	redisProvider *provider.RedisProvider,
 ) *UserService {
 	return &UserService{
@@ -149,8 +150,8 @@ func (us *UserService) CreateUser(ctx context.Context, request *dto.CreateUserDT
 		return nil, nil, nil, "", errors.New("failed to assign role")
 	}
 
-	// Create user limit
-	limit := &model.Limit{
+	// Create user subscription
+	subscription := &model.Subscription{
 		UserID:         user.ID,
 		OrganizationID: nil,
 		BytesLimit:     userConfig.DefaultBytesLimit,
@@ -158,9 +159,9 @@ func (us *UserService) CreateUser(ctx context.Context, request *dto.CreateUserDT
 		CreatedAt:      time.Now(),
 		UpdatedAt:      time.Now(),
 	}
-	if err := us.limitRepo.Create(ctx, limit); err != nil {
-		logger.Log.Error("failed to create limit", logger.Error(err))
-		return nil, nil, nil, "", errors.New("failed to create limit")
+	if err := us.subscriptionRepo.Create(ctx, subscription); err != nil {
+		logger.Log.Error("failed to create subscription", logger.Error(err))
+		return nil, nil, nil, "", errors.New("failed to create subscription")
 	}
 
 	return user, profile, userRoleAssignment, userRole.Name, nil
