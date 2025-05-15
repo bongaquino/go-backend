@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"koneksi/server/app/helper"
@@ -117,17 +118,31 @@ func (r *ServiceAccountRepository) UpdateByClientID(ctx context.Context, clientI
 	return nil
 }
 
-func (r *ServiceAccountRepository) DeleteByClientID(ctx context.Context, clientID string) error {
-	// Convert clientID to ObjectID
-	objectID, err := primitive.ObjectIDFromHex(clientID)
+func (r *ServiceAccountRepository) DeleteByUserIDClientID(ctx context.Context, userID, clientID string) error {
+	// Convert userID to ObjectID
+	userObjectID, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
 		logger.Log.Error("invalid ID format", logger.Error(err))
 		return err
 	}
-	_, err = r.collection.DeleteOne(ctx, bson.M{"client_id": objectID})
+
+	// Check if the service account exists
+	var account model.ServiceAccount
+	err = r.collection.FindOne(ctx, bson.M{"user_id": userObjectID, "client_id": clientID}).Decode(&account)
+	if err != nil {
+		if err == mongoDriver.ErrNoDocuments {
+			// Return new error if the service account does not exist
+			logger.Log.Error("service account not found", logger.Error(err))
+			return errors.New("service account not found")
+		}
+	}
+
+	// Delete the service account
+	_, err = r.collection.DeleteOne(ctx, bson.M{"user_id": userObjectID, "client_id": clientID})
 	if err != nil {
 		logger.Log.Error("error deleting service account", logger.Error(err))
 		return err
 	}
+
 	return nil
 }

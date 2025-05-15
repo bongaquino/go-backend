@@ -74,3 +74,13 @@ func (s *ServiceAccountService) ListServiceAccounts(ctx context.Context, userID 
 
 	return serviceAccounts, nil
 }
+
+func (s *ServiceAccountService) DeleteServiceAccount(ctx context.Context, userID string, clientID string) error {
+	// Revoke service account by client ID
+	err := s.serviceAccountRepo.DeleteByUserIDClientID(ctx, userID, clientID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
