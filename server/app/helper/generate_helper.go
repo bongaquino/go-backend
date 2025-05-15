@@ -1,31 +1,54 @@
 package helper
 
 import (
+	"crypto/hmac"
 	"crypto/rand"
+	"crypto/sha512"
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"koneksi/server/config"
 	"strings"
 )
 
-// GenerateClientID generates a cryptographically safe client ID
+// GenerateClientID creates a secure client ID using random bytes and HMAC with appKey
 func GenerateClientID() (string, error) {
-	return generateRandomString(32) // 32 bytes (~43 Base64 characters)
+	randomBytes, err := generateRandomBytes(32)
+	if err != nil {
+		return "", err
+	}
+
+	appConfig := config.LoadAppConfig()
+	h := hmac.New(sha512.New, []byte(appConfig.AppKey))
+	h.Write(randomBytes)
+	hashed := h.Sum(nil)
+
+	return base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(hashed), nil
 }
 
-// GenerateClientSecret generates a cryptographically safe client secret
+// GenerateClientSecret creates a secure client secret using random bytes and HMAC with appKey
 func GenerateClientSecret() (string, error) {
-	return generateRandomString(64) // 64 bytes (~86 Base64 characters)
+	randomBytes, err := generateRandomBytes(64)
+	if err != nil {
+		return "", err
+	}
+
+	appConfig := config.LoadAppConfig()
+	h := hmac.New(sha512.New, []byte(appConfig.AppKey))
+	h.Write(randomBytes)
+	hashed := h.Sum(nil)
+
+	return base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(hashed), nil
 }
 
-// generateRandomString generates a secure random string of the given length in bytes
-func generateRandomString(length int) (string, error) {
+// generateRandomBytes securely generates a random byte slice of specified length
+func generateRandomBytes(length int) ([]byte, error) {
 	bytes := make([]byte, length)
 	_, err := rand.Read(bytes)
 	if err != nil {
-		return "", fmt.Errorf("failed to generate random string: %w", err)
+		return nil, fmt.Errorf("failed to generate random bytes: %w", err)
 	}
-	return base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(bytes), nil
+	return bytes, nil
 }
 
 // GenerateCode generates a secure random reset code
@@ -38,16 +61,15 @@ func GenerateCode(length int) (string, error) {
 	return strings.ToUpper(hex.EncodeToString(bytes)), nil
 }
 
-// GenerateNumericCode generates a secure random code with only numeric characters
+// GenerateNumericCode generates a secure random numeric code
 func GenerateNumericCode(length int) (string, error) {
 	digits := make([]byte, length)
 	_, err := rand.Read(digits)
 	if err != nil {
-			return "", fmt.Errorf("failed to generate random digit: %w", err)
+		return "", fmt.Errorf("failed to generate random digit: %w", err)
 	}
 	for i := range digits {
-			digits[i] = byte(digits[i] % 10 + '0') // Convert byte to ASCII digit
+		digits[i] = byte(digits[i]%10 + '0') // Convert byte to ASCII digit
 	}
 	return string(digits), nil
 }
-

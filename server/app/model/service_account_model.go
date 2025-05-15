@@ -9,6 +9,8 @@ import (
 
 type ServiceAccount struct {
 	ID               primitive.ObjectID `bson:"_id,omitempty"`
+	UserID           primitive.ObjectID `bson:"user_id"`
+	OrganizationID   primitive.ObjectID `bson:"organization_id"`
 	Name             string             `bson:"name"`
 	Description      string             `bson:"description"`
 	ClientID         string             `bson:"client_id"`
