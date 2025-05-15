@@ -22,6 +22,7 @@ type UserService struct {
 	profileRepo   *repository.ProfileRepository
 	roleRepo      *repository.RoleRepository
 	userRoleRepo  *repository.UserRoleRepository
+	limitRepo     *repository.LimitRepository
 	redisProvider *provider.RedisProvider
 }
 
@@ -29,6 +30,7 @@ func NewUserService(userRepo *repository.UserRepository,
 	profileRepo *repository.ProfileRepository,
 	roleRepo *repository.RoleRepository,
 	userRoleRepo *repository.UserRoleRepository,
+	limitRepo *repository.LimitRepository,
 	redisProvider *provider.RedisProvider,
 ) *UserService {
 	return &UserService{
@@ -100,6 +102,10 @@ func (us *UserService) UserExists(ctx context.Context, email string) (bool, erro
 
 // Create registers a new user
 func (us *UserService) CreateUser(ctx context.Context, request *dto.CreateUserDTO) (*model.User, *model.Profile, *model.UserRole, string, error) {
+	// Load user configuration
+	userConfig := config.LoadUserConfig()
+
+	// Check user role
 	userRole, err := us.roleRepo.ReadByName(ctx, request.Role)
 	if err != nil {
 		logger.Log.Error("failed to assign role", logger.Error(err))
@@ -109,6 +115,7 @@ func (us *UserService) CreateUser(ctx context.Context, request *dto.CreateUserDT
 		return nil, nil, nil, "", errors.New("role not found")
 	}
 
+	// Create user
 	user := &model.User{
 		Email:      request.Email,
 		Password:   request.Password,
@@ -119,6 +126,7 @@ func (us *UserService) CreateUser(ctx context.Context, request *dto.CreateUserDT
 		return nil, nil, nil, "", errors.New("failed to create user")
 	}
 
+	// Create profile
 	profile := &model.Profile{
 		UserID:     user.ID,
 		FirstName:  request.FirstName,
@@ -131,6 +139,7 @@ func (us *UserService) CreateUser(ctx context.Context, request *dto.CreateUserDT
 		return nil, nil, nil, "", errors.New("failed to create profile")
 	}
 
+	// Create user role assignment
 	userRoleAssignment := &model.UserRole{
 		UserID: user.ID,
 		RoleID: userRole.ID,
@@ -138,6 +147,20 @@ func (us *UserService) CreateUser(ctx context.Context, request *dto.CreateUserDT
 	if err := us.userRoleRepo.Create(ctx, userRoleAssignment); err != nil {
 		logger.Log.Error("failed to assign role", logger.Error(err))
 		return nil, nil, nil, "", errors.New("failed to assign role")
+	}
+
+	// Create user limit
+	limit := &model.Limit{
+		UserID:         user.ID,
+		OrganizationID: nil,
+		BytesLimit:     userConfig.DefaultBytesLimit,
+		BytesUsage:     0,
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
+	}
+	if err := us.limitRepo.Create(ctx, limit); err != nil {
+		logger.Log.Error("failed to create limit", logger.Error(err))
+		return nil, nil, nil, "", errors.New("failed to create limit")
 	}
 
 	return user, profile, userRoleAssignment, userRole.Name, nil

@@ -40,6 +40,7 @@ type Repositories struct {
 	UserRole             *repository.UserRoleRepository
 	Organization         *repository.OrganizationRepository
 	OrganizationUserRole *repository.OrganizationUserRoleRepository
+	Limit                *repository.LimitRepository
 }
 
 type Services struct {
@@ -149,11 +150,12 @@ func initRepositories(p Providers) Repositories {
 		UserRole:             repository.NewUserRoleRepository(p.Mongo),
 		Organization:         repository.NewOrganizationRepository(p.Mongo),
 		OrganizationUserRole: repository.NewOrganizationUserRoleRepository(p.Mongo),
+		Limit:                repository.NewLimitRepository(p.Mongo),
 	}
 }
 
 func initServices(p Providers, r Repositories) Services {
-	user := service.NewUserService(r.User, r.Profile, r.Role, r.UserRole, p.Redis)
+	user := service.NewUserService(r.User, r.Profile, r.Role, r.UserRole, r.Limit, p.Redis)
 	email := service.NewEmailService(p.Postmark)
 	mfa := service.NewMFAService(r.User, p.Redis)
 	ipfs := service.NewIPFSService(p.IPFS)
