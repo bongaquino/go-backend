@@ -18,12 +18,12 @@ import (
 )
 
 type UserService struct {
-	userRepo         *repository.UserRepository
-	profileRepo      *repository.ProfileRepository
-	roleRepo         *repository.RoleRepository
-	userRoleRepo     *repository.UserRoleRepository
-	subscriptionRepo *repository.SubscriptionRepository
-	redisProvider    *provider.RedisProvider
+	userRepo      *repository.UserRepository
+	profileRepo   *repository.ProfileRepository
+	roleRepo      *repository.RoleRepository
+	userRoleRepo  *repository.UserRoleRepository
+	limitRepo     *repository.LimitRepository
+	redisProvider *provider.RedisProvider
 }
 
 func NewUserService(
@@ -31,16 +31,16 @@ func NewUserService(
 	profileRepo *repository.ProfileRepository,
 	roleRepo *repository.RoleRepository,
 	userRoleRepo *repository.UserRoleRepository,
-	subscriptionRepo *repository.SubscriptionRepository,
+	limitRepo *repository.LimitRepository,
 	redisProvider *provider.RedisProvider,
 ) *UserService {
 	return &UserService{
-		userRepo:         userRepo,
-		profileRepo:      profileRepo,
-		roleRepo:         roleRepo,
-		userRoleRepo:     userRoleRepo,
-		subscriptionRepo: subscriptionRepo,
-		redisProvider:    redisProvider,
+		userRepo:      userRepo,
+		profileRepo:   profileRepo,
+		roleRepo:      roleRepo,
+		userRoleRepo:  userRoleRepo,
+		limitRepo:     limitRepo,
+		redisProvider: redisProvider,
 	}
 }
 
@@ -151,8 +151,8 @@ func (us *UserService) CreateUser(ctx context.Context, request *dto.CreateUserDT
 		return nil, nil, nil, "", errors.New("failed to assign role")
 	}
 
-	// Create user subscription
-	subscription := &model.Subscription{
+	// Create user limit
+	limit := &model.Limit{
 		UserID:         user.ID,
 		OrganizationID: nil,
 		BytesLimit:     userConfig.DefaultBytesLimit,
@@ -160,9 +160,9 @@ func (us *UserService) CreateUser(ctx context.Context, request *dto.CreateUserDT
 		CreatedAt:      time.Now(),
 		UpdatedAt:      time.Now(),
 	}
-	if err := us.subscriptionRepo.Create(ctx, subscription); err != nil {
-		logger.Log.Error("failed to create subscription", logger.Error(err))
-		return nil, nil, nil, "", errors.New("failed to create subscription")
+	if err := us.limitRepo.Create(ctx, limit); err != nil {
+		logger.Log.Error("failed to create limit", logger.Error(err))
+		return nil, nil, nil, "", errors.New("failed to create limit")
 	}
 
 	return user, profile, userRoleAssignment, userRole.Name, nil

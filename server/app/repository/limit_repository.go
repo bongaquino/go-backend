@@ -13,18 +13,18 @@ import (
 	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 )
 
-type SubscriptionRepository struct {
+type LimitRepository struct {
 	collection *mongoDriver.Collection
 }
 
-func NewSubscriptionRepository(mongoProvider *provider.MongoProvider) *SubscriptionRepository {
+func NewLimitRepository(mongoProvider *provider.MongoProvider) *LimitRepository {
 	db := mongoProvider.GetDB()
-	return &SubscriptionRepository{
-		collection: db.Collection("subscriptions"),
+	return &LimitRepository{
+		collection: db.Collection("limits"),
 	}
 }
 
-func (r *SubscriptionRepository) Create(ctx context.Context, limit *model.Subscription) error {
+func (r *LimitRepository) Create(ctx context.Context, limit *model.Limit) error {
 	limit.ID = primitive.NewObjectID()
 	limit.CreatedAt = time.Now()
 	limit.UpdatedAt = time.Now()
@@ -37,7 +37,7 @@ func (r *SubscriptionRepository) Create(ctx context.Context, limit *model.Subscr
 	return nil
 }
 
-func (r *SubscriptionRepository) Read(ctx context.Context, id string) (*model.Subscription, error) {
+func (r *LimitRepository) Read(ctx context.Context, id string) (*model.Limit, error) {
 	// Convert id to ObjectID
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -45,7 +45,7 @@ func (r *SubscriptionRepository) Read(ctx context.Context, id string) (*model.Su
 		return nil, err
 	}
 
-	var limit model.Subscription
+	var limit model.Limit
 	err = r.collection.FindOne(ctx, bson.M{"_id": objectID}).Decode(&limit)
 	if err != nil {
 		if err == mongoDriver.ErrNoDocuments {
@@ -57,7 +57,7 @@ func (r *SubscriptionRepository) Read(ctx context.Context, id string) (*model.Su
 	return &limit, nil
 }
 
-func (r *SubscriptionRepository) ReadByUserID(ctx context.Context, userID string) (*model.Subscription, error) {
+func (r *LimitRepository) ReadByUserID(ctx context.Context, userID string) (*model.Limit, error) {
 	// Convert userID to ObjectID
 	objectID, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
@@ -65,7 +65,7 @@ func (r *SubscriptionRepository) ReadByUserID(ctx context.Context, userID string
 		return nil, err
 	}
 
-	var limit model.Subscription
+	var limit model.Limit
 	err = r.collection.FindOne(ctx, bson.M{"user_id": objectID}).Decode(&limit)
 	if err != nil {
 		if err == mongoDriver.ErrNoDocuments {
@@ -77,7 +77,7 @@ func (r *SubscriptionRepository) ReadByUserID(ctx context.Context, userID string
 	return &limit, nil
 }
 
-func (r *SubscriptionRepository) ReadByOrganizationID(ctx context.Context, orgID string) (*model.Subscription, error) {
+func (r *LimitRepository) ReadByOrganizationID(ctx context.Context, orgID string) (*model.Limit, error) {
 	// Convert orgID to ObjectID
 	objectID, err := primitive.ObjectIDFromHex(orgID)
 	if err != nil {
@@ -85,7 +85,7 @@ func (r *SubscriptionRepository) ReadByOrganizationID(ctx context.Context, orgID
 		return nil, err
 	}
 
-	var limit model.Subscription
+	var limit model.Limit
 	err = r.collection.FindOne(ctx, bson.M{"organization_id": objectID}).Decode(&limit)
 	if err != nil {
 		if err == mongoDriver.ErrNoDocuments {
@@ -97,7 +97,7 @@ func (r *SubscriptionRepository) ReadByOrganizationID(ctx context.Context, orgID
 	return &limit, nil
 }
 
-func (r *SubscriptionRepository) UpdateByUserID(ctx context.Context, userID string, update bson.M) error {
+func (r *LimitRepository) UpdateByUserID(ctx context.Context, userID string, update bson.M) error {
 	// Convert userID to ObjectID
 	objectID, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
@@ -116,7 +116,7 @@ func (r *SubscriptionRepository) UpdateByUserID(ctx context.Context, userID stri
 	return nil
 }
 
-func (r *SubscriptionRepository) UpdateByOrganizationID(ctx context.Context, orgID string, update bson.M) error {
+func (r *LimitRepository) UpdateByOrganizationID(ctx context.Context, orgID string, update bson.M) error {
 	// Convert orgID to ObjectID
 	objectID, err := primitive.ObjectIDFromHex(orgID)
 	if err != nil {

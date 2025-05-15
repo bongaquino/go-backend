@@ -7,7 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type Subscription struct {
+type Limit struct {
 	ID             primitive.ObjectID  `bson:"_id,omitempty"`
 	UserID         primitive.ObjectID  `bson:"user_id"`
 	OrganizationID *primitive.ObjectID `bson:"organization_id"`
@@ -17,7 +17,7 @@ type Subscription struct {
 	UpdatedAt      time.Time           `bson:"updated_at"`
 }
 
-func (Subscription) GetIndexes() []bson.D {
+func (Limit) GetIndexes() []bson.D {
 	return []bson.D{
 		{{Key: "user_id", Value: 1}},
 	}
