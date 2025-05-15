@@ -44,12 +44,13 @@ type Repositories struct {
 }
 
 type Services struct {
-	User         *service.UserService
-	Token        *service.TokenService
-	MFA          *service.MFAService
-	Email        *service.EmailService
-	IPFS         *service.IPFSService
-	Organization *service.OrganizationService
+	User           *service.UserService
+	Token          *service.TokenService
+	MFA            *service.MFAService
+	Email          *service.EmailService
+	IPFS           *service.IPFSService
+	Organization   *service.OrganizationService
+	ServiceAccount *service.ServiceAccountService
 }
 
 type Middleware struct {
@@ -162,7 +163,8 @@ func initServices(p Providers, r Repositories) Services {
 	token := service.NewTokenService(r.User, p.JWT, mfa, p.Redis)
 	organization := service.NewOrganizationService(r.Organization, r.Policy, r.Permission,
 		r.OrganizationUserRole, r.User, r.Role)
-	return Services{user, token, mfa, email, ipfs, organization}
+	serviceAccount := service.NewServiceAccountService(r.ServiceAccount, r.User, r.Limit)
+	return Services{user, token, mfa, email, ipfs, organization, serviceAccount}
 }
 
 func initMiddleware(p Providers, r Repositories) Middleware {
@@ -244,9 +246,9 @@ func initControllers(s Services) Controllers {
 			Generate *serviceaccounts.GenerateController
 			Revoke   *serviceaccounts.RevokeController
 		}{
-			Browse:   serviceaccounts.NewBrowseController(),
-			Generate: serviceaccounts.NewGenerateController(),
-			Revoke:   serviceaccounts.NewRevokeController(),
+			Browse:   serviceaccounts.NewBrowseController(s.ServiceAccount),
+			Generate: serviceaccounts.NewGenerateController(s.ServiceAccount),
+			Revoke:   serviceaccounts.NewRevokeController(s.ServiceAccount),
 		},
 		Admin: struct {
 			Users struct {

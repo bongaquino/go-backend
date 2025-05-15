@@ -4,15 +4,20 @@ import (
 	"net/http"
 
 	"koneksi/server/app/helper"
+	"koneksi/server/app/service"
 	"koneksi/server/config"
 
 	"github.com/gin-gonic/gin"
 )
 
-type BrowseController struct{}
+type BrowseController struct {
+	serviceAccountService *service.ServiceAccountService
+}
 
-func NewBrowseController() *BrowseController {
-	return &BrowseController{}
+func NewBrowseController(serviceAccountService *service.ServiceAccountService) *BrowseController {
+	return &BrowseController{
+		serviceAccountService: serviceAccountService,
+	}
 }
 
 func (hc *BrowseController) Handle(ctx *gin.Context) {

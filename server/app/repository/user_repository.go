@@ -62,9 +62,6 @@ func (r *UserRepository) Create(ctx context.Context, user *model.User) error {
 	}
 	user.Password = hashedPassword
 
-	user.CreatedAt = time.Now()
-	user.UpdatedAt = time.Now()
-
 	_, err = r.collection.InsertOne(ctx, user)
 	if err != nil {
 		logger.Log.Error("error creating user", logger.Error(err))

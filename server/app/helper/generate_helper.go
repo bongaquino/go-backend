@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-// GenerateClientID creates a secure client ID using random bytes and HMAC with appKey
+// GenerateClientID creates a secure client ID in the format: id_<clean_base64>
 func GenerateClientID() (string, error) {
 	randomBytes, err := generateRandomBytes(32)
 	if err != nil {
@@ -23,10 +23,12 @@ func GenerateClientID() (string, error) {
 	h.Write(randomBytes)
 	hashed := h.Sum(nil)
 
-	return base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(hashed), nil
+	encoded := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(hashed)
+	cleaned := removeDashesAndUnderscores(encoded)
+	return fmt.Sprintf("id_%s", cleaned), nil
 }
 
-// GenerateClientSecret creates a secure client secret using random bytes and HMAC with appKey
+// GenerateClientSecret creates a secure client secret in the format: sk_<clean_base64>
 func GenerateClientSecret() (string, error) {
 	randomBytes, err := generateRandomBytes(64)
 	if err != nil {
@@ -38,7 +40,14 @@ func GenerateClientSecret() (string, error) {
 	h.Write(randomBytes)
 	hashed := h.Sum(nil)
 
-	return base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(hashed), nil
+	encoded := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(hashed)
+	cleaned := removeDashesAndUnderscores(encoded)
+	return fmt.Sprintf("sk_%s", cleaned), nil
+}
+
+// removeDashesAndUnderscores removes '-' and '_' characters from the input string
+func removeDashesAndUnderscores(s string) string {
+	return strings.ReplaceAll(strings.ReplaceAll(s, "-", ""), "_", "")
 }
 
 // generateRandomBytes securely generates a random byte slice of specified length
