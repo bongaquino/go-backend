@@ -75,7 +75,7 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 	clientsGroup := engine.Group("/clients")
 	clientsGroup.Use(container.Middleware.API.Handle)
 	{
-		clientsGroup.GET("/peers/fetch", container.Controllers.Clients.Peers.Fetch.Handle)
+		clientsGroup.GET("/peers", container.Controllers.Clients.Peers.Fetch.Handle)
 	}
 
 	// Admin Routes
