@@ -6,6 +6,8 @@ import (
 	"koneksi/server/app/model"
 	"koneksi/server/app/repository"
 	"koneksi/server/core/logger"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // SeedCollections seeds initial data into MongoDB collections
@@ -45,17 +47,26 @@ func SeedCollections(
 // seedPermissions inserts initial permissions using the repository
 func seedPermissions(ctx context.Context, permissionRepo *repository.PermissionRepository) error {
 	permissions := []model.Permission{
-		{Name: "list:users"},
-		{Name: "create:user"},
-		{Name: "read:user"},
-		{Name: "update:user"},
-		{Name: "list:organizations"},
-		{Name: "create:organization"},
-		{Name: "read:organization"},
-		{Name: "update:organization"},
-		{Name: "list:files"},
-		{Name: "upload:file"},
-		{Name: "download:file"},
+		{Name: "user:browse"},
+		{Name: "user:read"},
+		{Name: "user:add"},
+		{Name: "user:edit"},
+		{Name: "user:delete"},
+		{Name: "organization:browse"},
+		{Name: "organization:read"},
+		{Name: "organization:edit"},
+		{Name: "organization:add"},
+		{Name: "organization:delete"},
+		{Name: "directory:browse"},
+		{Name: "directory:read"},
+		{Name: "directory:edit"},
+		{Name: "directory:add"},
+		{Name: "directory:delete"},
+		{Name: "file:upload"},
+		{Name: "file:download"},
+		{Name: "file:read"},
+		{Name: "file:edit"},
+		{Name: "file:delete"},
 	}
 
 	for _, perm := range permissions {
@@ -109,22 +120,28 @@ func seedRolePermissions(
 ) error {
 	rolePermissionsMap := map[string][]string{
 		"system_admin": {
-			"list:users", "create:user", "read:user", "update:user",
-			"list:organizations", "create:organization", "read:organization", "update:organization",
-			"list:files", "upload:file", "download:file",
+			"user:browse", "user:add", "user:read", "user:edit", "user:delete",
+			"organization:browse", "organization:add", "organization:read", "organization:edit", "organization:delete",
+			"directory:browse", "directory:add", "directory:read", "directory:edit", "directory:delete",
+			"file:upload", "file:download", "file:read", "file:edit", "file:delete",
 		},
 		"system_user": {
-			"list:files", "upload:file", "download:file",
+			"directory:browse", "directory:add", "directory:read", "directory:edit", "directory:delete",
+			"file:upload", "file:download", "file:read", "file:edit", "file:delete",
 		},
 		"organization_admin": {
-			"read:organization", "update:organization",
-			"list:files", "upload:file", "download:file",
+			"organization:browse", "organization:add", "organization:read", "organization:edit", "organization:delete",
+			"directory:browse", "directory:add", "directory:read", "directory:edit", "directory:delete",
+			"file:upload", "file:download", "file:read", "file:edit", "file:delete",
 		},
 		"organization_user": {
-			"list:files", "upload:file", "download:file",
+			"directory:browse", "directory:add", "directory:read", "directory:edit", "directory:delete",
+			"file:upload", "file:download", "file:read", "file:edit", "file:delete",
 		},
 		"organization_viewer": {
-			"list:files", "download:file",
+			"organization:browse", "organization:read",
+			"directory:browse", "directory:read",
+			"file:download", "file:read",
 		},
 	}
 
@@ -174,74 +191,108 @@ func seedRolePermissions(
 	return nil
 }
 
-// seedPolicies inserts a default organization-level policy
+// seedPolicies inserts default policies
 func seedPolicies(ctx context.Context, policyRepo *repository.PolicyRepository) error {
-	defaultPolicy := model.Policy{
-		Name: "default_org_access",
+	policies := []model.Policy{
+		{Name: "default_organization_policy"},
+		{Name: "default_service_account_policy"},
 	}
 
-	existing, err := policyRepo.ReadByName(ctx, defaultPolicy.Name)
-	if err != nil {
-		return err
-	}
-	if existing == nil {
-		if err := policyRepo.Create(ctx, &defaultPolicy); err != nil {
+	for _, policy := range policies {
+		existing, err := policyRepo.ReadByName(ctx, policy.Name)
+		if err != nil {
 			return err
 		}
-	} else {
-		logger.Log.Info(fmt.Sprintf("skipping policy: %s (already exists)", defaultPolicy.Name))
+		if existing == nil {
+			if err := policyRepo.Create(ctx, &policy); err != nil {
+				return err
+			}
+		} else {
+			logger.Log.Info(fmt.Sprintf("skipping policy: %s (already exists)", policy.Name))
+		}
 	}
 
 	return nil
 }
 
-// seedPolicyPermissions assigns permissions to the default policy
+// seedPolicyPermissions assigns permissions to the policies
 func seedPolicyPermissions(
 	ctx context.Context,
 	policyRepo *repository.PolicyRepository,
 	permissionRepo *repository.PermissionRepository,
 	policyPermissionRepo *repository.PolicyPermissionRepository,
 ) error {
-	defaultPolicy, err := policyRepo.ReadByName(ctx, "default_org_access")
+	// default_organization_policy → org perms only
+	orgPolicy, err := policyRepo.ReadByName(ctx, "default_organization_policy")
 	if err != nil {
 		return err
 	}
-	if defaultPolicy == nil {
-		logger.Log.Warn("default policy not found, skipping policy permission seeding")
-		return nil
+	if orgPolicy != nil {
+		orgPerms := []string{
+			"organization:browse", "organization:add", "organization:read", "organization:edit", "organization:delete",
+		}
+		if err := assignPolicyPermissions(ctx, orgPolicy.ID.Hex(), orgPerms, permissionRepo, policyPermissionRepo); err != nil {
+			return err
+		}
+	} else {
+		logger.Log.Warn("default_organization_policy not found, skipping")
 	}
 
-	permissions := []string{
-		"list:users", "create:user", "read:user", "update:user",
-		"list:organizations", "create:organization", "read:organization", "update:organization",
+	// default_service_account_policy → directory + file perms
+	servicePolicy, err := policyRepo.ReadByName(ctx, "default_service_account_policy")
+	if err != nil {
+		return err
+	}
+	if servicePolicy != nil {
+		dirFilePerms := []string{
+			"directory:browse", "directory:add", "directory:read", "directory:edit", "directory:delete",
+			"file:upload", "file:download", "file:read", "file:edit", "file:delete",
+		}
+		if err := assignPolicyPermissions(ctx, servicePolicy.ID.Hex(), dirFilePerms, permissionRepo, policyPermissionRepo); err != nil {
+			return err
+		}
+	} else {
+		logger.Log.Warn("default_service_account_policy not found, skipping")
 	}
 
-	for _, permName := range permissions {
+	return nil
+}
+
+func assignPolicyPermissions(
+	ctx context.Context,
+	policyID string,
+	permNames []string,
+	permissionRepo *repository.PermissionRepository,
+	policyPermissionRepo *repository.PolicyPermissionRepository,
+) error {
+	for _, permName := range permNames {
 		perm, err := permissionRepo.ReadByName(ctx, permName)
 		if err != nil {
 			return err
 		}
 		if perm == nil {
-			logger.Log.Warn(fmt.Sprintf("skipping policy permission seeding: Permission %s not found", permName))
+			logger.Log.Warn(fmt.Sprintf("permission %s not found", permName))
 			continue
 		}
 
-		existing, err := policyPermissionRepo.ReadByPolicyIDPermissionID(ctx, defaultPolicy.ID.Hex(), perm.ID.Hex())
+		existing, err := policyPermissionRepo.ReadByPolicyIDPermissionID(ctx, policyID, perm.ID.Hex())
 		if err != nil {
 			return err
 		}
 		if existing == nil {
-			policyPermission := model.PolicyPermission{
-				PolicyID:     defaultPolicy.ID,
-				PermissionID: perm.ID,
+			objID, err := primitive.ObjectIDFromHex(policyID)
+			if err != nil {
+				return fmt.Errorf("invalid policyID hex: %w", err)
 			}
-			if err := policyPermissionRepo.Create(ctx, &policyPermission); err != nil {
+			if err := policyPermissionRepo.Create(ctx, &model.PolicyPermission{
+				PolicyID:     objID,
+				PermissionID: perm.ID,
+			}); err != nil {
 				return err
 			}
 		} else {
-			logger.Log.Info(fmt.Sprintf("skipping policy permission: %s -> %s (already exists)", defaultPolicy.Name, permName))
+			logger.Log.Info("policy permission already exists")
 		}
 	}
-
 	return nil
 }

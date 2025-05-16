@@ -73,10 +73,23 @@ func (r *PolicyPermissionRepository) ReadByPermissionID(ctx context.Context, per
 	return results, nil
 }
 
-func (r *PolicyPermissionRepository) ReadByPolicyIDPermissionID(ctx context.Context, policyID, permissionID string) (*model.PolicyPermission, error) {
-	var result model.PolicyPermission
+func (r *PolicyPermissionRepository) ReadByPolicyIDPermissionID(ctx context.Context, policyID string, permissionID string) (*model.PolicyPermission, error) {
+	// Convert policyID to ObjectID
+	policyObjectID, err := primitive.ObjectIDFromHex(policyID)
+	if err != nil {
+		logger.Log.Error("invalid ID format", logger.Error(err))
+		return nil, err
+	}
 
-	err := r.collection.FindOne(ctx, bson.M{"policy_id": policyID, "permission_id": permissionID}).Decode(&result)
+	// Convert permissionID to ObjectID
+	permissionObjectID, err := primitive.ObjectIDFromHex(permissionID)
+	if err != nil {
+		logger.Log.Error("invalid ID format", logger.Error(err))
+		return nil, err
+	}
+
+	var result model.PolicyPermission
+	err = r.collection.FindOne(ctx, bson.M{"policy_id": policyObjectID, "permission_id": permissionObjectID}).Decode(&result)
 	if err != nil {
 		if err == mongoDriver.ErrNoDocuments {
 			return nil, nil
