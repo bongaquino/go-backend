@@ -59,6 +59,7 @@ type Middleware struct {
 	Authz    *middleware.AuthzMiddleware
 	Verified *middleware.VerifiedMiddleware
 	Locked   *middleware.LockedMiddleware
+	API      *middleware.APIMiddleware
 }
 
 type Controllers struct {
@@ -177,6 +178,7 @@ func initMiddleware(p Providers, r Repositories) Middleware {
 		Authz:    middleware.NewAuthzMiddleware(r.UserRole, r.Role),
 		Verified: middleware.NewVerifiedMiddleware(r.User),
 		Locked:   middleware.NewLockedMiddleware(r.User),
+		API:      middleware.NewAPIMiddleware(r.ServiceAccount),
 	}
 }
 

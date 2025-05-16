@@ -73,7 +73,7 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 
 	// Clients Routes
 	clientsGroup := engine.Group("/clients")
-	// clientsGroup.Use(container.Middleware.Authn.Handle, container.Middleware.Verified.Handle)
+	clientsGroup.Use(container.Middleware.API.Handle)
 	{
 		clientsGroup.POST("/pin", container.Controllers.Clients.Pin.Handle)
 	}

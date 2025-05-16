@@ -80,15 +80,8 @@ func (r *ServiceAccountRepository) Create(ctx context.Context, account *model.Se
 }
 
 func (r *ServiceAccountRepository) ReadByClientID(ctx context.Context, clientID string) (*model.ServiceAccount, error) {
-	// Convert clientID to ObjectID
-	objectID, err := primitive.ObjectIDFromHex(clientID)
-	if err != nil {
-		logger.Log.Error("invalid ID format", logger.Error(err))
-		return nil, err
-	}
-
 	var account model.ServiceAccount
-	err = r.collection.FindOne(ctx, bson.M{"client_id": objectID}).Decode(&account)
+	err := r.collection.FindOne(ctx, bson.M{"client_id": clientID}).Decode(&account)
 	if err != nil {
 		if err == mongoDriver.ErrNoDocuments {
 			return nil, nil
@@ -100,17 +93,10 @@ func (r *ServiceAccountRepository) ReadByClientID(ctx context.Context, clientID 
 }
 
 func (r *ServiceAccountRepository) UpdateByClientID(ctx context.Context, clientID string, update bson.M) error {
-	// Convert clientID to ObjectID
-	objectID, err := primitive.ObjectIDFromHex(clientID)
-	if err != nil {
-		logger.Log.Error("invalid ID format", logger.Error(err))
-		return err
-	}
-
 	// Set the updated time
 	update["updated_at"] = time.Now()
 
-	_, err = r.collection.UpdateOne(ctx, bson.M{"client_id": objectID}, bson.M{"$set": update})
+	_, err := r.collection.UpdateOne(ctx, bson.M{"client_id": clientID}, bson.M{"$set": update})
 	if err != nil {
 		logger.Log.Error("error updating service account", logger.Error(err))
 		return err
