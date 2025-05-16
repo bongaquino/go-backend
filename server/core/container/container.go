@@ -42,6 +42,8 @@ type Repositories struct {
 	Organization         *repository.OrganizationRepository
 	OrganizationUserRole *repository.OrganizationUserRoleRepository
 	Limit                *repository.LimitRepository
+	Directory            *repository.DirectoryRepository
+	File                 *repository.FileRepository
 }
 
 type Services struct {
@@ -52,6 +54,8 @@ type Services struct {
 	IPFS           *service.IPFSService
 	Organization   *service.OrganizationService
 	ServiceAccount *service.ServiceAccountService
+	Directory      *service.DirectoryService
+	File           *service.FileService
 }
 
 type Middleware struct {
@@ -159,6 +163,8 @@ func initRepositories(p Providers) Repositories {
 		Organization:         repository.NewOrganizationRepository(p.Mongo),
 		OrganizationUserRole: repository.NewOrganizationUserRoleRepository(p.Mongo),
 		Limit:                repository.NewLimitRepository(p.Mongo),
+		Directory:            repository.NewDirectoryRepository(p.Mongo),
+		File:                 repository.NewFileRepository(p.Mongo),
 	}
 }
 
@@ -171,7 +177,9 @@ func initServices(p Providers, r Repositories) Services {
 	organization := service.NewOrganizationService(r.Organization, r.Policy, r.Permission,
 		r.OrganizationUserRole, r.User, r.Role)
 	serviceAccount := service.NewServiceAccountService(r.ServiceAccount, r.User, r.Limit)
-	return Services{user, token, mfa, email, ipfs, organization, serviceAccount}
+	directory := service.NewDirectoryService(r.Directory)
+	file := service.NewFileService(r.File)
+	return Services{user, token, mfa, email, ipfs, organization, serviceAccount, directory, file}
 }
 
 func initMiddleware(p Providers, r Repositories) Middleware {
