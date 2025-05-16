@@ -33,7 +33,7 @@ func NewAPIMiddleware(svcAccRepo *repository.ServiceAccountRepository) *APIMiddl
 				return
 			}
 
-			// Validate the ClientID and ClientSecret using ServiceAccountRepository
+			// Read the ClientID and ClientSecret using ServiceAccountRepository
 			serviceAccount, err := svcAccRepo.ReadByClientID(ctx.Request.Context(), clientID)
 			fmt.Println(err)
 			if err != nil {
@@ -46,6 +46,16 @@ func NewAPIMiddleware(svcAccRepo *repository.ServiceAccountRepository) *APIMiddl
 				ctx.Abort()
 				return
 			}
+
+			// Check if the ClientSecret is valid
+			if !helper.CheckHash(clientSecret, serviceAccount.ClientSecret) {
+				helper.FormatResponse(ctx, "error", http.StatusUnauthorized, "invalid credentials", nil, nil)
+				ctx.Abort()
+				return
+			}
+
+			// Set the client ID in the context
+			ctx.Set("clientID", clientID)
 
 			// Continue to the next middleware
 			ctx.Next()
