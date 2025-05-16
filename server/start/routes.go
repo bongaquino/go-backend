@@ -71,6 +71,13 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 		serviceAccountGroup.DELETE("/revoke", container.Controllers.ServiceAccounts.Revoke.Handle)
 	}
 
+	// Clients Routes
+	clientsGroup := engine.Group("/clients")
+	// clientsGroup.Use(container.Middleware.Authn.Handle, container.Middleware.Verified.Handle)
+	{
+		clientsGroup.POST("/pin", container.Controllers.Clients.Pin.Handle)
+	}
+
 	// Admin Routes
 	adminGroup := engine.Group("/admin")
 	adminGroup.Use(container.Middleware.Authn.Handle, container.Middleware.Authz.Handle([]string{"system_admin"}))
