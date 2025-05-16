@@ -1,4 +1,4 @@
-package clients
+package peers
 
 import (
 	"koneksi/server/app/helper"
@@ -8,18 +8,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type PinController struct {
+type FetchController struct {
 	ipfsService *service.IPFSService
 }
 
-// NewPinController initializes a new PinController
-func NewPinController(ipfsService *service.IPFSService) *PinController {
-	return &PinController{
+// NewFetchController initializes a new FetchController
+func NewFetchController(ipfsService *service.IPFSService) *FetchController {
+	return &FetchController{
 		ipfsService: ipfsService,
 	}
 }
 
-func (pc *PinController) Handle(ctx *gin.Context) {
+func (pc *FetchController) Handle(ctx *gin.Context) {
 	// Extract user ID from the context
 	// userID, exists := ctx.Get("userID")
 	// if !exists {

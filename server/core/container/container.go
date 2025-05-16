@@ -4,7 +4,7 @@ import (
 	"koneksi/server/app/controller/admin/organizations"
 	"koneksi/server/app/controller/admin/organizations/members"
 	adminUsers "koneksi/server/app/controller/admin/users"
-	"koneksi/server/app/controller/clients"
+	"koneksi/server/app/controller/clients/peers"
 	"koneksi/server/app/controller/constants"
 	"koneksi/server/app/controller/health"
 	"koneksi/server/app/controller/network"
@@ -102,7 +102,9 @@ type Controllers struct {
 		Revoke   *serviceaccounts.RevokeController
 	}
 	Clients struct {
-		Pin *clients.PinController
+		Peers struct {
+			Fetch *peers.FetchController
+		}
 	}
 	Admin struct {
 		Users struct {
@@ -257,9 +259,15 @@ func initControllers(s Services) Controllers {
 			Revoke:   serviceaccounts.NewRevokeController(s.ServiceAccount),
 		},
 		Clients: struct {
-			Pin *clients.PinController
+			Peers struct {
+				Fetch *peers.FetchController
+			}
 		}{
-			Pin: clients.NewPinController(s.IPFS),
+			Peers: struct {
+				Fetch *peers.FetchController
+			}{
+				Fetch: peers.NewFetchController(s.IPFS),
+			},
 		},
 		Admin: struct {
 			Users struct {
