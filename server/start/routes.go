@@ -71,8 +71,8 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 		serviceAccountGroup.DELETE("/revoke", container.Controllers.ServiceAccounts.Revoke.Handle)
 	}
 
-	// Clients Routes
-	clientsGroup := engine.Group("/clients")
+	// Clients v1 Routes
+	clientsGroup := engine.Group("/clients/v1")
 	clientsGroup.Use(container.Middleware.API.Handle)
 	{
 		clientsGroup.GET("/peers", container.Controllers.Clients.Peers.Fetch.Handle)
