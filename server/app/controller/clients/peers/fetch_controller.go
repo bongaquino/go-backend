@@ -35,8 +35,8 @@ func (pc *FetchController) Handle(ctx *gin.Context) {
 	}
 
 	// Respond with the number of peers and their details
-	helper.FormatResponse(ctx, "success", http.StatusOK, "swarm addresses fetched successfully", gin.H{
-		"num_peers": numPeers,
-		"peers":     peers,
+	helper.FormatResponse(ctx, "success", http.StatusOK, "peers fetched successfully", gin.H{
+		"count": numPeers,
+		"peers": peers,
 	}, nil)
 }
