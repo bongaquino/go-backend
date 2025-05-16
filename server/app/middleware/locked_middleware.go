@@ -13,7 +13,6 @@ type LockedMiddleware struct {
 	Handle gin.HandlerFunc
 }
 
-// TODO: Implement the middleware to check if the user account is locked
 // Unlike other routes that already has middleware to check for authentication and get the user ID, this middleware should be used on routes that do not require authentication but still need to check if the account is locked in a secure manner.
 func NewLockedMiddleware(userRepo *repository.UserRepository) *LockedMiddleware {
 	return &LockedMiddleware{
