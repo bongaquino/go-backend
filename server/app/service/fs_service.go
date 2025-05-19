@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"koneksi/server/app/model"
 	"koneksi/server/app/repository"
 )
@@ -19,36 +20,24 @@ func NewFSService(directoryRepo *repository.DirectoryRepository, fileRepo *repos
 	}
 }
 
-// New helper to fetch subdirectories and files for a directory
-func (fs *FSService) fetchDirectoryContents(ctx context.Context, directory *model.Directory, userID string) ([]*model.Directory, []*model.File, error) {
-	subDirectories, err := fs.directoryRepo.ListByDirectoryIDUserID(ctx, directory.ID.Hex(), userID)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	// @TODO: Fetch files within the directory
-	// files, err := fs.fileRepo.ListByDirectoryID(ctx, directory.ID.Hex())
-	// if err != nil {
-	// 	return nil, nil, err
-	// }
-
-	return subDirectories, nil, nil
-}
-
 func (fs *FSService) ReadRootDirectory(ctx context.Context, userID string) (*model.Directory,
 	[]*model.Directory, []*model.File, error) {
-	// Fetch the root directory from the repository
+	// Fetch the directory from the repository
 	directory, err := fs.directoryRepo.ReadByUserIDName(ctx, userID, "root")
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
-	subDirectories, files, err := fs.fetchDirectoryContents(ctx, directory, userID)
+	// Fetch the subdirectories within the root directory
+	subDirectories, err := fs.directoryRepo.ListByDirectoryIDUserID(ctx, directory.ID.Hex(), userID)
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
-	return directory, subDirectories, files, nil
+	// @TODO: Fetch files within the root directory
+
+	// Return the directory details
+	return directory, subDirectories, nil, nil
 }
 
 func (fs *FSService) ReadDirectory(ctx context.Context, ID string, userID string) (*model.Directory,
@@ -59,10 +48,29 @@ func (fs *FSService) ReadDirectory(ctx context.Context, ID string, userID string
 		return nil, nil, nil, err
 	}
 
-	subDirectories, files, err := fs.fetchDirectoryContents(ctx, directory, userID)
+	// Check if the directory exists
+	if directory == nil {
+		return nil, nil, nil, errors.New("directory not found")
+	}
+
+	// Fetch the subdirectories within the specified directory
+	subDirectories, err := fs.directoryRepo.ListByDirectoryIDUserID(ctx, directory.ID.Hex(), userID)
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
-	return directory, subDirectories, files, nil
+	// @TODO: Fetch files within the specified directory
+
+	// Return the directory details
+	return directory, subDirectories, nil, nil
+}
+
+func (fs *FSService) CreateDirectory(ctx context.Context, directory *model.Directory) error {
+	// Create the directory in the repository
+	err := fs.directoryRepo.Create(ctx, directory)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
