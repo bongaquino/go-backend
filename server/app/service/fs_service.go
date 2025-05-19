@@ -3,8 +3,11 @@ package service
 import (
 	"context"
 	"errors"
+	"koneksi/server/app/dto"
 	"koneksi/server/app/model"
 	"koneksi/server/app/repository"
+
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type FSService struct {
@@ -68,6 +71,48 @@ func (fs *FSService) ReadDirectory(ctx context.Context, ID string, userID string
 func (fs *FSService) CreateDirectory(ctx context.Context, directory *model.Directory) error {
 	// Create the directory in the repository
 	err := fs.directoryRepo.Create(ctx, directory)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (fs *FSService) UpdateDirectory(ctx context.Context, ID string, userID string, request *dto.UpdateDirectoryDTO) error {
+	// Fetch the directory from the repository
+	directory, err := fs.directoryRepo.ReadByIDUserID(ctx, ID, userID)
+	if err != nil {
+		return err
+	}
+
+	// Check if the directory exists
+	if directory == nil {
+		return errors.New("directory not found")
+	}
+
+	// Update the parent directory if provided
+	if *request.DirectoryID != "" {
+		parentDirectory, err := fs.directoryRepo.ReadByIDUserID(ctx, *request.DirectoryID, userID)
+		if err != nil {
+			return err
+		}
+		if parentDirectory == nil {
+			return errors.New("parent directory not found")
+		}
+		directory.DirectoryID = &parentDirectory.ID
+	}
+
+	// Update the directory name
+	directory.Name = request.Name
+
+	// Save the updated directory in the repository
+	updateData := bson.M{
+		"name": directory.Name,
+	}
+	if directory.DirectoryID != nil {
+		updateData["directory_id"] = directory.DirectoryID
+	}
+	err = fs.directoryRepo.Update(ctx, ID, updateData)
 	if err != nil {
 		return err
 	}
