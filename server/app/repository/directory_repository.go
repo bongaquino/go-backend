@@ -57,6 +57,52 @@ func (r *DirectoryRepository) ListByUserID(ctx context.Context, userID string) (
 	return directories, nil
 }
 
+func (r *DirectoryRepository) ListByDirectoryIDUserID(ctx context.Context, directoryID string, userID string) ([]*model.Directory, error) {
+	// Convert directoryID to ObjectID
+	directoryObjectID, err := primitive.ObjectIDFromHex(directoryID)
+	if err != nil {
+		logger.Log.Error("invalid directory ID format", logger.Error(err))
+		return nil, err
+	}
+
+	// Convert userID to ObjectID
+	userObjectID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		logger.Log.Error("invalid user ID format", logger.Error(err))
+		return nil, err
+	}
+
+	filter := bson.M{
+		"directory_id": directoryObjectID,
+		"user_id":      userObjectID,
+		"is_deleted":   false,
+	}
+
+	cursor, err := r.collection.Find(ctx, filter)
+	if err != nil {
+		logger.Log.Error("error listing directories by directory ID and user ID", logger.Error(err))
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var directories []*model.Directory
+	for cursor.Next(ctx) {
+		var directory model.Directory
+		if err := cursor.Decode(&directory); err != nil {
+			logger.Log.Error("error decoding directory", logger.Error(err))
+			return nil, err
+		}
+		directories = append(directories, &directory)
+	}
+
+	if err := cursor.Err(); err != nil {
+		logger.Log.Error("cursor error", logger.Error(err))
+		return nil, err
+	}
+
+	return directories, nil
+}
+
 func (r *DirectoryRepository) Create(ctx context.Context, directory *model.Directory) error {
 	directory.ID = primitive.NewObjectID()
 	directory.CreatedAt = time.Now()
@@ -70,7 +116,7 @@ func (r *DirectoryRepository) Create(ctx context.Context, directory *model.Direc
 	return nil
 }
 
-func (r *DirectoryRepository) Read(ctx context.Context, id string) (*model.Directory, error) {
+func (r *DirectoryRepository) ReadByIDUserID(ctx context.Context, id string, userID string) (*model.Directory, error) {
 	// Convert id to ObjectID
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -78,8 +124,15 @@ func (r *DirectoryRepository) Read(ctx context.Context, id string) (*model.Direc
 		return nil, err
 	}
 
+	// Convert userID to ObjectID
+	userObjectID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		logger.Log.Error("invalid user ID format", logger.Error(err))
+		return nil, err
+	}
+
 	var directory model.Directory
-	err = r.collection.FindOne(ctx, bson.M{"_id": objectID}).Decode(&directory)
+	err = r.collection.FindOne(ctx, bson.M{"_id": objectID, "user_id": userObjectID, "is_deleted": false}).Decode(&directory)
 	if err != nil {
 		if err == mongoDriver.ErrNoDocuments {
 			return nil, nil
@@ -99,7 +152,7 @@ func (r *DirectoryRepository) ReadByUserIDName(ctx context.Context, userID strin
 	}
 
 	var directory model.Directory
-	err = r.collection.FindOne(ctx, bson.M{"user_id": objectID, "name": name}).Decode(&directory)
+	err = r.collection.FindOne(ctx, bson.M{"user_id": objectID, "name": name, "is_deleted": false}).Decode(&directory)
 	if err != nil {
 		if err == mongoDriver.ErrNoDocuments {
 			return nil, nil

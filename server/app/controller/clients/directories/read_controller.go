@@ -34,12 +34,15 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 
 	if directoryID == "root" {
 		// Use fsService to read the root directory
-		directory, err := rc.fsService.ReadRootDirectory(ctx, userID.(string))
+		directory, subDirectories, err := rc.fsService.ReadRootDirectory(ctx, userID.(string))
 		if err != nil {
 			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to read root directory", nil, nil)
 			return
 		}
-		helper.FormatResponse(ctx, "success", http.StatusOK, "directory fetched successfully", directory, nil)
+		helper.FormatResponse(ctx, "success", http.StatusOK, "directory fetched successfully", gin.H{
+			"directory":      directory,
+			"subDirectories": subDirectories,
+		}, nil)
 	} else {
 		numPeers, peers, err := rc.ipfsService.GetSwarmPeers()
 		if err != nil {
