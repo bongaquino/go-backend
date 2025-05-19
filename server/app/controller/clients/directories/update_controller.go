@@ -52,6 +52,10 @@ func (uc *UpdateController) Handle(ctx *gin.Context) {
 			helper.FormatResponse(ctx, "error", http.StatusNotFound, "directory not found", nil, nil)
 			return
 		}
+		if err.Error() == "cannot update root directory" {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "cannot update root directory", nil, nil)
+			return
+		}
 		if err.Error() == "parent directory not found" {
 			helper.FormatResponse(ctx, "error", http.StatusNotFound, "parent directory not found", nil, nil)
 			return
