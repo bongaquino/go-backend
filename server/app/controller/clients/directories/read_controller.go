@@ -1,4 +1,4 @@
-package peers
+package directories
 
 import (
 	"koneksi/server/app/helper"

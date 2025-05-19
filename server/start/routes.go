@@ -62,7 +62,7 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 		networkGroup.GET("/get-swarm-address", container.Controllers.Network.GetSwarmAddress.Handle)
 	}
 
-	// Service Accounts Routes
+	// Service Account Routes
 	serviceAccountGroup := engine.Group("/service-accounts")
 	serviceAccountGroup.Use(container.Middleware.Authn.Handle, container.Middleware.Verified.Handle)
 	{
@@ -75,7 +75,13 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 	clientsGroup := engine.Group("/clients/v1")
 	clientsGroup.Use(container.Middleware.API.Handle)
 	{
+		// Peer Routes
 		clientsGroup.GET("/peers", container.Controllers.Clients.Peers.Fetch.Handle)
+		// Directory Routes
+		clientsGroup.POST("/directories", container.Controllers.Clients.Directories.Create.Handle)
+		clientsGroup.GET("/directories/:directoryID", container.Controllers.Clients.Directories.Read.Handle)
+		clientsGroup.PUT("/directories/:directoryID", container.Controllers.Clients.Directories.Update.Handle)
+		clientsGroup.DELETE("/directories/:directoryID", container.Controllers.Clients.Directories.Delete.Handle)
 	}
 
 	// Admin Routes
