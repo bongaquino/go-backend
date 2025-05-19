@@ -27,14 +27,12 @@ func (uc *UpdateController) Handle(ctx *gin.Context) {
 	// 	return
 	// }
 
-	/// Update the number of peers and their details from the IPFS service
 	numPeers, peers, err := uc.ipfsService.GetSwarmPeers()
 	if err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, err.Error(), nil, nil)
 		return
 	}
 
-	// Respond with the number of peers and their details
 	helper.FormatResponse(ctx, "success", http.StatusOK, "peers fetched successfully", gin.H{
 		"count": numPeers,
 		"peers": peers,
