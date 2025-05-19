@@ -33,6 +33,12 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 	// Get the directory ID from the URL parameters
 	directoryID := ctx.Param("directoryID")
 
+	// Check if the directory ID is not empty
+	if directoryID == ":directory" {
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "directory ID is required", nil, nil)
+		return
+	}
+
 	if directoryID == "root" {
 		// Use fsService to read the root directory
 		directory, subDirectories, files, err := rc.fsService.ReadRootDirectory(ctx, userID.(string))

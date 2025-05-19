@@ -90,6 +90,11 @@ func (fs *FSService) UpdateDirectory(ctx context.Context, ID string, userID stri
 		return errors.New("directory not found")
 	}
 
+	// Check if the directory is the root directory
+	if directory.Name == "root" {
+		return errors.New("cannot update root directory")
+	}
+
 	// Update the parent directory if provided
 	if *request.DirectoryID != "" {
 		parentDirectory, err := fs.directoryRepo.ReadByIDUserID(ctx, *request.DirectoryID, userID)
@@ -116,6 +121,53 @@ func (fs *FSService) UpdateDirectory(ctx context.Context, ID string, userID stri
 	if err != nil {
 		return err
 	}
+
+	return nil
+}
+
+func (fs *FSService) DeleteDirectory(ctx context.Context, ID string, userID string) error {
+	// Fetch the directory from the repository
+	directory, err := fs.directoryRepo.ReadByIDUserID(ctx, ID, userID)
+	if err != nil {
+		return err
+	}
+
+	// Check if the directory exists
+	if directory == nil {
+		return errors.New("directory not found")
+	}
+
+	// Check if the directory is not the root directory
+	if directory.Name == "root" {
+		return errors.New("cannot delete root directory")
+	}
+
+	// Initialize a queue for BFS traversal
+	queue := []string{ID}
+
+	for len(queue) > 0 {
+		currentID := queue[0]
+		queue = queue[1:]
+
+		// Mark the current directory as deleted
+		err = fs.directoryRepo.Update(ctx, currentID, bson.M{"is_deleted": true})
+		if err != nil {
+			return err
+		}
+
+		// Fetch all subdirectories of the current directory
+		subdirs, err := fs.directoryRepo.ListByDirectoryIDUserID(ctx, currentID, userID)
+		if err != nil {
+			return err
+		}
+
+		// Enqueue all subdirectory IDs
+		for _, subdir := range subdirs {
+			queue = append(queue, subdir.ID.Hex())
+		}
+	}
+
+	// @TODO: Mark all files in the directory as deleted
 
 	return nil
 }

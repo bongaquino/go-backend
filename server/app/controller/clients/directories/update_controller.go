@@ -39,6 +39,12 @@ func (uc *UpdateController) Handle(ctx *gin.Context) {
 	// Get the directory ID from the URL parameters
 	directoryID := ctx.Param("directoryID")
 
+	// Check if the directory ID is not empty
+	if directoryID == ":directory" {
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "directory ID is required", nil, nil)
+		return
+	}
+
 	// Check id directoryID is same as request.DirectoryID
 	if directoryID == *request.DirectoryID {
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "parent directory cannot be same as current directory", nil, nil)
