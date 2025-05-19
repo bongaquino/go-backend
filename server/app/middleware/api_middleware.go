@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 
 	"koneksi/server/app/helper"
@@ -35,7 +34,6 @@ func NewAPIMiddleware(svcAccRepo *repository.ServiceAccountRepository) *APIMiddl
 
 			// Read the ClientID and ClientSecret using ServiceAccountRepository
 			serviceAccount, err := svcAccRepo.ReadByClientID(ctx.Request.Context(), clientID)
-			fmt.Println(err)
 			if err != nil {
 				helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to validate credentials", nil, nil)
 				ctx.Abort()
@@ -58,7 +56,7 @@ func NewAPIMiddleware(svcAccRepo *repository.ServiceAccountRepository) *APIMiddl
 			ctx.Set("clientID", clientID)
 
 			// Set the user ID in the context
-			ctx.Set("userID", serviceAccount.UserID)
+			ctx.Set("userID", serviceAccount.UserID.Hex())
 
 			// Continue to the next middleware
 			ctx.Next()

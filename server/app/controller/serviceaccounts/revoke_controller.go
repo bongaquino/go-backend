@@ -1,7 +1,6 @@
 package serviceaccounts
 
 import (
-	"fmt"
 	"net/http"
 
 	"koneksi/server/app/helper"
@@ -38,7 +37,6 @@ func (hc *RevokeController) Handle(ctx *gin.Context) {
 	// Revoke the service account
 	err := hc.serviceAccountService.DeleteServiceAccount(ctx, userID.(string), clientID)
 	if err != nil {
-		fmt.Println(err)
 		if err.Error() == "service account not found" {
 			helper.FormatResponse(ctx, "error", http.StatusNotFound, "service account not found", nil, nil)
 			return

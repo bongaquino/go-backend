@@ -1,6 +1,8 @@
 package service
 
 import (
+	"context"
+	"koneksi/server/app/model"
 	"koneksi/server/app/repository"
 )
 
@@ -15,4 +17,17 @@ func NewFSService(directoryRepo *repository.DirectoryRepository, fileRepo *repos
 		directoryRepo: directoryRepo,
 		fileRepo:      fileRepo,
 	}
+}
+
+func (fs *FSService) ReadRootDirectory(ctx context.Context, userID string) (*model.Directory, error) {
+	// Fetch the directory from the repository
+	directory, err := fs.directoryRepo.ReadByUserIDName(ctx, userID, "root")
+	if err != nil {
+		return nil, err
+	}
+
+	// Fetch the files and directories within the root directory
+
+	// Return the directory details
+	return directory, nil
 }

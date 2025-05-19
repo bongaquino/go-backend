@@ -90,6 +90,26 @@ func (r *DirectoryRepository) Read(ctx context.Context, id string) (*model.Direc
 	return &directory, nil
 }
 
+func (r *DirectoryRepository) ReadByUserIDName(ctx context.Context, userID string, name string) (*model.Directory, error) {
+	// Convert userID to ObjectID
+	objectID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		logger.Log.Error("invalid user ID format", logger.Error(err))
+		return nil, err
+	}
+
+	var directory model.Directory
+	err = r.collection.FindOne(ctx, bson.M{"user_id": objectID, "name": name}).Decode(&directory)
+	if err != nil {
+		if err == mongoDriver.ErrNoDocuments {
+			return nil, nil
+		}
+		logger.Log.Error("error reading directory by userID and name", logger.Error(err))
+		return nil, err
+	}
+	return &directory, nil
+}
+
 func (r *DirectoryRepository) Update(ctx context.Context, id string, update bson.M) error {
 	// Convert id to ObjectID
 	objectID, err := primitive.ObjectIDFromHex(id)
