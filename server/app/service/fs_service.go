@@ -19,40 +19,50 @@ func NewFSService(directoryRepo *repository.DirectoryRepository, fileRepo *repos
 	}
 }
 
-func (fs *FSService) ReadRootDirectory(ctx context.Context, userID string) (*model.Directory,
-	[]*model.Directory, error) {
-	// Fetch the directory from the repository
-	directory, err := fs.directoryRepo.ReadByUserIDName(ctx, userID, "root")
-	if err != nil {
-		return nil, nil, err
-	}
-
-	// Fetch the files and directories within the root directory
+// New helper to fetch subdirectories and files for a directory
+func (fs *FSService) fetchDirectoryContents(ctx context.Context, directory *model.Directory, userID string) ([]*model.Directory, []*model.File, error) {
 	subDirectories, err := fs.directoryRepo.ListByDirectoryIDUserID(ctx, directory.ID.Hex(), userID)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	// @TODO: Fetch files within the root directory
+	// @TODO: Fetch files within the directory
+	// files, err := fs.fileRepo.ListByDirectoryID(ctx, directory.ID.Hex())
+	// if err != nil {
+	// 	return nil, nil, err
+	// }
 
-	// Return the directory details
-	return directory, subDirectories, nil
+	return subDirectories, nil, nil
 }
 
-func (fs *FSService) ReadDirectory(ctx context.Context, userID string, directoryID string) (*model.Directory,
-	[]*model.Directory, error) {
+func (fs *FSService) ReadRootDirectory(ctx context.Context, userID string) (*model.Directory,
+	[]*model.Directory, []*model.File, error) {
+	// Fetch the root directory from the repository
+	directory, err := fs.directoryRepo.ReadByUserIDName(ctx, userID, "root")
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	subDirectories, files, err := fs.fetchDirectoryContents(ctx, directory, userID)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	return directory, subDirectories, files, nil
+}
+
+func (fs *FSService) ReadDirectory(ctx context.Context, ID string, userID string) (*model.Directory,
+	[]*model.Directory, []*model.File, error) {
 	// Fetch the directory from the repository
-	directory, err := fs.directoryRepo.ReadByIDUserID(ctx, directoryID, userID)
+	directory, err := fs.directoryRepo.ReadByIDUserID(ctx, ID, userID)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
-	// Fetch the files and directories within the specified directory
-	subDirectories, err := fs.directoryRepo.ListByDirectoryIDUserID(ctx, directory.ID.Hex(), userID)
+	subDirectories, files, err := fs.fetchDirectoryContents(ctx, directory, userID)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
-	// Return the directory details
-	return directory, subDirectories, nil
+	return directory, subDirectories, files, nil
 }

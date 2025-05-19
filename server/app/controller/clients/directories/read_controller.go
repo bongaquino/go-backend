@@ -2,6 +2,7 @@ package directories
 
 import (
 	"koneksi/server/app/helper"
+	"koneksi/server/app/model"
 	"koneksi/server/app/service"
 	"net/http"
 
@@ -34,25 +35,65 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 
 	if directoryID == "root" {
 		// Use fsService to read the root directory
-		directory, subDirectories, err := rc.fsService.ReadRootDirectory(ctx, userID.(string))
+		directory, subDirectories, files, err := rc.fsService.ReadRootDirectory(ctx, userID.(string))
 		if err != nil {
 			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to read root directory", nil, nil)
 			return
 		}
-		helper.FormatResponse(ctx, "success", http.StatusOK, "directory fetched successfully", gin.H{
-			"directory":      directory,
-			"subDirectories": subDirectories,
-		}, nil)
+
+		// Ensure subDirectories and files are not nil
+		if subDirectories == nil {
+			subDirectories = []*model.Directory{}
+		}
+		if files == nil {
+			files = []*model.File{}
+		}
+
+		// Prepare the response
+		response := gin.H{
+			"directory": gin.H{
+				"id":        directory.ID.Hex(),
+				"name":      directory.Name,
+				"size":      directory.Size,
+				"createdAt": directory.CreatedAt,
+				"updatedAt": directory.UpdatedAt,
+			},
+			"subdirectories": subDirectories,
+			"files":          files,
+		}
+
+		// Send the response
+		helper.FormatResponse(ctx, "success", http.StatusOK, "directory fetched successfully", response, nil)
 	} else {
-		numPeers, peers, err := rc.ipfsService.GetSwarmPeers()
+		// Use fsService to read the root directory
+		directory, subDirectories, files, err := rc.fsService.ReadDirectory(ctx, directoryID, userID.(string))
 		if err != nil {
-			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, err.Error(), nil, nil)
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to read directory", nil, nil)
 			return
 		}
 
-		helper.FormatResponse(ctx, "success", http.StatusOK, "peers fetched successfully", gin.H{
-			"count": numPeers,
-			"peers": peers,
-		}, nil)
+		// Ensure subDirectories and files are not nil
+		if subDirectories == nil {
+			subDirectories = []*model.Directory{}
+		}
+		if files == nil {
+			files = []*model.File{}
+		}
+
+		// Prepare the response
+		response := gin.H{
+			"directory": gin.H{
+				"id":        directory.ID.Hex(),
+				"name":      directory.Name,
+				"size":      directory.Size,
+				"createdAt": directory.CreatedAt,
+				"updatedAt": directory.UpdatedAt,
+			},
+			"subdirectories": subDirectories,
+			"files":          files,
+		}
+
+		// Send the response
+		helper.FormatResponse(ctx, "success", http.StatusOK, "directory fetched successfully", response, nil)
 	}
 }
