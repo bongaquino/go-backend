@@ -42,6 +42,7 @@ func NewUserService(
 		roleRepo:      roleRepo,
 		userRoleRepo:  userRoleRepo,
 		limitRepo:     limitRepo,
+		directoryRepo: directoryRepo,
 		redisProvider: redisProvider,
 	}
 }
