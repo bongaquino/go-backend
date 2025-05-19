@@ -184,7 +184,7 @@ func initRepositories(p Providers) Repositories {
 }
 
 func initServices(p Providers, r Repositories) Services {
-	user := service.NewUserService(r.User, r.Profile, r.Role, r.UserRole, r.Limit, p.Redis)
+	user := service.NewUserService(r.User, r.Profile, r.Role, r.UserRole, r.Limit, r.Directory, p.Redis)
 	email := service.NewEmailService(p.Postmark)
 	mfa := service.NewMFAService(r.User, p.Redis)
 	ipfs := service.NewIPFSService(p.IPFS)

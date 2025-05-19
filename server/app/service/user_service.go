@@ -23,6 +23,7 @@ type UserService struct {
 	roleRepo      *repository.RoleRepository
 	userRoleRepo  *repository.UserRoleRepository
 	limitRepo     *repository.LimitRepository
+	directoryRepo *repository.DirectoryRepository
 	redisProvider *provider.RedisProvider
 }
 
@@ -32,6 +33,7 @@ func NewUserService(
 	roleRepo *repository.RoleRepository,
 	userRoleRepo *repository.UserRoleRepository,
 	limitRepo *repository.LimitRepository,
+	directoryRepo *repository.DirectoryRepository,
 	redisProvider *provider.RedisProvider,
 ) *UserService {
 	return &UserService{
@@ -163,6 +165,19 @@ func (us *UserService) CreateUser(ctx context.Context, request *dto.CreateUserDT
 	if err := us.limitRepo.Create(ctx, limit); err != nil {
 		logger.Log.Error("failed to create limit", logger.Error(err))
 		return nil, nil, nil, "", errors.New("failed to create limit")
+	}
+
+	// Create user root directory
+	directory := &model.Directory{
+		UserID:      user.ID,
+		DirectoryID: nil,
+		Name:        "root",
+		Size:        0,
+		IsDeleted:   false,
+	}
+	if err := us.directoryRepo.Create(ctx, directory); err != nil {
+		logger.Log.Error("failed to create root directory", logger.Error(err))
+		return nil, nil, nil, "", errors.New("failed to create root directory")
 	}
 
 	return user, profile, userRoleAssignment, userRole.Name, nil
