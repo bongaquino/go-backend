@@ -67,7 +67,7 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 		}
 
 		// Send the response
-		helper.FormatResponse(ctx, "success", http.StatusOK, "directory fetched successfully", response, nil)
+		helper.FormatResponse(ctx, "success", http.StatusOK, "directory read successfully", response, nil)
 	} else {
 		// Use fsService to read the root directory
 		directory, subDirectories, files, err := rc.fsService.ReadDirectory(ctx, directoryID, userID.(string))
@@ -119,6 +119,6 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 		}
 
 		// Send the response
-		helper.FormatResponse(ctx, "success", http.StatusOK, "directory fetched successfully", response, nil)
+		helper.FormatResponse(ctx, "success", http.StatusOK, "directory read successfully", response, nil)
 	}
 }

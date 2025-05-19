@@ -83,7 +83,7 @@ func (cc *CreateController) Handle(ctx *gin.Context) {
 		},
 	}
 
-	// Prepare the response
+	// Return success response
 	helper.FormatResponse(ctx, "success", http.StatusOK, "directory created successfully", response, nil)
 }
 
