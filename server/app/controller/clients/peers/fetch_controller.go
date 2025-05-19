@@ -20,13 +20,6 @@ func NewFetchController(ipfsService *service.IPFSService) *FetchController {
 }
 
 func (pc *FetchController) Handle(ctx *gin.Context) {
-	// Extract user ID from the context
-	// userID, exists := ctx.Get("userID")
-	// if !exists {
-	// 	helper.FormatResponse(ctx, "error", http.StatusUnauthorized, "userID not found in context", nil, nil)
-	// 	return
-	// }
-
 	/// Fetch the number of peers and their details from the IPFS service
 	numPeers, peers, err := pc.ipfsService.GetSwarmPeers()
 	if err != nil {
