@@ -57,6 +57,9 @@ func NewAPIMiddleware(svcAccRepo *repository.ServiceAccountRepository) *APIMiddl
 			// Set the client ID in the context
 			ctx.Set("clientID", clientID)
 
+			// Set the user ID in the context
+			ctx.Set("userID", serviceAccount.UserID)
+
 			// Continue to the next middleware
 			ctx.Next()
 		},
