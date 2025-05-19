@@ -82,6 +82,11 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 		clientsGroup.GET("/directories/:directoryID", container.Controllers.Clients.Directories.Read.Handle)
 		clientsGroup.PUT("/directories/:directoryID", container.Controllers.Clients.Directories.Update.Handle)
 		clientsGroup.DELETE("/directories/:directoryID", container.Controllers.Clients.Directories.Delete.Handle)
+		// File Routes
+		clientsGroup.POST("/files", container.Controllers.Clients.Files.Upload.Handle)
+		clientsGroup.GET("/files/:fileID", container.Controllers.Clients.Files.Read.Handle)
+		clientsGroup.PUT("/files/:fileID", container.Controllers.Clients.Files.Update.Handle)
+		clientsGroup.DELETE("/files/:fileID", container.Controllers.Clients.Files.Delete.Handle)
 	}
 
 	// Admin Routes

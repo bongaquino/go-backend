@@ -5,6 +5,7 @@ import (
 	"koneksi/server/app/controller/admin/organizations/members"
 	adminUsers "koneksi/server/app/controller/admin/users"
 	"koneksi/server/app/controller/clients/directories"
+	"koneksi/server/app/controller/clients/files"
 	"koneksi/server/app/controller/clients/peers"
 	"koneksi/server/app/controller/constants"
 	"koneksi/server/app/controller/health"
@@ -115,6 +116,13 @@ type Controllers struct {
 			Read   *directories.ReadController
 			Update *directories.UpdateController
 			Delete *directories.DeleteController
+		}
+		Files struct {
+			Upload   *files.UploadController
+			Download *files.DownloadController
+			Read     *files.ReadController
+			Update   *files.UpdateController
+			Delete   *files.DeleteController
 		}
 	}
 	Admin struct {
@@ -283,6 +291,13 @@ func initControllers(s Services) Controllers {
 				Update *directories.UpdateController
 				Delete *directories.DeleteController
 			}
+			Files struct {
+				Upload   *files.UploadController
+				Download *files.DownloadController
+				Read     *files.ReadController
+				Update   *files.UpdateController
+				Delete   *files.DeleteController
+			}
 		}{
 			Peers: struct {
 				Fetch *peers.FetchController
@@ -299,6 +314,19 @@ func initControllers(s Services) Controllers {
 				Read:   directories.NewReadController(s.IPFS),
 				Update: directories.NewUpdateController(s.IPFS),
 				Delete: directories.NewDeleteController(s.IPFS),
+			},
+			Files: struct {
+				Upload   *files.UploadController
+				Download *files.DownloadController
+				Read     *files.ReadController
+				Update   *files.UpdateController
+				Delete   *files.DeleteController
+			}{
+				Upload:   files.NewUploadController(s.IPFS),
+				Download: files.NewDownloadController(s.IPFS),
+				Read:     files.NewReadController(s.IPFS),
+				Update:   files.NewUpdateController(s.IPFS),
+				Delete:   files.NewDeleteController(s.IPFS),
 			},
 		},
 		Admin: struct {
