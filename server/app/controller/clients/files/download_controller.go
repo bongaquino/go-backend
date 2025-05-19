@@ -9,12 +9,14 @@ import (
 )
 
 type DownloadController struct {
+	fsService   *service.FSService
 	ipfsService *service.IPFSService
 }
 
 // NewDownloadController initializes a new DownloadController
-func NewDownloadController(ipfsService *service.IPFSService) *DownloadController {
+func NewDownloadController(fsService *service.FSService, ipfsService *service.IPFSService) *DownloadController {
 	return &DownloadController{
+		fsService:   fsService,
 		ipfsService: ipfsService,
 	}
 }

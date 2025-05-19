@@ -9,12 +9,14 @@ import (
 )
 
 type ReadController struct {
+	fsService   *service.FSService
 	ipfsService *service.IPFSService
 }
 
 // NewReadController initializes a new ReadController
-func NewReadController(ipfsService *service.IPFSService) *ReadController {
+func NewReadController(fsService *service.FSService, ipfsService *service.IPFSService) *ReadController {
 	return &ReadController{
+		fsService:   fsService,
 		ipfsService: ipfsService,
 	}
 }

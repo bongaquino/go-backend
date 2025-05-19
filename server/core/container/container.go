@@ -56,8 +56,7 @@ type Services struct {
 	IPFS           *service.IPFSService
 	Organization   *service.OrganizationService
 	ServiceAccount *service.ServiceAccountService
-	Directory      *service.DirectoryService
-	File           *service.FileService
+	FS             *service.FSService
 }
 
 type Middleware struct {
@@ -184,7 +183,8 @@ func initRepositories(p Providers) Repositories {
 }
 
 func initServices(p Providers, r Repositories) Services {
-	user := service.NewUserService(r.User, r.Profile, r.Role, r.UserRole, r.Limit, r.Directory, p.Redis)
+	user := service.NewUserService(r.User, r.Profile, r.Role, r.UserRole, r.Limit, r.Directory,
+		p.Redis)
 	email := service.NewEmailService(p.Postmark)
 	mfa := service.NewMFAService(r.User, p.Redis)
 	ipfs := service.NewIPFSService(p.IPFS)
@@ -192,9 +192,8 @@ func initServices(p Providers, r Repositories) Services {
 	organization := service.NewOrganizationService(r.Organization, r.Policy, r.Permission,
 		r.OrganizationUserRole, r.User, r.Role)
 	serviceAccount := service.NewServiceAccountService(r.ServiceAccount, r.User, r.Limit)
-	directory := service.NewDirectoryService(r.Directory)
-	file := service.NewFileService(r.File)
-	return Services{user, token, mfa, email, ipfs, organization, serviceAccount, directory, file}
+	fs := service.NewFSService(r.Directory, r.File)
+	return Services{user, token, mfa, email, ipfs, organization, serviceAccount, fs}
 }
 
 func initMiddleware(p Providers, r Repositories) Middleware {
@@ -310,10 +309,10 @@ func initControllers(s Services) Controllers {
 				Update *directories.UpdateController
 				Delete *directories.DeleteController
 			}{
-				Create: directories.NewCreateController(s.IPFS),
-				Read:   directories.NewReadController(s.IPFS),
-				Update: directories.NewUpdateController(s.IPFS),
-				Delete: directories.NewDeleteController(s.IPFS),
+				Create: directories.NewCreateController(s.FS, s.IPFS),
+				Read:   directories.NewReadController(s.FS, s.IPFS),
+				Update: directories.NewUpdateController(s.FS, s.IPFS),
+				Delete: directories.NewDeleteController(s.FS, s.IPFS),
 			},
 			Files: struct {
 				Upload   *files.UploadController
@@ -322,11 +321,11 @@ func initControllers(s Services) Controllers {
 				Update   *files.UpdateController
 				Delete   *files.DeleteController
 			}{
-				Upload:   files.NewUploadController(s.IPFS),
-				Download: files.NewDownloadController(s.IPFS),
-				Read:     files.NewReadController(s.IPFS),
-				Update:   files.NewUpdateController(s.IPFS),
-				Delete:   files.NewDeleteController(s.IPFS),
+				Upload:   files.NewUploadController(s.FS, s.IPFS),
+				Download: files.NewDownloadController(s.FS, s.IPFS),
+				Read:     files.NewReadController(s.FS, s.IPFS),
+				Update:   files.NewUpdateController(s.FS, s.IPFS),
+				Delete:   files.NewDeleteController(s.FS, s.IPFS),
 			},
 		},
 		Admin: struct {

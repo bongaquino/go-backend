@@ -9,12 +9,14 @@ import (
 )
 
 type UpdateController struct {
+	fsService   *service.FSService
 	ipfsService *service.IPFSService
 }
 
 // NewUpdateController initializes a new UpdateController
-func NewUpdateController(ipfsService *service.IPFSService) *UpdateController {
+func NewUpdateController(fsService *service.FSService, ipfsService *service.IPFSService) *UpdateController {
 	return &UpdateController{
+		fsService:   fsService,
 		ipfsService: ipfsService,
 	}
 }

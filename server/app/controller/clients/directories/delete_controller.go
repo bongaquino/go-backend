@@ -9,12 +9,14 @@ import (
 )
 
 type DeleteController struct {
+	fsService   *service.FSService
 	ipfsService *service.IPFSService
 }
 
 // NewDeleteController initializes a new DeleteController
-func NewDeleteController(ipfsService *service.IPFSService) *DeleteController {
+func NewDeleteController(fsService *service.FSService, ipfsService *service.IPFSService) *DeleteController {
 	return &DeleteController{
+		fsService:   fsService,
 		ipfsService: ipfsService,
 	}
 }

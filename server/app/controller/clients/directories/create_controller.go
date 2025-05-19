@@ -9,12 +9,14 @@ import (
 )
 
 type CreateController struct {
+	fsService   *service.FSService
 	ipfsService *service.IPFSService
 }
 
 // NewCreateController initializes a new CreateController
-func NewCreateController(ipfsService *service.IPFSService) *CreateController {
+func NewCreateController(fsService *service.FSService, ipfsService *service.IPFSService) *CreateController {
 	return &CreateController{
+		fsService:   fsService,
 		ipfsService: ipfsService,
 	}
 }

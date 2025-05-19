@@ -9,12 +9,14 @@ import (
 )
 
 type UploadController struct {
+	fsService   *service.FSService
 	ipfsService *service.IPFSService
 }
 
 // NewUploadController initializes a new UploadController
-func NewUploadController(ipfsService *service.IPFSService) *UploadController {
+func NewUploadController(fsService *service.FSService, ipfsService *service.IPFSService) *UploadController {
 	return &UploadController{
+		fsService:   fsService,
 		ipfsService: ipfsService,
 	}
 }
