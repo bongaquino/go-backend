@@ -2,11 +2,13 @@ package middleware
 
 import (
 	"net/http"
+	"time"
 
 	"koneksi/server/app/helper"
 	"koneksi/server/app/repository"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type APIMiddleware struct {
@@ -48,6 +50,18 @@ func NewAPIMiddleware(svcAccRepo *repository.ServiceAccountRepository) *APIMiddl
 			// Check if the ClientSecret is valid
 			if !helper.CheckHash(clientSecret, serviceAccount.ClientSecret) {
 				helper.FormatResponse(ctx, "error", http.StatusUnauthorized, "invalid credentials", nil, nil)
+				ctx.Abort()
+				return
+			}
+
+			// Update service account last used timestamp
+			serviceAccount.LastUsedAt = time.Now()
+
+			// Update the service account in the repository
+			if err := svcAccRepo.UpdateByClientID(ctx.Request.Context(), clientID, bson.M{
+				"last_used_at": serviceAccount.LastUsedAt,
+			}); err != nil {
+				helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to update service account", nil, nil)
 				ctx.Abort()
 				return
 			}
