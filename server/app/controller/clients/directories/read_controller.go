@@ -115,13 +115,25 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 			}
 		}
 
-		// @TODO: Format the files
+		// Format the files
+		filesData := make([]gin.H, len(files))
+		for i, file := range files {
+			filesData[i] = gin.H{
+				"id":          file.ID.Hex(),
+				"name":        file.Name,
+				"hash":        file.Hash,
+				"size":        file.Size,
+				"contentType": file.ContentType,
+				"createdAt":   file.CreatedAt,
+				"updatedAt":   file.UpdatedAt,
+			}
+		}
 
 		// Prepare the response
 		response := gin.H{
 			"directory":      directoryData,
 			"subdirectories": subDirectoriesData,
-			"files":          files,
+			"files":          filesData,
 		}
 
 		// Send the response

@@ -39,10 +39,14 @@ func (fs *FSService) ReadRootDirectory(ctx context.Context, userID string) (*mod
 		return nil, nil, nil, err
 	}
 
-	// @TODO: Fetch files within the root directory
+	// Fetch files within the root directory
+	files, err := fs.fileRepo.ListByDirectoryIDUserID(ctx, directory.ID.Hex(), userID)
+	if err != nil {
+		return nil, nil, nil, err
+	}
 
 	// Return the directory details
-	return directory, subDirectories, nil, nil
+	return directory, subDirectories, files, nil
 }
 
 func (fs *FSService) ReadDirectory(ctx context.Context, ID string, userID string) (*model.Directory,
@@ -64,10 +68,14 @@ func (fs *FSService) ReadDirectory(ctx context.Context, ID string, userID string
 		return nil, nil, nil, err
 	}
 
-	// @TODO: Fetch files within the specified directory
+	// Fetch files within the specified directory
+	files, err := fs.fileRepo.ListByDirectoryIDUserID(ctx, directory.ID.Hex(), userID)
+	if err != nil {
+		return nil, nil, nil, err
+	}
 
 	// Return the directory details
-	return directory, subDirectories, nil, nil
+	return directory, subDirectories, files, nil
 }
 
 func (fs *FSService) CreateDirectory(ctx context.Context, directory *model.Directory) error {

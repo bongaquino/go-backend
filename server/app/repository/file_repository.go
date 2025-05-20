@@ -86,6 +86,59 @@ func (r *FileRepository) ListByDirectoryID(ctx context.Context, fileID string) (
 	return files, nil
 }
 
+func (r *FileRepository) ListByDirectoryIDUserID(ctx context.Context, directoryID string, userID string) ([]*model.File, error) {
+	// Convert directoryID to ObjectID
+	directoryObjectID, err := primitive.ObjectIDFromHex(directoryID)
+	if err != nil {
+		logger.Log.Error("invalid directory ID format", logger.Error(err))
+		return nil, err
+	}
+
+	// Convert userID to ObjectID
+	userObjectID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		logger.Log.Error("invalid user ID format", logger.Error(err))
+		return nil, err
+	}
+
+	// Create a filter to find files by directory ID and user ID
+	filter := bson.M{
+		"directory_id": directoryObjectID,
+		"user_id":      userObjectID,
+		"is_deleted":   false,
+	}
+
+	// Find files in the collection
+	cursor, err := r.collection.Find(ctx, filter)
+	if err != nil {
+		logger.Log.Error("error listing files by directory ID and user ID", logger.Error(err))
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	// Initialize a slice to hold the files
+	var files []*model.File
+
+	// Iterate through the cursor and decode each file
+	for cursor.Next(ctx) {
+		var file model.File
+		if err := cursor.Decode(&file); err != nil {
+			logger.Log.Error("error decoding file", logger.Error(err))
+			return nil, err
+		}
+		files = append(files, &file)
+	}
+
+	// Check for any errors during iteration
+	if err := cursor.Err(); err != nil {
+		logger.Log.Error("cursor error", logger.Error(err))
+		return nil, err
+	}
+
+	// Return the list of files
+	return files, nil
+}
+
 func (r *FileRepository) Create(ctx context.Context, file *model.File) error {
 	file.ID = primitive.NewObjectID()
 	file.CreatedAt = time.Now()
