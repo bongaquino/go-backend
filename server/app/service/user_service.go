@@ -618,3 +618,17 @@ func (us *UserService) UpdateUser(ctx context.Context, userID string, dto *dto.U
 	}
 	return user, profile, &model.UserRole{UserID: userObjectID, RoleID: userRole.ID}, userRole.Name, nil
 }
+
+func (us *UserService) GetUserLimits(ctx context.Context, userID string) (*model.Limit, error) {
+	// Fetch the user limit from the repository
+	limit, err := us.limitRepo.ReadByUserID(ctx, userID)
+	if err != nil {
+		logger.Log.Error("failed to retrieve user limit", logger.Error(err))
+		return nil, errors.New("failed to retrieve user limit")
+	}
+	if limit == nil {
+		return nil, errors.New("user limit not found")
+	}
+
+	return limit, nil
+}

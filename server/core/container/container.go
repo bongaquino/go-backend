@@ -192,7 +192,7 @@ func initServices(p Providers, r Repositories) Services {
 	organization := service.NewOrganizationService(r.Organization, r.Policy, r.Permission,
 		r.OrganizationUserRole, r.User, r.Role)
 	serviceAccount := service.NewServiceAccountService(r.ServiceAccount, r.User, r.Limit)
-	fs := service.NewFSService(r.Directory, r.File, r.Limit)
+	fs := service.NewFSService(r.Directory, r.File)
 	return Services{user, token, mfa, email, ipfs, organization, serviceAccount, fs}
 }
 
@@ -321,7 +321,7 @@ func initControllers(s Services) Controllers {
 				Update   *files.UpdateController
 				Delete   *files.DeleteController
 			}{
-				Upload:   files.NewUploadController(s.FS, s.IPFS),
+				Upload:   files.NewUploadController(s.FS, s.IPFS, s.User),
 				Download: files.NewDownloadController(s.FS, s.IPFS),
 				Read:     files.NewReadController(s.FS, s.IPFS),
 				Update:   files.NewUpdateController(s.FS, s.IPFS),
