@@ -1,6 +1,7 @@
 package files
 
 import (
+	"fmt"
 	"koneksi/server/app/helper"
 	"koneksi/server/app/service"
 	"net/http"
@@ -23,20 +24,19 @@ func NewDeleteController(fsService *service.FSService, ipfsService *service.IPFS
 
 func (rc *DeleteController) Handle(ctx *gin.Context) {
 	// Extract user ID from the context
-	// userID, exists := ctx.Get("userID")
-	// if !exists {
-	// 	helper.FormatResponse(ctx, "error", http.StatusUnauthorized, "userID not found in context", nil, nil)
-	// 	return
-	// }
-
-	numPeers, peers, err := rc.ipfsService.GetSwarmPeers()
-	if err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, err.Error(), nil, nil)
+	userID, exists := ctx.Get("userID")
+	if !exists {
+		helper.FormatResponse(ctx, "error", http.StatusUnauthorized, "user ID not found in context", nil, nil)
 		return
 	}
 
-	helper.FormatResponse(ctx, "success", http.StatusOK, "peers fetched successfully", gin.H{
-		"count": numPeers,
-		"peers": peers,
-	}, nil)
+	// Get the file ID from the URL parameters
+	fileID := ctx.Param("fileID")
+	if fileID == ":file" {
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "file ID is required", nil, nil)
+		return
+	}
+
+	fmt.Println("userID", userID)
+	fmt.Println("fileID", fileID)
 }
