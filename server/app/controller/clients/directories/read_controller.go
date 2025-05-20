@@ -105,13 +105,13 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 		// Send the response
 		helper.FormatResponse(ctx, "success", http.StatusOK, "directory read successfully", response, nil)
 	} else {
-		// Check if the file ID is in valid format
+		// Check if the directory ID is in valid format
 		if directoryID == "" {
-			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "file ID is required", nil, nil)
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "directory ID is required", nil, nil)
 			return
 		}
 		if _, err := primitive.ObjectIDFromHex(directoryID); err != nil {
-			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid file ID format", nil, nil)
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid directory ID format", nil, nil)
 			return
 		}
 

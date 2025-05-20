@@ -24,7 +24,7 @@ func NewDeleteController(fsService *service.FSService, ipfsService *service.IPFS
 	}
 }
 
-func (rc *DeleteController) Handle(ctx *gin.Context) {
+func (dc *DeleteController) Handle(ctx *gin.Context) {
 	// Extract user ID from the context
 	userID, exists := ctx.Get("userID")
 	if !exists {

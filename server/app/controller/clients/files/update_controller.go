@@ -1,11 +1,13 @@
 package files
 
 import (
+	"koneksi/server/app/dto"
 	"koneksi/server/app/helper"
 	"koneksi/server/app/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type UpdateController struct {
@@ -21,24 +23,32 @@ func NewUpdateController(fsService *service.FSService, ipfsService *service.IPFS
 	}
 }
 
-func (rc *UpdateController) Handle(ctx *gin.Context) {
-	// Extract user ID from the context
-	// userID, exists := ctx.Get("userID")
-	// if !exists {
-	// 	helper.FormatResponse(ctx, "error", http.StatusUnauthorized, "userID not found in context", nil, nil)
-	// 	return
-	// }
-
-	/// Update the number of peers and their details from the IPFS service
-	numPeers, peers, err := rc.ipfsService.GetSwarmPeers()
-	if err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, err.Error(), nil, nil)
+func (uc *UpdateController) Handle(ctx *gin.Context) {
+	// Validate the request payload
+	var request dto.UpdateDirectoryDTO
+	if err := uc.validatePayload(ctx, &request); err != nil {
 		return
 	}
 
-	// Respond with the number of peers and their details
-	helper.FormatResponse(ctx, "success", http.StatusOK, "peers fetched successfully", gin.H{
-		"count": numPeers,
-		"peers": peers,
-	}, nil)
+	// Get the file ID from the URL parameters
+	fileID := ctx.Param("fileID")
+
+	// Check if the file ID is in valid format
+	if fileID == "" {
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "file ID is required", nil, nil)
+		return
+	}
+	if _, err := primitive.ObjectIDFromHex(fileID); err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid file ID format", nil, nil)
+		return
+	}
+
+}
+
+func (uc *UpdateController) validatePayload(ctx *gin.Context, request *dto.UpdateDirectoryDTO) error {
+	if err := ctx.ShouldBindJSON(request); err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
+		return err
+	}
+	return nil
 }
