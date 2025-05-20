@@ -131,8 +131,11 @@ func (r *DirectoryRepository) ReadByIDUserID(ctx context.Context, id string, use
 		return nil, err
 	}
 
+	// Find the directory by ID and userID
 	var directory model.Directory
 	err = r.collection.FindOne(ctx, bson.M{"_id": objectID, "user_id": userObjectID, "is_deleted": false}).Decode(&directory)
+
+	// Check if the directory was found
 	if err != nil {
 		if err == mongoDriver.ErrNoDocuments {
 			return nil, nil
@@ -140,6 +143,8 @@ func (r *DirectoryRepository) ReadByIDUserID(ctx context.Context, id string, use
 		logger.Log.Error("error reading directory", logger.Error(err))
 		return nil, err
 	}
+
+	// Return the directory
 	return &directory, nil
 }
 

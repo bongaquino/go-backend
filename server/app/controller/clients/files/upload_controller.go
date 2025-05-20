@@ -2,10 +2,12 @@ package files
 
 import (
 	"koneksi/server/app/helper"
+	"koneksi/server/app/model"
 	"koneksi/server/app/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type UploadController struct {
@@ -30,14 +32,29 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 	// Extract user ID from the context
 	userID, exists := ctx.Get("userID")
 	if !exists {
-		helper.FormatResponse(ctx, "error", http.StatusUnauthorized, "userID not found in context", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusUnauthorized, "user ID not found in context", nil, nil)
 		return
 	}
 
 	// Extract directory ID from the query parameters
 	directoryID := ctx.Query("directory_id")
 	if directoryID == "" {
-		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "directory_id is required", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "directory ID is required", nil, nil)
+		return
+	}
+
+	// Check if user has access to the directory
+	isOwner, err := uc.fsService.CheckDirectoryOwnership(ctx, directoryID, userID.(string))
+	if err != nil {
+		if err.Error() == "directory not found" {
+			helper.FormatResponse(ctx, "error", http.StatusNotFound, "directory not found", nil, nil)
+			return
+		}
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to check directory ownership", nil, nil)
+		return
+	}
+	if !isOwner {
+		helper.FormatResponse(ctx, "error", http.StatusForbidden, "access denied to directory", nil, nil)
 		return
 	}
 
@@ -66,28 +83,59 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	// Save the uploaded file to a temporary location
-	destination := "/tmp/uploads/" + file.Filename
-	err = ctx.SaveUploadedFile(file, destination)
+	// Stream the file and upload directly to IPFS
+	uploadedFile, err := file.Open()
 	if err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to save uploaded file", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to open uploaded file", nil, nil)
+		return
+	}
+	defer uploadedFile.Close()
+	cid, err := uc.ipfsService.UploadFile(file.Filename, uploadedFile)
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to upload file to IPFS", nil, nil)
 		return
 	}
 
-	// Upload file to IPFS using the IPFS service
-	// _, err = uc.ipfsService.UploadFile(destination)
-	// if err != nil {
-	// 	helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to upload file to IPFS", nil, nil)
-	// 	return
-	// }
+	// Convert userID string to primitive.ObjectID
+	userObjID, err := primitive.ObjectIDFromHex(userID.(string))
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "invalid user ID format", nil, nil)
+		return
+	}
 
-	// Add file metadata to the database using the FS service
+	// Convert directoryID string to primitive.ObjectID
+	dirObjID, err := primitive.ObjectIDFromHex(directoryID)
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "invalid directory ID format", nil, nil)
+		return
+	}
 
-	// Update user limits
+	// Build the file model
+	fileModel := &model.File{
+		UserID:      userObjID,
+		DirectoryID: &dirObjID,
+		Name:        fileName,
+		Hash:        cid,
+		Size:        fileSize,
+		ContentType: fileType,
+		IsDeleted:   false,
+	}
+
+	// Save the file metadata to the database
+	err = uc.fsService.CreateFile(ctx, fileModel)
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to save file metadata", nil, nil)
+		return
+	}
+
+	// Update user usage
+	// (To be implemented)
 
 	helper.FormatResponse(ctx, "success", http.StatusOK, "file uploaded successfully", gin.H{
-		"filename": fileName,
-		"size":     fileSize,
-		"type":     fileType,
+		"directory_id": directoryID,
+		"name":         fileName,
+		"hash":         cid,
+		"size":         fileSize,
+		"content_type": fileType,
 	}, nil)
 }

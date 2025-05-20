@@ -173,3 +173,30 @@ func (fs *FSService) DeleteDirectory(ctx context.Context, ID string, userID stri
 
 	return nil
 }
+
+func (fs *FSService) CheckDirectoryOwnership(ctx context.Context, ID string, userID string) (bool, error) {
+	// Fetch the directory from the repository
+	directory, err := fs.directoryRepo.ReadByIDUserID(ctx, ID, userID)
+
+	if err != nil {
+		return false, err
+	}
+
+	// Check if the directory exists
+	if directory == nil {
+		return false, errors.New("directory not found")
+	}
+
+	// Return true if the user owns the directory
+	return true, nil
+}
+
+func (fs *FSService) CreateFile(ctx context.Context, file *model.File) error {
+	// Create the file in the repository
+	err := fs.fileRepo.Create(ctx, file)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -14,7 +14,6 @@ type File struct {
 	Hash        string              `bson:"hash"`
 	Size        int64               `bson:"size"`
 	ContentType string              `bson:"content_type"`
-	Status      string              `bson:"status"`
 	IsDeleted   bool                `bson:"is_deleted"`
 	CreatedAt   time.Time           `bson:"created_at"`
 	UpdatedAt   time.Time           `bson:"updated_at"`
