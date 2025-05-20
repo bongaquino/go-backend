@@ -128,8 +128,11 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 		return
 	}
 
+	// Compute the new usage
+	newUsage := userLimit.BytesUsage + fileSize
+
 	// Update user usage
-	err = uc.userService.UpdateUserUsage(ctx, userID.(string), fileSize)
+	err = uc.userService.UpdateUserUsage(ctx, userID.(string), newUsage)
 	if err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to update user usage", nil, nil)
 		return
