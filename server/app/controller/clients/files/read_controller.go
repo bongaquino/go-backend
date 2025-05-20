@@ -1,6 +1,7 @@
 package files
 
 import (
+	"fmt"
 	"koneksi/server/app/helper"
 	"koneksi/server/app/service"
 	"net/http"
@@ -63,6 +64,8 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error generating file URL", nil, nil)
 		return
 	}
+
+	fmt.Println("file", file)
 
 	// Return the file details
 	helper.FormatResponse(ctx, "success", http.StatusOK, "file read successfully", gin.H{

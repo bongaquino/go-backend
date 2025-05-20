@@ -25,8 +25,15 @@ func NewUpdateController(fsService *service.FSService, ipfsService *service.IPFS
 
 func (uc *UpdateController) Handle(ctx *gin.Context) {
 	// Validate the request payload
-	var request dto.UpdateDirectoryDTO
+	var request dto.UpdateFileDTO
 	if err := uc.validatePayload(ctx, &request); err != nil {
+		return
+	}
+
+	// Extract user ID from the context
+	userID, exists := ctx.Get("userID")
+	if !exists {
+		helper.FormatResponse(ctx, "error", http.StatusUnauthorized, "user ID not found in context", nil, nil)
 		return
 	}
 
@@ -43,9 +50,26 @@ func (uc *UpdateController) Handle(ctx *gin.Context) {
 		return
 	}
 
+	// Update the file using the fsService
+	err := uc.fsService.UpdateFile(ctx, fileID, userID.(string), &request)
+	if err != nil {
+		if err.Error() == "file not found" {
+			helper.FormatResponse(ctx, "error", http.StatusNotFound, "file not found", nil, nil)
+			return
+		}
+		if err.Error() == "directory not found" {
+			helper.FormatResponse(ctx, "error", http.StatusNotFound, "directory not found", nil, nil)
+			return
+		}
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error updating file", nil, nil)
+		return
+	}
+
+	// Return success response
+	helper.FormatResponse(ctx, "success", http.StatusOK, "file updated successfully", nil, nil)
 }
 
-func (uc *UpdateController) validatePayload(ctx *gin.Context, request *dto.UpdateDirectoryDTO) error {
+func (uc *UpdateController) validatePayload(ctx *gin.Context, request *dto.UpdateFileDTO) error {
 	if err := ctx.ShouldBindJSON(request); err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
 		return err
