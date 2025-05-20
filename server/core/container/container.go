@@ -117,11 +117,10 @@ type Controllers struct {
 			Delete *directories.DeleteController
 		}
 		Files struct {
-			Upload   *files.UploadController
-			Download *files.DownloadController
-			Read     *files.ReadController
-			Update   *files.UpdateController
-			Delete   *files.DeleteController
+			Upload *files.UploadController
+			Read   *files.ReadController
+			Update *files.UpdateController
+			Delete *files.DeleteController
 		}
 	}
 	Admin struct {
@@ -291,11 +290,10 @@ func initControllers(s Services) Controllers {
 				Delete *directories.DeleteController
 			}
 			Files struct {
-				Upload   *files.UploadController
-				Download *files.DownloadController
-				Read     *files.ReadController
-				Update   *files.UpdateController
-				Delete   *files.DeleteController
+				Upload *files.UploadController
+				Read   *files.ReadController
+				Update *files.UpdateController
+				Delete *files.DeleteController
 			}
 		}{
 			Peers: struct {
@@ -315,17 +313,15 @@ func initControllers(s Services) Controllers {
 				Delete: directories.NewDeleteController(s.FS, s.IPFS),
 			},
 			Files: struct {
-				Upload   *files.UploadController
-				Download *files.DownloadController
-				Read     *files.ReadController
-				Update   *files.UpdateController
-				Delete   *files.DeleteController
+				Upload *files.UploadController
+				Read   *files.ReadController
+				Update *files.UpdateController
+				Delete *files.DeleteController
 			}{
-				Upload:   files.NewUploadController(s.FS, s.IPFS, s.User),
-				Download: files.NewDownloadController(s.FS, s.IPFS),
-				Read:     files.NewReadController(s.FS, s.IPFS),
-				Update:   files.NewUpdateController(s.FS, s.IPFS),
-				Delete:   files.NewDeleteController(s.FS, s.IPFS),
+				Upload: files.NewUploadController(s.FS, s.IPFS, s.User),
+				Read:   files.NewReadController(s.FS, s.IPFS),
+				Update: files.NewUpdateController(s.FS, s.IPFS),
+				Delete: files.NewDeleteController(s.FS, s.IPFS),
 			},
 		},
 		Admin: struct {
