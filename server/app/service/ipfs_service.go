@@ -46,3 +46,8 @@ func (s *IPFSService) GetSwarmPeers() (int, []PeerDetails, error) {
 func (s *IPFSService) UploadFile(filename string, reader io.Reader) (string, error) {
 	return s.ipfsProvider.Pin(filename, reader)
 }
+
+// GetFileURL returns the public URL to access a pinned file using its IPFS hash
+func (s *IPFSService) GetFileURL(hash string) string {
+	return s.ipfsProvider.GetFileURL(hash)
+}

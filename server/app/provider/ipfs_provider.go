@@ -119,3 +119,8 @@ func (p *IPFSProvider) Pin(filename string, file io.Reader) (string, error) {
 	// Return the IPFS hash of the pinned file
 	return result.Hash, nil
 }
+
+// GetFileURL returns the public URL to access a pinned file using its IPFS hash
+func (p *IPFSProvider) GetFileURL(hash string) string {
+	return fmt.Sprintf("%s/ipfs/%s", p.baseURL, hash)
+}
