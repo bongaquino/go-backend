@@ -1,6 +1,7 @@
 package service
 
 import (
+	"io"
 	"koneksi/server/app/provider"
 )
 
@@ -39,4 +40,9 @@ func (s *IPFSService) GetSwarmPeers() (int, []PeerDetails, error) {
 	}
 
 	return numPeers, peers, nil
+}
+
+// UploadFile uploads a file to IPFS and pins it
+func (s *IPFSService) UploadFile(filename string, reader io.Reader) (string, error) {
+	return s.ipfsProvider.Pin(filename, reader)
 }

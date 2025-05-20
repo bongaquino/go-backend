@@ -1,10 +1,14 @@
 package provider
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"koneksi/server/config"
+	"mime/multipart"
 	"net/http"
+	"path/filepath"
 	"time"
 )
 
@@ -53,4 +57,65 @@ func (p *IPFSProvider) GetSwarmAddrsDetailed() (int, map[string][]string, error)
 	// Count the number of peers
 	numPeers := len(result.Addrs)
 	return numPeers, result.Addrs, nil
+}
+
+// Pin uploads a file to IPFS and pins it
+func (p *IPFSProvider) Pin(filename string, file io.Reader) (string, error) {
+	// Build the URL for the IPFS API
+	url := fmt.Sprintf("%s/api/v0/add?pin=true", p.baseURL)
+
+	// Create a multipart form request
+	var body bytes.Buffer
+	writer := multipart.NewWriter(&body)
+
+	// Create a form file field
+	part, err := writer.CreateFormFile("file", filepath.Base(filename))
+	if err != nil {
+		return "", fmt.Errorf("failed to create form file: %w", err)
+	}
+
+	// Copy the file content to the form file field
+	if _, err = io.Copy(part, file); err != nil {
+		return "", fmt.Errorf("failed to copy file content: %w", err)
+	}
+
+	// Close the multipart writer to finalize the request
+	if err := writer.Close(); err != nil {
+		return "", fmt.Errorf("failed to close multipart writer: %w", err)
+	}
+
+	// Create the HTTP request
+	req, err := http.NewRequest("POST", url, &body)
+	if err != nil {
+		return "", fmt.Errorf("failed to create request: %w", err)
+	}
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	// Set the timeout for the request
+	resp, err := p.client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("failed to call IPFS API: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Check for non-200 status codes
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	// Parse the response body
+	var result struct {
+		Hash string `json:"Hash"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return "", fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	// Check if the Hash field is empty
+	if result.Hash == "" {
+		return "", fmt.Errorf("empty hash in response")
+	}
+
+	// Return the IPFS hash of the pinned file
+	return result.Hash, nil
 }
