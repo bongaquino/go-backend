@@ -165,6 +165,18 @@ func (fs *FSService) DeleteDirectory(ctx context.Context, ID string, userID stri
 			return err
 		}
 
+		// Mark all files in the current directory as deleted
+		files, err := fs.fileRepo.ListByDirectoryIDUserID(ctx, currentID, userID)
+		if err != nil {
+			return err
+		}
+		for _, file := range files {
+			err = fs.fileRepo.Update(ctx, file.ID.Hex(), bson.M{"is_deleted": true})
+			if err != nil {
+				return err
+			}
+		}
+
 		// Fetch all subdirectories of the current directory
 		subdirs, err := fs.directoryRepo.ListByDirectoryIDUserID(ctx, currentID, userID)
 		if err != nil {
@@ -176,8 +188,6 @@ func (fs *FSService) DeleteDirectory(ctx context.Context, ID string, userID stri
 			queue = append(queue, subdir.ID.Hex())
 		}
 	}
-
-	// @TODO: Mark all files in the directory as deleted
 
 	return nil
 }
