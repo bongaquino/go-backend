@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type DeleteController struct {
@@ -32,9 +33,13 @@ func (dc *DeleteController) Handle(ctx *gin.Context) {
 	// Get the directory ID from the URL parameters
 	directoryID := ctx.Param("directoryID")
 
-	// Check if the directory ID is not empty
-	if directoryID == ":directory" {
-		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "directory ID is required", nil, nil)
+	// Check if the file ID is in valid format
+	if directoryID == "" {
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "file ID is required", nil, nil)
+		return
+	}
+	if _, err := primitive.ObjectIDFromHex(directoryID); err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid file ID format", nil, nil)
 		return
 	}
 
