@@ -72,6 +72,6 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 		"size":         file.Size,
 		"hash":         file.Hash,
 		"content_type": file.ContentType,
-		"url":          fileURL,
+		"ipfs_url":     fileURL,
 	}, nil)
 }
