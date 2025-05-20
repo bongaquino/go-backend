@@ -129,7 +129,11 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 	}
 
 	// Update user usage
-	// (To be implemented)
+	err = uc.userService.UpdateUserUsage(ctx, userID.(string), fileSize)
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to update user usage", nil, nil)
+		return
+	}
 
 	helper.FormatResponse(ctx, "success", http.StatusOK, "file uploaded successfully", gin.H{
 		"directory_id": directoryID,

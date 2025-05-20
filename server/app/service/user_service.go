@@ -632,3 +632,26 @@ func (us *UserService) GetUserLimits(ctx context.Context, userID string) (*model
 
 	return limit, nil
 }
+
+func (us *UserService) UpdateUserUsage(ctx context.Context, userID string, bytesUsed int64) error {
+	// Fetch the user limit from the repository
+	limit, err := us.limitRepo.ReadByUserID(ctx, userID)
+	if err != nil {
+		logger.Log.Error("failed to retrieve user limit", logger.Error(err))
+		return errors.New("failed to retrieve user limit")
+	}
+	if limit == nil {
+		return errors.New("user limit not found")
+	}
+
+	// Update the user's usage
+	update := bson.M{
+		"bytes_usage": bytesUsed,
+	}
+	if err := us.limitRepo.UpdateByUserID(ctx, userID, update); err != nil {
+		logger.Log.Error("failed to update user limit", logger.Error(err))
+		return errors.New("failed to update user limit")
+	}
+
+	return nil
+}
