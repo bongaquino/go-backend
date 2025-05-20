@@ -172,6 +172,33 @@ func (r *FileRepository) Read(ctx context.Context, id string) (*model.File, erro
 	return &file, nil
 }
 
+func (r *FileRepository) ReadByIDUserID(ctx context.Context, id string, userID string) (*model.File, error) {
+	// Convert id to ObjectID
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		logger.Log.Error("invalid ID format", logger.Error(err))
+		return nil, err
+	}
+
+	// Convert userID to ObjectID
+	userObjectID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		logger.Log.Error("invalid user ID format", logger.Error(err))
+		return nil, err
+	}
+
+	var file model.File
+	err = r.collection.FindOne(ctx, bson.M{"_id": objectID, "user_id": userObjectID, "is_deleted": false}).Decode(&file)
+	if err != nil {
+		if err == mongoDriver.ErrNoDocuments {
+			return nil, nil
+		}
+		logger.Log.Error("error reading file by userID", logger.Error(err))
+		return nil, err
+	}
+	return &file, nil
+}
+
 func (r *FileRepository) Update(ctx context.Context, id string, update bson.M) error {
 	// Convert id to ObjectID
 	objectID, err := primitive.ObjectIDFromHex(id)
