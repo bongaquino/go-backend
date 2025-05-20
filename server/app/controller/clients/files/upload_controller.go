@@ -138,6 +138,7 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 		return
 	}
 
+	// Return response
 	helper.FormatResponse(ctx, "success", http.StatusOK, "file uploaded successfully", gin.H{
 		"directory_id": directoryID,
 		"name":         fileName,
