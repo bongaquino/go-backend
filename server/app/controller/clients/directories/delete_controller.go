@@ -25,7 +25,7 @@ func (dc *DeleteController) Handle(ctx *gin.Context) {
 	// Extract user ID from the context
 	userID, exists := ctx.Get("userID")
 	if !exists {
-		helper.FormatResponse(ctx, "error", http.StatusUnauthorized, "userID not found in context", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusUnauthorized, "user ID not found in context", nil, nil)
 		return
 	}
 

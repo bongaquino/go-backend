@@ -34,7 +34,7 @@ func (cc *CreateController) Handle(ctx *gin.Context) {
 	// Extract user ID from the context
 	userID, exists := ctx.Get("userID")
 	if !exists {
-		helper.FormatResponse(ctx, "error", http.StatusUnauthorized, "userID not found in context", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusUnauthorized, "user ID not found in context", nil, nil)
 		return
 	}
 
@@ -42,7 +42,7 @@ func (cc *CreateController) Handle(ctx *gin.Context) {
 	userIDStr := userID.(string)
 	objectID, err := primitive.ObjectIDFromHex(userIDStr)
 	if err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid userID format", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid user ID format", nil, nil)
 		return
 	}
 
@@ -51,7 +51,7 @@ func (cc *CreateController) Handle(ctx *gin.Context) {
 	if request.DirectoryID != "" {
 		tmpID, err := primitive.ObjectIDFromHex(request.DirectoryID)
 		if err != nil {
-			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid directoryID format", nil, nil)
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid directory ID format", nil, nil)
 			return
 		}
 		dirObjectID = &tmpID
