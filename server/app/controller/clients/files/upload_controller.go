@@ -38,7 +38,7 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 
 	// Extract directory ID from the query parameters
 	directoryID := ctx.Query("directory_id")
-	if directoryID == "" {
+	if directoryID == ":directory" {
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "directory ID is required", nil, nil)
 		return
 	}
