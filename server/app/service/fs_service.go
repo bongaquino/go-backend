@@ -13,13 +13,18 @@ import (
 type FSService struct {
 	directoryRepo *repository.DirectoryRepository
 	fileRepo      *repository.FileRepository
+	limitRepo     *repository.LimitRepository
 }
 
 // NewFSService initializes a new FSService
-func NewFSService(directoryRepo *repository.DirectoryRepository, fileRepo *repository.FileRepository) *FSService {
+func NewFSService(directoryRepo *repository.DirectoryRepository,
+	fileRepo *repository.FileRepository,
+	limitRepo *repository.LimitRepository,
+) *FSService {
 	return &FSService{
 		directoryRepo: directoryRepo,
 		fileRepo:      fileRepo,
+		limitRepo:     limitRepo,
 	}
 }
 
