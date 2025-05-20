@@ -6,6 +6,8 @@ import (
 	"koneksi/server/app/service"
 	"net/http"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -32,8 +34,14 @@ func (rc *DeleteController) Handle(ctx *gin.Context) {
 
 	// Get the file ID from the URL parameters
 	fileID := ctx.Param("fileID")
-	if fileID == ":file" {
+
+	// Check if the file ID is in valid format
+	if fileID == "" {
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "file ID is required", nil, nil)
+		return
+	}
+	if _, err := primitive.ObjectIDFromHex(fileID); err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid file ID format", nil, nil)
 		return
 	}
 
