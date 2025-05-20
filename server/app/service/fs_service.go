@@ -274,3 +274,26 @@ func (fs *FSService) UpdateFile(ctx context.Context, ID string, userID string, r
 
 	return nil
 }
+
+func (fs *FSService) DeleteFile(ctx context.Context, ID string, userID string) error {
+	// Fetch the file from the repository
+	file, err := fs.fileRepo.ReadByIDUserID(ctx, ID, userID)
+	if err != nil {
+		return err
+	}
+
+	// Check if the file exists
+	if file == nil {
+		return errors.New("file not found")
+	}
+	// Save the updated file in the repository
+	updateData := bson.M{
+		"is_deleted": true,
+	}
+	err = fs.fileRepo.Update(ctx, ID, updateData)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -1,7 +1,6 @@
 package files
 
 import (
-	"fmt"
 	"koneksi/server/app/helper"
 	"koneksi/server/app/service"
 	"net/http"
@@ -45,6 +44,17 @@ func (dc *DeleteController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	fmt.Println("userID", userID)
-	fmt.Println("fileID", fileID)
+	// Delete the file using the fsService
+	err := dc.fsService.DeleteFile(ctx, fileID, userID.(string))
+	if err != nil {
+		if err.Error() == "file not found" {
+			helper.FormatResponse(ctx, "error", http.StatusNotFound, "file not found", nil, nil)
+			return
+		}
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to delete file", nil, nil)
+		return
+	}
+
+	// If the file is successfully deleted, return a success response
+	helper.FormatResponse(ctx, "success", http.StatusOK, "file deleted successfully", nil, nil)
 }
