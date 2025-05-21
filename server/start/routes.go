@@ -15,6 +15,13 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 	// Fetch Constants Route
 	engine.GET("/fetch-constants", container.Controllers.Constants.Fetch.Handle)
 
+	// Dashboard Routes
+	dashboardGroup := engine.Group("/dashboard")
+	dashboardGroup.Use(container.Middleware.Authn.Handle, container.Middleware.Verified.Handle)
+	{
+		dashboardGroup.GET("/collect-metrics", container.Controllers.Dashboard.CollectMetrics.Handle)
+	}
+
 	// User Routes
 	userGroup := engine.Group("/users")
 	{

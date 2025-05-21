@@ -132,3 +132,20 @@ func (r *ServiceAccountRepository) DeleteByUserIDClientID(ctx context.Context, u
 
 	return nil
 }
+
+func (r *ServiceAccountRepository) CountByUserID(ctx context.Context, userID string) (int64, error) {
+	// Convert userID to ObjectID
+	objectID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		logger.Log.Error("invalid ID format", logger.Error(err))
+		return 0, err
+	}
+
+	count, err := r.collection.CountDocuments(ctx, bson.M{"user_id": objectID})
+	if err != nil {
+		logger.Log.Error("error counting service accounts by user ID", logger.Error(err))
+		return 0, err
+	}
+
+	return count, nil
+}

@@ -8,6 +8,7 @@ import (
 	"koneksi/server/app/controller/clients/files"
 	"koneksi/server/app/controller/clients/peers"
 	"koneksi/server/app/controller/constants"
+	"koneksi/server/app/controller/dashboard"
 	"koneksi/server/app/controller/health"
 	"koneksi/server/app/controller/network"
 	"koneksi/server/app/controller/profile"
@@ -73,6 +74,9 @@ type Controllers struct {
 	}
 	Constants struct {
 		Fetch *constants.FetchController
+	}
+	Dashboard struct {
+		CollectMetrics *dashboard.CollectMetricsController
 	}
 	Users struct {
 		Register               *users.RegisterController
@@ -183,7 +187,7 @@ func initRepositories(p Providers) Repositories {
 
 func initServices(p Providers, r Repositories) Services {
 	user := service.NewUserService(r.User, r.Profile, r.Role, r.UserRole,
-		r.Limit, r.Directory, r.File, p.Redis)
+		r.Limit, r.Directory, r.File, r.ServiceAccount, p.Redis)
 	email := service.NewEmailService(p.Postmark)
 	mfa := service.NewMFAService(r.User, p.Redis)
 	ipfs := service.NewIPFSService(p.IPFS)
@@ -216,6 +220,11 @@ func initControllers(s Services) Controllers {
 			Fetch *constants.FetchController
 		}{
 			Fetch: constants.NewFetchController(s.User, s.Organization),
+		},
+		Dashboard: struct {
+			CollectMetrics *dashboard.CollectMetricsController
+		}{
+			CollectMetrics: dashboard.NewCollectMetricsController(s.User),
 		},
 		Users: struct {
 			Register               *users.RegisterController

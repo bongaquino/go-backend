@@ -25,6 +25,7 @@ type UserService struct {
 	limitRepo     *repository.LimitRepository
 	directoryRepo *repository.DirectoryRepository
 	fileRepo      *repository.FileRepository
+	svcAccRepo    *repository.ServiceAccountRepository
 	redisProvider *provider.RedisProvider
 }
 
@@ -36,6 +37,7 @@ func NewUserService(
 	limitRepo *repository.LimitRepository,
 	directoryRepo *repository.DirectoryRepository,
 	fileRepo *repository.FileRepository,
+	svcAccRepo *repository.ServiceAccountRepository,
 	redisProvider *provider.RedisProvider,
 ) *UserService {
 	return &UserService{
@@ -46,6 +48,7 @@ func NewUserService(
 		limitRepo:     limitRepo,
 		directoryRepo: directoryRepo,
 		fileRepo:      fileRepo,
+		svcAccRepo:    svcAccRepo,
 		redisProvider: redisProvider,
 	}
 }
@@ -657,4 +660,60 @@ func (us *UserService) UpdateUserUsage(ctx context.Context, userID string, bytes
 	}
 
 	return nil
+}
+
+func (us *UserService) CollectMetrics(ctx context.Context, userID string) (*model.Limit, int64, int64, int64, error) {
+	// Fetch the user from the repository
+	user, err := us.userRepo.Read(ctx, userID)
+	if err != nil {
+		logger.Log.Error("failed to retrieve user", logger.Error(err))
+		return nil, 0, 0, 0, errors.New("failed to retrieve user")
+	}
+	if user == nil {
+		return nil, 0, 0, 0, errors.New("user not found")
+	}
+
+	// Fetch the user's profile
+	profile, err := us.profileRepo.ReadByUserID(ctx, user.ID.Hex())
+	if err != nil {
+		logger.Log.Error("failed to retrieve profile", logger.Error(err))
+		return nil, 0, 0, 0, errors.New("failed to retrieve profile")
+	}
+	if profile == nil {
+		return nil, 0, 0, 0, errors.New("profile not found")
+	}
+
+	// Fetch the user's limit
+	limit, err := us.limitRepo.ReadByUserID(ctx, user.ID.Hex())
+	if err != nil {
+		logger.Log.Error("failed to retrieve limit", logger.Error(err))
+		return nil, 0, 0, 0, errors.New("failed to retrieve limit")
+	}
+	if limit == nil {
+		return nil, 0, 0, 0, errors.New("limit not found")
+	}
+
+	// Count the number of directories
+	directories, err := us.directoryRepo.CountByUserID(ctx, user.ID.Hex())
+	if err != nil {
+		logger.Log.Error("failed to count directories", logger.Error(err))
+		return nil, 0, 0, 0, errors.New("failed to count directories")
+	}
+
+	// Count the number of files
+	files, err := us.fileRepo.CountByUserID(ctx, user.ID.Hex())
+	if err != nil {
+		logger.Log.Error("failed to count files", logger.Error(err))
+		return nil, 0, 0, 0, errors.New("failed to count files")
+	}
+
+	// Count the number service accounts
+	serviceAccounts, err := us.svcAccRepo.CountByUserID(ctx, user.ID.Hex())
+	if err != nil {
+		logger.Log.Error("failed to count service accounts", logger.Error(err))
+		return nil, 0, 0, 0, errors.New("failed to count service accounts")
+	}
+
+	// Return the limit, directories, and files
+	return limit, directories, files, serviceAccounts, nil
 }

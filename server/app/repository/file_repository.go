@@ -217,3 +217,19 @@ func (r *FileRepository) Update(ctx context.Context, id string, update bson.M) e
 	}
 	return nil
 }
+
+func (r *FileRepository) CountByUserID(ctx context.Context, userID string) (int64, error) {
+	// Convert userID to ObjectID
+	objectID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		logger.Log.Error("invalid user ID format", logger.Error(err))
+		return 0, err
+	}
+
+	count, err := r.collection.CountDocuments(ctx, bson.M{"user_id": objectID})
+	if err != nil {
+		logger.Log.Error("error counting files by userID", logger.Error(err))
+		return 0, err
+	}
+	return count, nil
+}
