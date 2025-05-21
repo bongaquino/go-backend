@@ -24,6 +24,7 @@ type UserService struct {
 	userRoleRepo  *repository.UserRoleRepository
 	limitRepo     *repository.LimitRepository
 	directoryRepo *repository.DirectoryRepository
+	fileRepo      *repository.FileRepository
 	redisProvider *provider.RedisProvider
 }
 
@@ -34,6 +35,7 @@ func NewUserService(
 	userRoleRepo *repository.UserRoleRepository,
 	limitRepo *repository.LimitRepository,
 	directoryRepo *repository.DirectoryRepository,
+	fileRepo *repository.FileRepository,
 	redisProvider *provider.RedisProvider,
 ) *UserService {
 	return &UserService{
@@ -43,6 +45,7 @@ func NewUserService(
 		userRoleRepo:  userRoleRepo,
 		limitRepo:     limitRepo,
 		directoryRepo: directoryRepo,
+		fileRepo:      fileRepo,
 		redisProvider: redisProvider,
 	}
 }
