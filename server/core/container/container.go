@@ -4,6 +4,7 @@ import (
 	"koneksi/server/app/controller/admin/organizations"
 	"koneksi/server/app/controller/admin/organizations/members"
 	adminUsers "koneksi/server/app/controller/admin/users"
+	adminUserLimits "koneksi/server/app/controller/admin/users/limits"
 	"koneksi/server/app/controller/clients/directories"
 	"koneksi/server/app/controller/clients/files"
 	"koneksi/server/app/controller/clients/peers"
@@ -129,6 +130,9 @@ type Controllers struct {
 	}
 	Admin struct {
 		Users struct {
+			Limits struct {
+				Update *adminUserLimits.UpdateController
+			}
 			List   *adminUsers.ListController
 			Create *adminUsers.CreateController
 			Read   *adminUsers.ReadController
@@ -335,6 +339,9 @@ func initControllers(s Services) Controllers {
 		},
 		Admin: struct {
 			Users struct {
+				Limits struct {
+					Update *adminUserLimits.UpdateController
+				}
 				List   *adminUsers.ListController
 				Create *adminUsers.CreateController
 				Read   *adminUsers.ReadController
@@ -354,12 +361,20 @@ func initControllers(s Services) Controllers {
 			}
 		}{
 			Users: struct {
+				Limits struct {
+					Update *adminUserLimits.UpdateController
+				}
 				List   *adminUsers.ListController
 				Create *adminUsers.CreateController
 				Read   *adminUsers.ReadController
 				Update *adminUsers.UpdateController
 				Search *adminUsers.SearchController
 			}{
+				Limits: struct {
+					Update *adminUserLimits.UpdateController
+				}{
+					Update: adminUserLimits.NewUpdateController(s.User),
+				},
 				List:   adminUsers.NewListController(s.User),
 				Create: adminUsers.NewCreateController(s.User, s.Token, s.Email),
 				Read:   adminUsers.NewReadController(s.User),
