@@ -69,6 +69,26 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 		networkGroup.GET("/get-swarm-address", container.Controllers.Network.GetSwarmAddress.Handle)
 	}
 
+	// Directories Routes
+	directoriesGroup := engine.Group("/directories")
+	directoriesGroup.Use(container.Middleware.Authn.Handle, container.Middleware.Verified.Handle)
+	{
+		directoriesGroup.POST("/create", container.Controllers.Clients.Directories.Create.Handle)
+		directoriesGroup.GET("/:directoryID/read", container.Controllers.Clients.Directories.Read.Handle)
+		directoriesGroup.PUT("/:directoryID/update", container.Controllers.Clients.Directories.Update.Handle)
+		directoriesGroup.DELETE("/:directoryID/delete", container.Controllers.Clients.Directories.Delete.Handle)
+	}
+
+	// Files Routes
+	filesGroup := engine.Group("/files")
+	filesGroup.Use(container.Middleware.Authn.Handle, container.Middleware.Verified.Handle)
+	{
+		filesGroup.POST("/upload", container.Controllers.Clients.Files.Upload.Handle)
+		filesGroup.GET("/:fileID/read", container.Controllers.Clients.Files.Read.Handle)
+		filesGroup.PUT("/:fileID/update", container.Controllers.Clients.Files.Update.Handle)
+		filesGroup.DELETE("/:fileID/delete", container.Controllers.Clients.Files.Delete.Handle)
+	}
+
 	// Service Account Routes
 	serviceAccountGroup := engine.Group("/service-accounts")
 	serviceAccountGroup.Use(container.Middleware.Authn.Handle, container.Middleware.Verified.Handle)
