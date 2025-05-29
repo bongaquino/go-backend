@@ -377,7 +377,7 @@ func initControllers(s Services) Controllers {
 				},
 				List:   adminUsers.NewListController(s.User),
 				Create: adminUsers.NewCreateController(s.User, s.Token, s.Email),
-				Read:   adminUsers.NewReadController(s.User),
+				Read:   adminUsers.NewReadController(s.User, s.Organization),
 				Update: adminUsers.NewUpdateController(s.User),
 				Search: adminUsers.NewSearchController(s.User),
 			},

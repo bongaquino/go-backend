@@ -384,3 +384,29 @@ func (os *OrganizationService) RemoveMember(ctx context.Context, orgID string, u
 
 	return nil
 }
+
+func (os *OrganizationService) GetOrganizationByUserID(ctx context.Context, userID string) (*model.Organization, error) {
+	// Fetch the user's roles within organizations
+	orgUserRole, err := os.orgUserRoleRepo.ReadByUserID(ctx, userID)
+
+	if err != nil {
+		logger.Log.Error("error fetching organization user roles", logger.Error(err))
+		return nil, errors.New("error fetching organization user roles")
+	}
+	if len(orgUserRole) == 0 {
+		return nil, errors.New("user is not a member of any organization")
+	}
+
+	// Fetch the first organization associated with the user
+	orgID := orgUserRole[0].OrganizationID.Hex()
+	org, err := os.orgRepo.Read(ctx, orgID)
+	if err != nil {
+		logger.Log.Error("error fetching organization", logger.Error(err))
+		return nil, errors.New("error fetching organization")
+	}
+	if org == nil {
+		return nil, errors.New("organization not found")
+	}
+
+	return org, nil
+}

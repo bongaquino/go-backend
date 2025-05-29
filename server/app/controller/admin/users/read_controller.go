@@ -10,12 +10,14 @@ import (
 
 type ReadController struct {
 	userService *service.UserService
+	orgService  *service.OrganizationService
 }
 
 // NewReadController initializes a new ReadController
-func NewReadController(userService *service.UserService) *ReadController {
+func NewReadController(userService *service.UserService, orgService *service.OrganizationService) *ReadController {
 	return &ReadController{
 		userService: userService,
+		orgService:  orgService,
 	}
 }
 
@@ -39,6 +41,8 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to fetch user", nil, err)
 	}
 
+	org, _ := rc.orgService.GetOrganizationByUserID(ctx.Request.Context(), userID)
+
 	// Exclude sensitive fields from the response
 	user.Password = "REDACTED"
 	user.OtpSecret = "REDACTED"
@@ -49,5 +53,6 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 		"profile": profile,
 		"role":    role,
 		"limit":   limit,
+		"org":     org,
 	}, nil)
 }
