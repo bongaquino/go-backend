@@ -9,7 +9,6 @@ import (
 	"mime/multipart"
 	"net/http"
 	"path/filepath"
-	"time"
 )
 
 // IPFSProvider handles interactions with the IPFS API
@@ -25,7 +24,7 @@ func NewIPFSProvider() *IPFSProvider {
 	return &IPFSProvider{
 		baseURL: ipfsConfig.IpfsNodeURL,
 		client: &http.Client{
-			Timeout: 10 * time.Second,
+			Timeout: 0,
 		},
 	}
 }
