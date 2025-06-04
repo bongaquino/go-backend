@@ -40,7 +40,10 @@ func (uc *UpdateController) Handle(ctx *gin.Context) {
 	}
 
 	// Update the settings using the UserService
-	fmt.Println("Updating settings for user ID:", userID)
+	err := uc.userService.UpdateUserSettings(ctx.Request.Context(), userID.(string), &request)
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "settings update failed", nil, nil)
+	}
 
 	// Return success response
 	helper.FormatResponse(ctx, "success", http.StatusOK, "settings updated successfully", nil, nil)

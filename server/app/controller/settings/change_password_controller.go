@@ -42,7 +42,7 @@ func (cpc *ChangePasswordController) Handle(ctx *gin.Context) {
 	// Change the password using the UserService
 	err := cpc.userService.ChangePassword(ctx.Request.Context(), userID.(string), &request)
 	if err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusUnauthorized, err.Error(), nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "password change failed", nil, nil)
 		return
 	}
 

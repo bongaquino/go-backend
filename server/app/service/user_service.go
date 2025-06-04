@@ -451,6 +451,28 @@ func (us *UserService) GetUserSettingsByEmail(ctx context.Context, email string)
 	return user, settings, nil
 }
 
+func (us *UserService) UpdateUserSettings(ctx context.Context, userID string, request *dto.UpdateSettingsDTO) error {
+	// Prepare the update fields
+	update := bson.M{
+		"backup_cycle":                  request.BackupCycle,
+		"backup_custom_day":             request.BackupCustomDay,
+		"notifications_frequency":       request.NotificationsFrequency,
+		"recovery_priority_order":       request.RecoveryPriorityOrder,
+		"recovery_custom_order":         request.RecoveryCustomOrder,
+		"is_realtime_backup_enabled":    request.IsRealtimeBackupEnabled,
+		"is_email_notification_enabled": request.IsEmailNotificationEnabled,
+		"is_sms_notification_enabled":   request.IsSMSNotificationEnabled,
+		"is_version_history_enabled":    request.IsVersionHistoryEnabled,
+	}
+
+	if err := us.settingRepo.UpdateByUserID(ctx, userID, update); err != nil {
+		logger.Log.Error("failed to update user settings", logger.Error(err))
+		return errors.New("failed to update user settings")
+	}
+
+	return nil
+}
+
 func (us *UserService) ValidatePassword(ctx context.Context, userID string, password string) (bool, error) {
 	// Retrieve the user from the database
 	user, err := us.userRepo.Read(ctx, userID)
