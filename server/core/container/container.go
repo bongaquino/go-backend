@@ -48,6 +48,7 @@ type Repositories struct {
 	Limit                *repository.LimitRepository
 	Directory            *repository.DirectoryRepository
 	File                 *repository.FileRepository
+	Setting              *repository.SettingRepository
 }
 
 type Services struct {
@@ -190,7 +191,7 @@ func initRepositories(p Providers) Repositories {
 }
 
 func initServices(p Providers, r Repositories) Services {
-	user := service.NewUserService(r.User, r.Profile, r.Role, r.UserRole,
+	user := service.NewUserService(r.User, r.Profile, r.Setting, r.Role, r.UserRole,
 		r.Limit, r.Directory, r.File, r.ServiceAccount, p.Redis)
 	email := service.NewEmailService(p.Postmark)
 	mfa := service.NewMFAService(r.User, p.Redis)

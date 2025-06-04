@@ -20,6 +20,7 @@ import (
 type UserService struct {
 	userRepo      *repository.UserRepository
 	profileRepo   *repository.ProfileRepository
+	settingRepo   *repository.SettingRepository
 	roleRepo      *repository.RoleRepository
 	userRoleRepo  *repository.UserRoleRepository
 	limitRepo     *repository.LimitRepository
@@ -32,6 +33,7 @@ type UserService struct {
 func NewUserService(
 	userRepo *repository.UserRepository,
 	profileRepo *repository.ProfileRepository,
+	settingRepo *repository.SettingRepository,
 	roleRepo *repository.RoleRepository,
 	userRoleRepo *repository.UserRoleRepository,
 	limitRepo *repository.LimitRepository,
@@ -43,6 +45,7 @@ func NewUserService(
 	return &UserService{
 		userRepo:      userRepo,
 		profileRepo:   profileRepo,
+		settingRepo:   settingRepo,
 		roleRepo:      roleRepo,
 		userRoleRepo:  userRoleRepo,
 		limitRepo:     limitRepo,
@@ -326,33 +329,42 @@ func (us *UserService) ResetPassword(ctx context.Context, email, resetCode, newP
 
 	return nil
 }
-func (us *UserService) GetUserProfile(ctx context.Context, userID string) (
-	*model.User, *model.Profile, *model.Role, *model.Limit, error) {
+func (us *UserService) GetUserInfo(ctx context.Context, userID string) (
+	*model.User, *model.Profile, *model.Setting, *model.Role, *model.Limit, error) {
 	user, err := us.userRepo.Read(ctx, userID)
 	if err != nil {
 		logger.Log.Error("failed to retrieve user", logger.Error(err))
-		return nil, nil, nil, nil, errors.New("failed to retrieve user")
+		return nil, nil, nil, nil, nil, errors.New("failed to retrieve user")
 	}
 	if user == nil {
-		return nil, nil, nil, nil, errors.New("user not found")
+		return nil, nil, nil, nil, nil, errors.New("user not found")
 	}
 
 	profile, err := us.profileRepo.ReadByUserID(ctx, userID)
 	if err != nil {
 		logger.Log.Error("failed to retrieve profile", logger.Error(err))
-		return nil, nil, nil, nil, errors.New("failed to retrieve profile")
+		return nil, nil, nil, nil, nil, errors.New("failed to retrieve profile")
 	}
 	if profile == nil {
-		return nil, nil, nil, nil, errors.New("profile not found")
+		return nil, nil, nil, nil, nil, errors.New("profile not found")
+	}
+
+	setting, err := us.settingRepo.ReadByUserID(ctx, userID)
+	if err != nil {
+		logger.Log.Error("failed to retrieve settings", logger.Error(err))
+		return nil, nil, nil, nil, nil, errors.New("failed to retrieve settings")
+	}
+	if setting == nil {
+		return nil, nil, nil, nil, nil, errors.New("settings not found")
 	}
 
 	userRole, err := us.userRoleRepo.ReadByUserID(ctx, userID)
 	if err != nil {
 		logger.Log.Error("failed to retrieve user role", logger.Error(err))
-		return nil, nil, nil, nil, errors.New("failed to retrieve user role")
+		return nil, nil, nil, nil, nil, errors.New("failed to retrieve user role")
 	}
 	if userRole == nil {
-		return nil, nil, nil, nil, errors.New("user role not found")
+		return nil, nil, nil, nil, nil, errors.New("user role not found")
 	}
 
 	var role *model.Role
@@ -360,20 +372,20 @@ func (us *UserService) GetUserProfile(ctx context.Context, userID string) (
 		role, err = us.roleRepo.Read(ctx, userRole[0].RoleID.Hex())
 		if err != nil {
 			logger.Log.Error("failed to retrieve role", logger.Error(err))
-			return nil, nil, nil, nil, errors.New("failed to retrieve role")
+			return nil, nil, nil, nil, nil, errors.New("failed to retrieve role")
 		}
 	}
 
 	limit, err := us.limitRepo.ReadByUserID(ctx, userID)
 	if err != nil {
 		logger.Log.Error("failed to retrieve limit", logger.Error(err))
-		return nil, nil, nil, nil, errors.New("failed to retrieve limit")
+		return nil, nil, nil, nil, nil, errors.New("failed to retrieve limit")
 	}
 	if limit == nil {
-		return nil, nil, nil, nil, errors.New("limit not found")
+		return nil, nil, nil, nil, nil, errors.New("limit not found")
 	}
 
-	return user, profile, role, limit, nil
+	return user, profile, setting, role, limit, nil
 }
 
 func (us *UserService) GetUserProfileByEmail(ctx context.Context, email string) (*model.User, *model.Profile, error) {
@@ -396,6 +408,28 @@ func (us *UserService) GetUserProfileByEmail(ctx context.Context, email string) 
 	}
 
 	return user, profile, nil
+}
+
+func (us *UserService) GetUserSettingsByEmail(ctx context.Context, email string) (*model.User, *model.Setting, error) {
+	user, err := us.userRepo.ReadByEmail(ctx, email)
+	if err != nil {
+		logger.Log.Error("failed to retrieve user", logger.Error(err))
+		return nil, nil, errors.New("failed to retrieve user")
+	}
+	if user == nil {
+		return nil, nil, errors.New("user not found")
+	}
+
+	settings, err := us.settingRepo.ReadByUserID(ctx, user.ID.Hex())
+	if err != nil {
+		logger.Log.Error("failed to retrieve settings", logger.Error(err))
+		return nil, nil, errors.New("failed to retrieve settings")
+	}
+	if settings == nil {
+		return nil, nil, errors.New("settings not found")
+	}
+
+	return user, settings, nil
 }
 
 func (us *UserService) ValidatePassword(ctx context.Context, userID string, password string) (bool, error) {

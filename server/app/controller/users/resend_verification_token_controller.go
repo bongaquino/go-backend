@@ -33,7 +33,7 @@ func (rvtc *ResendVerificationCodeController) Handle(ctx *gin.Context) {
 	}
 
 	// Get user email from the UserService
-	user, _, _, _, _ := rvtc.userService.GetUserProfile(ctx.Request.Context(), userID.(string))
+	user, _, _, _, _, _ := rvtc.userService.GetUserInfo(ctx.Request.Context(), userID.(string))
 
 	// Resend verification code using the UserService
 	code, err := rvtc.userService.GenerateVerificationCode(ctx.Request.Context(), userID.(string))

@@ -45,14 +45,14 @@ func (rc *RequestTokenController) Handle(ctx *gin.Context) {
 	}
 
 	// Get user details
-	user, _, err := rc.userService.GetUserProfileByEmail(ctx, request.Email)
+	user, settings, err := rc.userService.GetUserSettingsByEmail(ctx, request.Email)
 	if err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to retrieve user profile", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to retrieve user settings", nil, nil)
 		return
 	}
 
 	// Check if MFA is enabled
-	if user.IsMFAEnabled {
+	if settings.IsMFAEnabled {
 		// Generate login code
 		loginCode, err := rc.mfaService.GenerateLoginCode(ctx.Request.Context(), user.ID.Hex())
 		if err != nil {

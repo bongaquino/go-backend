@@ -22,8 +22,9 @@ func MigrateCollections(mongoProvider *provider.MongoProvider) {
 		Indexes []mongoDriver.IndexModel
 	}{
 		{"users", []mongoDriver.IndexModel{{Keys: bson.D{{Key: "email", Value: 1}}, Options: mongoOptions.Index().SetUnique(true).SetName("unique_email")}}},
-		{"profiles", generateIndexes(model.Profile{}.GetIndexes(), "unique_user_profile")},
-		{"roles", generateIndexes(model.Role{}.GetIndexes(), "unique_roles")},
+		{"profiles", generateIndexes(model.Profile{}.GetIndexes(), "unique_user_id")},
+		{"settings", generateIndexes(model.Setting{}.GetIndexes(), "unique_user_id")},
+		{"roles", generateIndexes(model.Role{}.GetIndexes(), "unique_role_name")},
 		{"permissions", generateIndexes(model.Permission{}.GetIndexes(), "unique_permission_name")},
 		{"policies", generateIndexes(model.Policy{}.GetIndexes(), "unique_policy_name")},
 		{"policy_permission", []mongoDriver.IndexModel{{Keys: bson.D{{Key: "policy_id", Value: 1}, {Key: "permission_id", Value: 1}}, Options: mongoOptions.Index().SetUnique(true).SetName("unique_policy_permission")}}},

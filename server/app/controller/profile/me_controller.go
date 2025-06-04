@@ -29,8 +29,8 @@ func (hc *MeController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	// Fetch the user profile
-	user, profile, role, limit, err := hc.userService.GetUserProfile(ctx.Request.Context(), userID.(string))
+	// Fetch the user details
+	user, profile, setting, role, limit, err := hc.userService.GetUserInfo(ctx.Request.Context(), userID.(string))
 	if err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, err.Error(), nil, nil)
 		return
@@ -62,12 +62,25 @@ func (hc *MeController) Handle(ctx *gin.Context) {
 	}
 
 	// Sanitize the setting object by removing sensitive fields
+	sanitizedSettings := gin.H{
+		"backup_cycle":                  setting.BackupCycle,
+		"backup_custom_day":             setting.BackupCustomDay,
+		"notifications_frequency":       setting.NotificationsFrequency,
+		"recovery_priority_order":       setting.RecoveryPriorityOrder,
+		"recovery_custom_order":         setting.RecoveryCustomOrder,
+		"is_mfa_enabled":                setting.IsMFAEnabled,
+		"is_realtime_backup_enabled":    setting.IsRealtimeBackupEnabled,
+		"is_email_notification_enabled": setting.IsEmailNotificationEnabled,
+		"is_sms_notification_enabled":   setting.IsSMSNotificationEnabled,
+		"is_version_history_enabled":    setting.IsVersionHistoryEnabled,
+	}
 
-	// Return the user profile
-	helper.FormatResponse(ctx, "success", http.StatusOK, "user profile retrieved successfully", gin.H{
-		"user":    sanitizedUser,
-		"profile": sanitizedProfile,
-		"role":    sanitizedRole,
-		"limit":   sanitizedLimit,
+	// Return the user info
+	helper.FormatResponse(ctx, "success", http.StatusOK, "user info retrieved successfully", gin.H{
+		"user":     sanitizedUser,
+		"profile":  sanitizedProfile,
+		"settings": sanitizedSettings,
+		"role":     sanitizedRole,
+		"limit":    sanitizedLimit,
 	}, nil)
 }
