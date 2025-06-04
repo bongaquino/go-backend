@@ -153,6 +153,25 @@ func (us *UserService) CreateUser(ctx context.Context, request *dto.CreateUserDT
 		return nil, nil, nil, "", errors.New("failed to create profile")
 	}
 
+	// Create settings
+	setting := &model.Setting{
+		UserID:                     user.ID,
+		BackupCycle:                userConfig.DefaultBackupCycle,
+		BackupCustomDay:            userConfig.DefaultBackupCustomDay,
+		NotificationsFrequency:     userConfig.DefaultNotificationsFrequency,
+		RecoveryPriorityOrder:      userConfig.DefaultRecoveryPriorityOrder,
+		RecoveryCustomOrder:        userConfig.DefaultRecoveryCustomOrder,
+		IsMFAEnabled:               userConfig.DefaultIsMFAEnabled,
+		IsRealtimeBackupEnabled:    userConfig.DefaultIsRealtimeBackupEnabled,
+		IsEmailNotificationEnabled: userConfig.DefaultIsEmailNotificationEnabled,
+		IsSMSNotificationEnabled:   userConfig.DefaultIsSMSNotificationEnabled,
+		IsVersionHistoryEnabled:    userConfig.DefaultIsVersionHistoryEnabled,
+	}
+	if err := us.settingRepo.Create(ctx, setting); err != nil {
+		logger.Log.Error("failed to create settings", logger.Error(err))
+		return nil, nil, nil, "", errors.New("failed to create settings")
+	}
+
 	// Create user role assignment
 	userRoleAssignment := &model.UserRole{
 		UserID: user.ID,

@@ -11,7 +11,7 @@ type Setting struct {
 	ID                         primitive.ObjectID `bson:"_id,omitempty"`
 	UserID                     primitive.ObjectID `bson:"user_id"`
 	BackupCycle                string             `bson:"backup_cycle"`
-	BackupCustomDay            string             `bson:"backup_custom_day"`
+	BackupCustomDay            int                `bson:"backup_custom_day"`
 	NotificationsFrequency     string             `bson:"notifications_frequency"`
 	RecoveryPriorityOrder      string             `bson:"recovery_priority_order"`
 	RecoveryCustomOrder        string             `bson:"recovery_custom_order"`
