@@ -38,10 +38,9 @@ func (hc *MeController) Handle(ctx *gin.Context) {
 
 	// Sanitize the user object by removing sensitive fields
 	sanitizedUser := gin.H{
-		"id":             user.ID,
-		"email":          user.Email,
-		"is_verified":    user.IsVerified,
-		"is_mfa_enabled": user.IsMFAEnabled,
+		"id":          user.ID,
+		"email":       user.Email,
+		"is_verified": user.IsVerified,
 	}
 
 	// Sanitize the profile object by removing sensitive fields
@@ -61,6 +60,8 @@ func (hc *MeController) Handle(ctx *gin.Context) {
 		"limit": limit.BytesLimit,
 		"used":  limit.BytesUsage,
 	}
+
+	// Sanitize the setting object by removing sensitive fields
 
 	// Return the user profile
 	helper.FormatResponse(ctx, "success", http.StatusOK, "user profile retrieved successfully", gin.H{
