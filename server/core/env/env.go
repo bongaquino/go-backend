@@ -31,7 +31,6 @@ type Env struct {
 	PostmarkFrom          string `envconfig:"POSTMARK_FROM" required:"true"`
 	IPFSNodeURL           string `envconfig:"IPFS_NODE_URL" required:"true"`
 	IPFSDownloadURL       string `envconfig:"IPFS_DOWNLOAD_URL" required:"true"`
-	// Add more environment variables here
 }
 
 // LoadEnv loads and validates environment variables
