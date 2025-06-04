@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"koneksi/server/app/model"
@@ -48,8 +47,6 @@ func (r *SettingRepository) ReadByUserID(ctx context.Context, userID string) (*m
 
 	var setting model.Setting
 	err = r.collection.FindOne(ctx, bson.M{"user_id": objectID}).Decode(&setting)
-
-	fmt.Println(err)
 
 	if err != nil {
 		if err == mongoDriver.ErrNoDocuments {
