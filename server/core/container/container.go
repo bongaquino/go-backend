@@ -195,7 +195,7 @@ func initServices(p Providers, r Repositories) Services {
 	user := service.NewUserService(r.User, r.Profile, r.Setting, r.Role, r.UserRole,
 		r.Limit, r.Directory, r.File, r.ServiceAccount, p.Redis)
 	email := service.NewEmailService(p.Postmark)
-	mfa := service.NewMFAService(r.User, p.Redis)
+	mfa := service.NewMFAService(r.User, r.Setting, p.Redis)
 	ipfs := service.NewIPFSService(p.IPFS)
 	token := service.NewTokenService(r.User, p.JWT, mfa, p.Redis)
 	organization := service.NewOrganizationService(r.Organization, r.Policy, r.Permission,
