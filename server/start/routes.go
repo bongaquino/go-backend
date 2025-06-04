@@ -46,7 +46,7 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 	settingsGroup.Use(container.Middleware.Authn.Handle, container.Middleware.Verified.Handle)
 	{
 		// Update Settings Route
-		// settingsGroup.PUT("/update", container.Controllers.Settings.Update.Handle)
+		settingsGroup.PUT("/update", container.Controllers.Settings.Update.Handle)
 
 		// Change Password Route
 		settingsGroup.POST("/change-password", container.Controllers.Settings.ChangePassword.Handle)

@@ -94,6 +94,7 @@ type Controllers struct {
 		Revoke  *tokens.RevokeTokenController
 	}
 	Settings struct {
+		Update         *settings.UpdateController
 		ChangePassword *settings.ChangePasswordController
 		MFA            struct {
 			Generate *mfa.GenerateOTPController
@@ -257,6 +258,7 @@ func initControllers(s Services) Controllers {
 			Revoke:  tokens.NewRevokeTokenController(s.Token),
 		},
 		Settings: struct {
+			Update         *settings.UpdateController
 			ChangePassword *settings.ChangePasswordController
 			MFA            struct {
 				Generate *mfa.GenerateOTPController
@@ -264,6 +266,7 @@ func initControllers(s Services) Controllers {
 				Disable  *mfa.DisableMFAController
 			}
 		}{
+			Update:         settings.NewUpdateController(s.User),
 			ChangePassword: settings.NewChangePasswordController(s.User),
 			MFA: struct {
 				Generate *mfa.GenerateOTPController

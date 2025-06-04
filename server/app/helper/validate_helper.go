@@ -29,3 +29,12 @@ func ValidatePassword(password string) (bool, error) {
 	// Return error if any condition fails
 	return false, fmt.Errorf("password must contain at least one uppercase letter, one lowercase letter, and one special character")
 }
+
+func Contains(slice []string, item string) bool {
+	for _, v := range slice {
+		if v == item {
+			return true
+		}
+	}
+	return false
+}

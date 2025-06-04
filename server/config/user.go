@@ -13,6 +13,10 @@ type UserConfig struct {
 	DefaultIsEmailNotificationEnabled bool
 	DefaultIsSMSNotificationEnabled   bool
 	DefaultIsVersionHistoryEnabled    bool
+	BackupCycleOptions                []string
+	NotificationsFrequencyOptions     []string
+	RecoveryPriorityOrderOptions      []string
+	RecoveryCustomOrderOptions        []string
 }
 
 func LoadUserConfig() *UserConfig {
@@ -50,5 +54,30 @@ func LoadUserConfig() *UserConfig {
 
 		// DefaultIsVersionHistoryEnabled is set to false
 		DefaultIsVersionHistoryEnabled: false,
+
+		BackupCycleOptions: []string{
+			"daily",
+			"weekly",
+			"monthly",
+			"custom",
+		},
+
+		NotificationsFrequencyOptions: []string{
+			"immediately",
+			"daily",
+			"weekly",
+			"monthly",
+			"never",
+		},
+
+		RecoveryPriorityOrderOptions: []string{
+			"default",
+			"custom",
+		},
+
+		RecoveryCustomOrderOptions: []string{
+			"general",
+			"critical",
+		},
 	}
 }
