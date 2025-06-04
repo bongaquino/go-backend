@@ -29,7 +29,8 @@ type Env struct {
 	JWTRefreshExpiration  int    `envconfig:"JWT_REFRESH_EXPIRATION" default:"86400"`
 	PostmarkAPIKey        string `envconfig:"POSTMARK_API_KEY" required:"true"`
 	PostmarkFrom          string `envconfig:"POSTMARK_FROM" required:"true"`
-	IpfsNodeURL           string `envconfig:"IPFS_NODE_URL" required:"true"`
+	IPFSNodeURL           string `envconfig:"IPFS_NODE_URL" required:"true"`
+	IPFSDownloadURL       string `envconfig:"IPFS_DOWNLOAD_URL" required:"true"`
 	// Add more environment variables here
 }
 

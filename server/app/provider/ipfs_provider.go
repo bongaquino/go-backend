@@ -13,8 +13,9 @@ import (
 
 // IPFSProvider handles interactions with the IPFS API
 type IPFSProvider struct {
-	baseURL string
-	client  *http.Client
+	nodeURL     string
+	downloadURL string
+	client      *http.Client
 }
 
 // NewIPFSProvider initializes a new IPFSProvider
@@ -22,7 +23,8 @@ func NewIPFSProvider() *IPFSProvider {
 	ipfsConfig := config.LoadIPFSConfig()
 
 	return &IPFSProvider{
-		baseURL: ipfsConfig.IpfsNodeURL,
+		nodeURL:     ipfsConfig.IPFSNodeURL,
+		downloadURL: ipfsConfig.IPFSDownloadURL,
 		client: &http.Client{
 			Timeout: 0,
 		},
@@ -31,7 +33,7 @@ func NewIPFSProvider() *IPFSProvider {
 
 // GetSwarmAddrsDetailed calls the IPFS API to get swarm addresses and returns the number of peers and their details
 func (p *IPFSProvider) GetSwarmAddrsDetailed() (int, map[string][]string, error) {
-	url := fmt.Sprintf("%s/api/v0/swarm/addrs", p.baseURL)
+	url := fmt.Sprintf("%s/api/v0/swarm/addrs", p.nodeURL)
 
 	// Make the HTTP request
 	resp, err := p.client.Post(url, "application/json", nil)
@@ -61,7 +63,7 @@ func (p *IPFSProvider) GetSwarmAddrsDetailed() (int, map[string][]string, error)
 // Pin uploads a file to IPFS and pins it
 func (p *IPFSProvider) Pin(filename string, file io.Reader) (string, error) {
 	// Build the URL for the IPFS API
-	url := fmt.Sprintf("%s/api/v0/add?pin=true", p.baseURL)
+	url := fmt.Sprintf("%s/api/v0/add?pin=true", p.nodeURL)
 
 	// Create a multipart form request
 	var body bytes.Buffer
@@ -121,5 +123,5 @@ func (p *IPFSProvider) Pin(filename string, file io.Reader) (string, error) {
 
 // GetFileURL returns the public URL to access a pinned file using its IPFS hash
 func (p *IPFSProvider) GetFileURL(hash string) string {
-	return fmt.Sprintf("%s/ipfs/%s", p.baseURL, hash)
+	return fmt.Sprintf("%s/ipfs/%s", p.downloadURL, hash)
 }
