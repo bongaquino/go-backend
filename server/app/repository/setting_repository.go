@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"koneksi/server/app/model"
@@ -31,7 +32,7 @@ func (r *SettingRepository) Create(ctx context.Context, setting *model.Setting) 
 
 	_, err := r.collection.InsertOne(ctx, setting)
 	if err != nil {
-		logger.Log.Error("error creating setting", logger.Error(err))
+		logger.Log.Error("error creating settings", logger.Error(err))
 		return err
 	}
 	return nil
@@ -47,13 +48,17 @@ func (r *SettingRepository) ReadByUserID(ctx context.Context, userID string) (*m
 
 	var setting model.Setting
 	err = r.collection.FindOne(ctx, bson.M{"user_id": objectID}).Decode(&setting)
+
+	fmt.Println(err)
+
 	if err != nil {
 		if err == mongoDriver.ErrNoDocuments {
 			return nil, nil
 		}
-		logger.Log.Error("error reading setting by user ID", logger.Error(err))
+		logger.Log.Error("error reading settings by user ID", logger.Error(err))
 		return nil, err
 	}
+
 	return &setting, nil
 }
 
@@ -70,7 +75,7 @@ func (r *SettingRepository) UpdateByUserID(ctx context.Context, userID string, u
 
 	_, err = r.collection.UpdateOne(ctx, bson.M{"user_id": objectID}, bson.M{"$set": update})
 	if err != nil {
-		logger.Log.Error("error updating setting", logger.Error(err))
+		logger.Log.Error("error updating settings", logger.Error(err))
 		return err
 	}
 	return nil
@@ -79,7 +84,7 @@ func (r *SettingRepository) UpdateByUserID(ctx context.Context, userID string, u
 func (r *SettingRepository) Delete(ctx context.Context, userID string) error {
 	_, err := r.collection.DeleteOne(ctx, bson.M{"user_id": userID})
 	if err != nil {
-		logger.Log.Error("error deleting setting", logger.Error(err))
+		logger.Log.Error("error deleting settings", logger.Error(err))
 		return err
 	}
 	return nil

@@ -178,6 +178,7 @@ func initRepositories(p Providers) Repositories {
 		PolicyPermission:     repository.NewPolicyPermissionRepository(p.Mongo),
 		Profile:              repository.NewProfileRepository(p.Mongo),
 		Role:                 repository.NewRoleRepository(p.Mongo),
+		Setting:              repository.NewSettingRepository(p.Mongo),
 		RolePermission:       repository.NewRolePermissionRepository(p.Mongo),
 		ServiceAccount:       repository.NewServiceAccountRepository(p.Mongo),
 		User:                 repository.NewUserRepository(p.Mongo),
