@@ -9,16 +9,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// RequestTokenController handles user authentication and token generation
-type RequestTokenController struct {
+// RequestController handles user authentication and token generation
+type RequestController struct {
 	tokenService *service.TokenService
 	userService  *service.UserService
 	mfaService   *service.MFAService
 }
 
-// NewRequestTokenController initializes a new RequestTokenController
-func NewRequestTokenController(tokenService *service.TokenService, userService *service.UserService, mfaService *service.MFAService) *RequestTokenController {
-	return &RequestTokenController{
+// NewRequestController initializes a new RequestController
+func NewRequestController(tokenService *service.TokenService, userService *service.UserService, mfaService *service.MFAService) *RequestController {
+	return &RequestController{
 		tokenService: tokenService,
 		userService:  userService,
 		mfaService:   mfaService,
@@ -26,7 +26,7 @@ func NewRequestTokenController(tokenService *service.TokenService, userService *
 }
 
 // Handle processes the login request and returns an access & refresh token
-func (rc *RequestTokenController) Handle(ctx *gin.Context) {
+func (rc *RequestController) Handle(ctx *gin.Context) {
 	var request struct {
 		Email    string `json:"email" binding:"required,email"`
 		Password string `json:"password" binding:"required,min=8"`
@@ -76,7 +76,7 @@ func (rc *RequestTokenController) Handle(ctx *gin.Context) {
 }
 
 // validatePayload validates the incoming request payload
-func (rc *RequestTokenController) validatePayload(ctx *gin.Context, request any) error {
+func (rc *RequestController) validatePayload(ctx *gin.Context, request any) error {
 	if err := ctx.ShouldBindJSON(request); err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
 		return err

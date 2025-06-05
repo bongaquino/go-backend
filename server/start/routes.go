@@ -38,7 +38,7 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 		tokenGroup.POST("/request", container.Controllers.Tokens.Request.Handle)
 		tokenGroup.POST("/verify-otp", container.Controllers.Tokens.Verify.Handle)
 		tokenGroup.POST("/refresh", container.Controllers.Tokens.Refresh.Handle)
-		tokenGroup.POST("/revoke", container.Controllers.Tokens.Revoke.Handle)
+		tokenGroup.DELETE("/revoke", container.Controllers.Tokens.Revoke.Handle)
 	}
 
 	// Settings Routes

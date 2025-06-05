@@ -88,10 +88,10 @@ type Controllers struct {
 		ResendVerificationCode *users.ResendVerificationCodeController
 	}
 	Tokens struct {
-		Request *tokens.RequestTokenController
+		Request *tokens.RequestController
 		Verify  *tokens.VerifyOTPController
-		Refresh *tokens.RefreshTokenController
-		Revoke  *tokens.RevokeTokenController
+		Refresh *tokens.RefreshController
+		Revoke  *tokens.RevokeController
 	}
 	Settings struct {
 		Update         *settings.UpdateController
@@ -247,15 +247,15 @@ func initControllers(s Services) Controllers {
 			ResendVerificationCode: users.NewResendVerificationCodeController(s.User, s.Email),
 		},
 		Tokens: struct {
-			Request *tokens.RequestTokenController
+			Request *tokens.RequestController
 			Verify  *tokens.VerifyOTPController
-			Refresh *tokens.RefreshTokenController
-			Revoke  *tokens.RevokeTokenController
+			Refresh *tokens.RefreshController
+			Revoke  *tokens.RevokeController
 		}{
-			Request: tokens.NewRequestTokenController(s.Token, s.User, s.MFA),
+			Request: tokens.NewRequestController(s.Token, s.User, s.MFA),
 			Verify:  tokens.NewVerifyOTPController(s.Token, s.MFA),
-			Refresh: tokens.NewRefreshTokenController(s.Token),
-			Revoke:  tokens.NewRevokeTokenController(s.Token),
+			Refresh: tokens.NewRefreshController(s.Token),
+			Revoke:  tokens.NewRevokeController(s.Token),
 		},
 		Settings: struct {
 			Update         *settings.UpdateController
