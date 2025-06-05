@@ -257,14 +257,11 @@ func (fs *FSService) UpdateFile(ctx context.Context, ID string, userID string, r
 		return errors.New("directory not found")
 	}
 
-	// Update the file name
-	file.Name = request.Name
-
 	// Save the updated file in the repository
 	updateData := bson.M{
-		"name": file.Name,
+		"name": request.Name,
 	}
-	if file.DirectoryID != nil {
+	if request.DirectoryID != nil {
 		updateData["directory_id"] = request.DirectoryID
 	}
 	err = fs.fileRepo.Update(ctx, ID, updateData)
