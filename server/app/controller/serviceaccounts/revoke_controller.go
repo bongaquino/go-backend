@@ -19,7 +19,16 @@ func NewRevokeController(serviceAccountService *service.ServiceAccountService) *
 	}
 }
 
-func (hc *RevokeController) Handle(ctx *gin.Context) {
+func (rc *RevokeController) Handle(ctx *gin.Context) {
+	var request struct {
+		ClientID string `json:"client_id" binding:"required"`
+	}
+
+	// Validate the payload
+	if err := rc.validatePayload(ctx, &request); err != nil {
+		return
+	}
+
 	// Extract user ID from the context
 	userID, exists := ctx.Get("userID")
 	if !exists {
@@ -27,15 +36,8 @@ func (hc *RevokeController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	// Get client ID from query parameters
-	clientID := ctx.Query("client_id")
-	if clientID == "" {
-		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "client_id is required", nil, nil)
-		return
-	}
-
 	// Revoke the service account
-	err := hc.serviceAccountService.DeleteServiceAccount(ctx, userID.(string), clientID)
+	err := rc.serviceAccountService.DeleteServiceAccount(ctx, userID.(string), request.ClientID)
 	if err != nil {
 		if err.Error() == "service account not found" {
 			helper.FormatResponse(ctx, "error", http.StatusNotFound, "service account not found", nil, nil)
@@ -46,4 +48,13 @@ func (hc *RevokeController) Handle(ctx *gin.Context) {
 	}
 	// Respond with success
 	helper.FormatResponse(ctx, "success", http.StatusOK, "service account revoked successfully", nil, nil)
+}
+
+// validatePayload validates the incoming request payload
+func (rc *RevokeController) validatePayload(ctx *gin.Context, request any) error {
+	if err := ctx.ShouldBindJSON(request); err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
+		return err
+	}
+	return nil
 }
