@@ -89,7 +89,7 @@ func (cc *CreateController) Handle(ctx *gin.Context) {
 
 func (cc *CreateController) validatePayload(ctx *gin.Context, request *dto.CreateDirectoryDTO) error {
 	if err := ctx.ShouldBindJSON(request); err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid request body", nil, nil)
 		return err
 	}
 	return nil

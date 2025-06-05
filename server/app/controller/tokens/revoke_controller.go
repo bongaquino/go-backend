@@ -46,7 +46,7 @@ func (rc *RevokeController) Handle(ctx *gin.Context) {
 // validatePayload validates the incoming request payload
 func (rc *RevokeController) validatePayload(ctx *gin.Context, request any) error {
 	if err := ctx.ShouldBindJSON(request); err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid request body", nil, nil)
 		return err
 	}
 	return nil

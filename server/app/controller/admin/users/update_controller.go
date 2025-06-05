@@ -65,7 +65,7 @@ func (uc *UpdateController) Handle(ctx *gin.Context) {
 
 func (rc *UpdateController) validatePayload(ctx *gin.Context, request *dto.UpdateUserDTO) error {
 	if err := ctx.ShouldBindJSON(request); err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid request body", nil, nil)
 		return err
 	}
 	// Check if new passwords pass validation
