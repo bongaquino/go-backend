@@ -3,6 +3,7 @@ package helper
 import (
 	"fmt"
 	"regexp"
+	"slices"
 )
 
 // ValidatePassword checks if a given password meets specific criteria:
@@ -33,10 +34,5 @@ func ValidatePassword(password string) (bool, error) {
 }
 
 func Contains(slice []string, item string) bool {
-	for _, v := range slice {
-		if v == item {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(slice, item)
 }
