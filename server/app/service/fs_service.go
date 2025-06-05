@@ -259,11 +259,12 @@ func (fs *FSService) UpdateFile(ctx context.Context, ID string, userID string, r
 
 	// Save the updated file in the repository
 	updateData := bson.M{
-		"name": request.Name,
+		"name":         request.Name,
+		"directory_id": request.DirectoryID,
 	}
-	if request.DirectoryID != nil {
-		updateData["directory_id"] = request.DirectoryID
-	}
+	// if request.DirectoryID != nil {
+	// 	updateData["directory_id"] = request.DirectoryID
+	// }
 	err = fs.fileRepo.Update(ctx, ID, updateData)
 	if err != nil {
 		return err
