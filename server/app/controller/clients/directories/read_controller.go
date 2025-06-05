@@ -36,7 +36,7 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 
 	// Check if the directory ID is not empty
 	if directoryID == "" {
-		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "file ID is required", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "directory ID is required", nil, nil)
 		return
 	}
 
