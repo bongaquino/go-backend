@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// VVerifyAccountController handles verifying user accounts
+// VerifyAccountController handles verifying user accounts
 type VerifyAccountController struct {
 	userService *service.UserService
 }
