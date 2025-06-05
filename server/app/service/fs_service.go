@@ -106,7 +106,7 @@ func (fs *FSService) UpdateDirectory(ctx context.Context, ID string, userID stri
 	}
 
 	// Update the parent directory if provided
-	if *request.DirectoryID != "" {
+	if request.DirectoryID != nil && *request.DirectoryID != "" {
 		parentDirectory, err := fs.directoryRepo.ReadByIDUserID(ctx, *request.DirectoryID, userID)
 		if err != nil {
 			return err
@@ -117,16 +117,12 @@ func (fs *FSService) UpdateDirectory(ctx context.Context, ID string, userID stri
 		directory.DirectoryID = &parentDirectory.ID
 	}
 
-	// Update the directory name
-	directory.Name = request.Name
-
 	// Save the updated directory in the repository
 	updateData := bson.M{
-		"name": directory.Name,
+		"name":         request.Name,
+		"directory_id": directory.DirectoryID,
 	}
-	if directory.DirectoryID != nil {
-		updateData["directory_id"] = directory.DirectoryID
-	}
+
 	err = fs.directoryRepo.Update(ctx, ID, updateData)
 	if err != nil {
 		return err
@@ -252,7 +248,7 @@ func (fs *FSService) UpdateFile(ctx context.Context, ID string, userID string, r
 	}
 
 	// If a new directory ID is provided, validate and include it
-	if request.DirectoryID != nil {
+	if request.DirectoryID != nil && *request.DirectoryID != "" {
 		directory, err := fs.directoryRepo.ReadByIDUserID(ctx, *request.DirectoryID, userID)
 		if err != nil {
 			return errors.New("error fetching directory")

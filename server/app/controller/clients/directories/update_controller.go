@@ -50,7 +50,7 @@ func (uc *UpdateController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	// Check id directoryID is same as request.DirectoryID
+	// Check if directoryID is same as request.DirectoryID
 	if directoryID == *request.DirectoryID {
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "parent directory cannot be same as current directory", nil, nil)
 		return
