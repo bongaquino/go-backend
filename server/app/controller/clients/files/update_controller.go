@@ -61,6 +61,10 @@ func (uc *UpdateController) Handle(ctx *gin.Context) {
 			helper.FormatResponse(ctx, "error", http.StatusNotFound, "directory not found", nil, nil)
 			return
 		}
+		if err.Error() == "error fetching directory" {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error fetching directory", nil, nil)
+			return
+		}
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error updating file", nil, nil)
 		return
 	}

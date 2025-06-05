@@ -246,25 +246,24 @@ func (fs *FSService) UpdateFile(ctx context.Context, ID string, userID string, r
 		return errors.New("file not found")
 	}
 
-	// Fetch the directory from the repository
-	directory, err := fs.directoryRepo.ReadByIDUserID(ctx, *request.DirectoryID, userID)
-	if err != nil {
-		return err
+	// Prepare update data
+	updateData := bson.M{
+		"name": request.Name,
 	}
 
-	// Check if the directory exists
-	if directory == nil {
-		return errors.New("directory not found")
+	// If a new directory ID is provided, validate and include it
+	if request.DirectoryID != nil {
+		directory, err := fs.directoryRepo.ReadByIDUserID(ctx, *request.DirectoryID, userID)
+		if err != nil {
+			return errors.New("error fetching directory")
+		}
+		if directory == nil {
+			return errors.New("directory not found")
+		}
+		updateData["directory_id"] = directory.ID
 	}
 
 	// Save the updated file in the repository
-	updateData := bson.M{
-		"name":         request.Name,
-		"directory_id": request.DirectoryID,
-	}
-	// if request.DirectoryID != nil {
-	// 	updateData["directory_id"] = request.DirectoryID
-	// }
 	err = fs.fileRepo.Update(ctx, ID, updateData)
 	if err != nil {
 		return err
