@@ -50,10 +50,12 @@ func (uc *UpdateController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	// Check if directoryID is same as request.DirectoryID
-	if directoryID == *request.DirectoryID {
-		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "parent directory cannot be same as current directory", nil, nil)
-		return
+	// Check if the request contains a valid DirectoryID
+	if request.DirectoryID != nil && *request.DirectoryID != "" {
+		if directoryID == *request.DirectoryID {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "parent directory cannot be same as current directory", nil, nil)
+			return
+		}
 	}
 
 	// Update the directory using the fsService
