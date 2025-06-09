@@ -88,6 +88,7 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 	filesGroup.Use(container.Middleware.Authn.Handle, container.Middleware.Verified.Handle)
 	{
 		filesGroup.POST("/upload", container.Controllers.Clients.Files.Upload.Handle)
+		filesGroup.GET("/:fileID/download", container.Controllers.Clients.Files.Download.Handle)
 		filesGroup.GET("/:fileID/read", container.Controllers.Clients.Files.Read.Handle)
 		filesGroup.PUT("/:fileID/update", container.Controllers.Clients.Files.Update.Handle)
 		filesGroup.DELETE("/:fileID/delete", container.Controllers.Clients.Files.Delete.Handle)

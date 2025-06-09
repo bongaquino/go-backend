@@ -125,3 +125,11 @@ func (p *IPFSProvider) Pin(filename string, file io.Reader) (string, error) {
 func (p *IPFSProvider) GetFileURL(hash string) string {
 	return fmt.Sprintf("%s/ipfs/%s", p.downloadURL, hash)
 }
+
+func (p *IPFSProvider) GetInternalNodeURL() string {
+	return p.nodeURL
+}
+
+func (p *IPFSProvider) Client() *http.Client {
+	return p.client
+}
