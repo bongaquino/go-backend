@@ -1,7 +1,6 @@
 package files
 
 import (
-	"fmt"
 	"koneksi/server/app/helper"
 	"koneksi/server/app/service"
 	"net/http"
@@ -55,18 +54,6 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	// Get the file details
-	hash := file.Hash
-
-	// Generate file URL
-	fileURL := rc.ipfsService.GetFileURL(hash)
-	if fileURL == "" {
-		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error generating file URL", nil, nil)
-		return
-	}
-
-	fmt.Println("file", file)
-
 	// Return the file details
 	helper.FormatResponse(ctx, "success", http.StatusOK, "file read successfully", gin.H{
 		"id":           file.ID.Hex(),
@@ -75,6 +62,5 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 		"size":         file.Size,
 		"hash":         file.Hash,
 		"content_type": file.ContentType,
-		"ipfs_url":     fileURL,
 	}, nil)
 }
