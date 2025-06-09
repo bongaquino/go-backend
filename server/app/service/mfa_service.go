@@ -67,6 +67,11 @@ func (ms *MFAService) VerifyOTP(ctx context.Context, userID, otp string) (bool, 
 		return false, fmt.Errorf("user not found")
 	}
 
+	// Check if OTP secret is already generated
+	if len(user.OtpSecret) == 0 {
+		return false, fmt.Errorf("OTP secret not set")
+	}
+
 	// Decrypt the stored OTP secret
 	decryptedOtpSecret, err := helper.Decrypt(user.OtpSecret)
 	if err != nil {
