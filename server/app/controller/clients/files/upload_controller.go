@@ -4,6 +4,7 @@ import (
 	"koneksi/server/app/helper"
 	"koneksi/server/app/model"
 	"koneksi/server/app/service"
+	"koneksi/server/core/logger"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -138,9 +139,13 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 		return
 	}
 
+	logger.Log.Info(fileModel.ID.Hex())
+	logger.Log.Info(fileModel.ID.String())
+
 	// Return response
 	helper.FormatResponse(ctx, "success", http.StatusOK, "file uploaded successfully", gin.H{
 		"directory_id": directoryID,
+		"file_id":      fileModel.ID.Hex(),
 		"name":         fileName,
 		"hash":         cid,
 		"size":         fileSize,
