@@ -22,8 +22,8 @@ type UserConfig struct {
 func LoadUserConfig() *UserConfig {
 	// Create the configuration from environment variables
 	return &UserConfig{
-		// DefaultBytesLimit is set to 2GB
-		DefaultBytesLimit: 2 * 1024 * 1024 * 1024,
+		// DefaultBytesLimit is set to 5GB
+		DefaultBytesLimit: 5 * 1024 * 1024 * 1024,
 
 		// DefaultBackupCycle is set to "daily"
 		DefaultBackupCycle: "daily",
