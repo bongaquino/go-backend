@@ -38,11 +38,16 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 	}
 
 	// Extract directory ID from the query parameters
-	directoryID := ctx.Query("directory_id")
-	if directoryID == ":directory" {
-		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "directory ID is required", nil, nil)
-		return
-	}
+    directoryID := ctx.Query("directory_id")
+    if directoryID == "" || directoryID == ":directory" {
+        // Get the user's root directory
+        rootDir, _, _, err := uc.fsService.ReadRootDirectory(ctx, userID.(string))
+        if err != nil {
+            helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to get root directory", nil, nil)
+            return
+        }
+        directoryID = rootDir.ID.Hex()
+    }
 
 	// Check if user has access to the directory
 	isOwner, err := uc.fsService.CheckDirectoryOwnership(ctx, directoryID, userID.(string))
