@@ -1,7 +1,6 @@
 package provider
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -65,35 +64,35 @@ func (p *IPFSProvider) Pin(filename string, file io.Reader) (string, error) {
 	// Build the URL for the IPFS API
 	url := fmt.Sprintf("%s/api/v0/add?pin=true", p.nodeURL)
 
-	// Create a multipart form request
-	var body bytes.Buffer
-	writer := multipart.NewWriter(&body)
+	// Use io.Pipe to stream the multipart form data
+	pr, pw := io.Pipe()
+	writer := multipart.NewWriter(pw)
 
-	// Create a form file field
-	part, err := writer.CreateFormFile("file", filepath.Base(filename))
-	if err != nil {
-		return "", fmt.Errorf("failed to create form file: %w", err)
-	}
-
-	// Copy the file content to the form file field
-	if _, err = io.Copy(part, file); err != nil {
-		return "", fmt.Errorf("failed to copy file content: %w", err)
-	}
-
-	// Close the multipart writer to finalize the request
-	if err := writer.Close(); err != nil {
-		return "", fmt.Errorf("failed to close multipart writer: %w", err)
-	}
+	// Write the multipart form in a goroutine
+	go func() {
+		defer pw.Close()
+		defer writer.Close()
+		part, err := writer.CreateFormFile("file", filepath.Base(filename))
+		if err != nil {
+			pw.CloseWithError(fmt.Errorf("failed to create form file: %w", err))
+			return
+		}
+		if _, err = io.Copy(part, file); err != nil {
+			pw.CloseWithError(fmt.Errorf("failed to copy file content: %w", err))
+			return
+		}
+	}()
 
 	// Create the HTTP request
-	req, err := http.NewRequest("POST", url, &body)
+	req, err := http.NewRequest("POST", url, pr)
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %w", err)
 	}
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
-	// Set the timeout for the request
+	// Send the request
 	resp, err := p.client.Do(req)
+	fmt.Println("resp", resp)
 	if err != nil {
 		return "", fmt.Errorf("failed to call IPFS API: %w", err)
 	}
@@ -112,12 +111,10 @@ func (p *IPFSProvider) Pin(filename string, file io.Reader) (string, error) {
 		return "", fmt.Errorf("failed to decode response: %w", err)
 	}
 
-	// Check if the Hash field is empty
 	if result.Hash == "" {
 		return "", fmt.Errorf("empty hash in response")
 	}
 
-	// Return the IPFS hash of the pinned file
 	return result.Hash, nil
 }
 
