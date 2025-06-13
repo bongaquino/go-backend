@@ -92,7 +92,6 @@ func (p *IPFSProvider) Pin(filename string, file io.Reader) (string, error) {
 
 	// Send the request
 	resp, err := p.client.Do(req)
-	fmt.Println("resp", resp)
 	if err != nil {
 		return "", fmt.Errorf("failed to call IPFS API: %w", err)
 	}
