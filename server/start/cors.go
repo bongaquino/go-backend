@@ -12,6 +12,6 @@ func SetupCORS(engine *gin.Engine) {
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Content-Type", "Authorization", "Client-Id", "Client-Secret", "X-Requested-With"},
 		ExposeHeaders:    []string{"Content-Length", "Content-Type"},
-		AllowCredentials: true,
+		AllowCredentials: false,
 	}))
 }
