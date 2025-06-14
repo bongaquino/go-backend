@@ -226,7 +226,7 @@ func (r *FileRepository) CountByUserID(ctx context.Context, userID string) (int6
 		return 0, err
 	}
 
-	count, err := r.collection.CountDocuments(ctx, bson.M{"user_id": objectID})
+	count, err := r.collection.CountDocuments(ctx, bson.M{"user_id": objectID, "is_deleted": false})
 	if err != nil {
 		logger.Log.Error("error counting files by userID", logger.Error(err))
 		return 0, err

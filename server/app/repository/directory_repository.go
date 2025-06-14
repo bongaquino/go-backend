@@ -195,7 +195,7 @@ func (r *DirectoryRepository) CountByUserID(ctx context.Context, userID string) 
 		return 0, err
 	}
 
-	count, err := r.collection.CountDocuments(ctx, bson.M{"user_id": objectID})
+	count, err := r.collection.CountDocuments(ctx, bson.M{"user_id": objectID, "is_deleted": false})
 	if err != nil {
 		logger.Log.Error("error counting directories by userID", logger.Error(err))
 		return 0, err
