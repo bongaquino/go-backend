@@ -55,6 +55,13 @@ func (cc *CreateController) Handle(ctx *gin.Context) {
 			return
 		}
 		dirObjectID = &tmpID
+	} else {
+		rootDir, _, _, err := cc.fsService.ReadRootDirectory(ctx, userID.(string))
+        if err != nil {
+            helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to get root directory", nil, nil)
+            return
+        }
+		dirObjectID = &rootDir.ID
 	}
 
 	// Build directory model
