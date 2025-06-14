@@ -89,6 +89,11 @@ func (fs *FSService) CreateDirectory(ctx context.Context, directory *model.Direc
 }
 
 func (fs *FSService) UpdateDirectory(ctx context.Context, ID string, userID string, request *dto.UpdateDirectoryDTO) error {
+	// Check if there is anything to update
+	if request.Name == "" && request.DirectoryID == nil {
+		return errors.New("no fields to update")
+	}
+	
 	// Fetch the directory from the repository
 	directory, err := fs.directoryRepo.ReadByIDUserID(ctx, ID, userID)
 	if err != nil {
@@ -231,6 +236,11 @@ func (fs *FSService) ReadFileByIDUserID(ctx context.Context, ID string, userID s
 }
 
 func (fs *FSService) UpdateFile(ctx context.Context, ID string, userID string, request *dto.UpdateFileDTO) error {
+	// Check if there is anything to update
+	if request.Name == "" && request.DirectoryID == nil {
+		return errors.New("no fields to update")
+	}
+
 	// Fetch the file from the repository
 	file, err := fs.fileRepo.ReadByIDUserID(ctx, ID, userID)
 	if err != nil {
