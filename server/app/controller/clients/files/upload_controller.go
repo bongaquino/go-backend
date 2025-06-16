@@ -51,6 +51,7 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 			return
 		}
 		directoryID = rootDir.ID.Hex()
+		println("Using root directory ID:", directoryID)
 	}
 
 	// Check if user has access to the directory
@@ -135,6 +136,12 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 	err = uc.fsService.CreateFile(ctx, fileModel)
 	if err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to save file metadata", nil, nil)
+		return
+	}
+
+	err = uc.fsService.RecalculateDirectorySizeAndParents(ctx, directoryID, userID.(string))
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to recalculate directory sizes", nil, nil)
 		return
 	}
 

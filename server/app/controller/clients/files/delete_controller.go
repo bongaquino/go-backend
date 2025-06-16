@@ -68,6 +68,12 @@ func (dc *DeleteController) Handle(ctx *gin.Context) {
 		return
 	}
 
+	err = dc.fsService.RecalculateDirectorySizeAndParents(ctx, file.DirectoryID.Hex(), userID.(string))
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to recalculate directory sizes", nil, nil)
+		return
+	}
+
 	// Get user limits (usage)
 	userLimit, err := dc.userService.GetUserLimits(ctx, userID.(string))
 	if err != nil {
