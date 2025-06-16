@@ -65,6 +65,10 @@ func (uc *UpdateController) Handle(ctx *gin.Context) {
 			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error fetching directory", nil, nil)
 			return
 		}
+		if err.Error() == "no fields to update" {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "no fields to update", nil, nil)
+			return
+		}
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error updating file", nil, nil)
 		return
 	}
