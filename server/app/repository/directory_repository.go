@@ -202,3 +202,27 @@ func (r *DirectoryRepository) CountByUserID(ctx context.Context, userID string) 
 	}
 	return count, nil
 }
+
+// FindAllDescendantIDs returns all descendant directory IDs (as strings) for a given directory, including nested children.
+func (r *DirectoryRepository) FindAllDescendantIDs(ctx context.Context, directoryID, userID string) ([]string, error) {
+    var result []string
+    queue := []string{directoryID}
+
+    for len(queue) > 0 {
+        currentID := queue[0]
+        queue = queue[1:]
+
+        // Find direct children of currentID
+        children, err := r.ListByDirectoryIDUserID(ctx, currentID, userID)
+        if err != nil {
+            return nil, err
+        }
+        for _, child := range children {
+            childID := child.ID.Hex()
+            result = append(result, childID)
+            queue = append(queue, childID)
+        }
+    }
+
+    return result, nil
+}
