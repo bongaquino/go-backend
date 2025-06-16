@@ -93,7 +93,7 @@ func (fs *FSService) UpdateDirectory(ctx context.Context, ID string, userID stri
 	if request.Name == "" && request.DirectoryID == nil {
 		return errors.New("no fields to update")
 	}
-	
+
 	// Fetch the directory from the repository
 	directory, err := fs.directoryRepo.ReadByIDUserID(ctx, ID, userID)
 	if err != nil {
@@ -122,9 +122,15 @@ func (fs *FSService) UpdateDirectory(ctx context.Context, ID string, userID stri
 		directory.DirectoryID = &parentDirectory.ID
 	}
 
+	// If the request contains a new name, use it; otherwise, keep the existing name
+	directoryName := directory.Name
+	if request.Name != "" {
+		directoryName = request.Name
+	}
+
 	// Save the updated directory in the repository
 	updateData := bson.M{
-		"name":         request.Name,
+		"name":         directoryName,
 		"directory_id": directory.DirectoryID,
 	}
 
@@ -252,9 +258,15 @@ func (fs *FSService) UpdateFile(ctx context.Context, ID string, userID string, r
 		return errors.New("file not found")
 	}
 
+	// If the request contains a new name, use it; otherwise, keep the existing name
+	fileName := file.Name
+	if request.Name != "" {
+		fileName = request.Name
+	}
+
 	// Prepare update data
 	updateData := bson.M{
-		"name": request.Name,
+		"name": fileName,
 	}
 
 	// If a new directory ID is provided, validate and include it
