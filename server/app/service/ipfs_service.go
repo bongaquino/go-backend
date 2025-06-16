@@ -79,3 +79,8 @@ func (s *IPFSService) DownloadFile(hash string) ([]byte, error) {
 
 	return data, nil
 }
+
+// GetHTTPClient exposes the underlying HTTP client from the IPFS provider
+func (s *IPFSService) GetHTTPClient() *http.Client {
+	return s.ipfsProvider.Client()
+}

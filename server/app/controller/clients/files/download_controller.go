@@ -1,6 +1,7 @@
 package files
 
 import (
+	"bufio"
 	"koneksi/server/app/helper"
 	"koneksi/server/app/service"
 	"net/http"
@@ -24,17 +25,13 @@ func NewDownloadController(fsService *service.FSService, ipfsService *service.IP
 }
 
 func (dc *DownloadController) Handle(ctx *gin.Context) {
-	// Extract user ID from the context
 	userID, exists := ctx.Get("userID")
 	if !exists {
 		helper.FormatResponse(ctx, "error", http.StatusUnauthorized, "user ID not found in context", nil, nil)
 		return
 	}
 
-	// Get the file ID from the URL parameters
 	fileID := ctx.Param("fileID")
-
-	// Check if the file ID is in valid format
 	if fileID == "" {
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "file ID is required", nil, nil)
 		return
@@ -44,37 +41,76 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	// Check if the file is owned by the user
 	file, err := dc.fsService.ReadFileByIDUserID(ctx, fileID, userID.(string))
 	if err != nil {
+		status := http.StatusInternalServerError
+		message := "error reading file"
 		if err.Error() == "file not found" {
-			helper.FormatResponse(ctx, "error", http.StatusNotFound, "file not found", nil, nil)
-			return
+			status = http.StatusNotFound
+			message = "file not found"
 		}
-		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error reading file", nil, nil)
+		helper.FormatResponse(ctx, "error", status, message, nil, nil)
 		return
 	}
 
-	// Get the file hash
 	fileHash := file.Hash
 	if fileHash == "" {
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "file hash is required for download", nil, nil)
 		return
 	}
 
-	// Download the file from IPFS
+	if ctx.DefaultQuery("stream", "false") == "true" {
+		url := dc.ipfsService.GetFileURL(fileHash)
+		resp, err := dc.ipfsService.GetHTTPClient().Get(url)
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error streaming file from IPFS", nil, nil)
+			return
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "unexpected status code from IPFS node", nil, nil)
+			return
+		}
+
+		// Set headers, but skip Content-Length to enable chunked transfer
+		ctx.Header("Content-Disposition", "attachment; filename="+file.Name)
+		ctx.Header("Content-Type", file.ContentType)
+		ctx.Header("Cache-Control", "no-cache, no-store, must-revalidate")
+		ctx.Header("Pragma", "no-cache")
+		ctx.Header("Expires", "0")
+
+		reader := bufio.NewReader(resp.Body)
+		ctx.Status(http.StatusOK)
+
+		buf := make([]byte, 32*1024) // 32KB buffer
+		for {
+			n, err := reader.Read(buf)
+			if n > 0 {
+				if _, writeErr := ctx.Writer.Write(buf[:n]); writeErr != nil {
+					break
+				}
+				ctx.Writer.Flush()
+			}
+			if err != nil {
+				break
+			}
+		}
+		return
+	}
+
+	// Non-stream mode: download and send full file
 	fileContent, err := dc.ipfsService.DownloadFile(fileHash)
 	if err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error downloading file from IPFS", nil, nil)
 		return
 	}
 
-	// Set the response headers for file download
 	ctx.Header("Content-Disposition", "attachment; filename="+file.Name)
 	ctx.Header("Content-Length", strconv.Itoa(len(fileContent)))
 	ctx.Header("Cache-Control", "no-cache, no-store, must-revalidate")
 	ctx.Header("Pragma", "no-cache")
 	ctx.Header("Expires", "0")
+
 	ctx.Data(http.StatusOK, file.ContentType, fileContent)
-	helper.FormatResponse(ctx, "success", http.StatusOK, "file downloaded successfully", nil, nil)
 }
