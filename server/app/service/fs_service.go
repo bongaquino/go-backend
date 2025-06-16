@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"koneksi/server/app/dto"
 	"koneksi/server/app/model"
 	"koneksi/server/app/repository"
@@ -142,61 +143,102 @@ func (fs *FSService) UpdateDirectory(ctx context.Context, ID string, userID stri
 	return nil
 }
 
-func (fs *FSService) DeleteDirectory(ctx context.Context, ID string, userID string) error {
-	// Fetch the directory from the repository
-	directory, err := fs.directoryRepo.ReadByIDUserID(ctx, ID, userID)
-	if err != nil {
-		return err
-	}
-
-	// Check if the directory exists
-	if directory == nil {
-		return errors.New("directory not found")
-	}
-
-	// Check if the directory is not the root directory
-	if directory.Name == "root" {
-		return errors.New("cannot delete root directory")
-	}
-
-	// Initialize a queue for BFS traversal
-	queue := []string{ID}
-
-	for len(queue) > 0 {
-		currentID := queue[0]
-		queue = queue[1:]
-
-		// Mark the current directory as deleted
-		err = fs.directoryRepo.Update(ctx, currentID, bson.M{"is_deleted": true})
+func (fs *FSService) RecalculateDirectorySizeAndParents(ctx context.Context, directoryID, userID string) error {
+	currentID := directoryID
+	for currentID != "" {
+		// Get the sum of all non-deleted files in the subtree
+		totalSize, err := fs.fileRepo.SumSizeByDirectorySubtree(ctx, currentID, userID)
 		if err != nil {
 			return err
 		}
-
-		// Mark all files in the current directory as deleted
-		files, err := fs.fileRepo.ListByDirectoryIDUserID(ctx, currentID, userID)
+		
+		// Update the directory's size
+		err = fs.directoryRepo.Update(ctx, currentID, bson.M{"size": totalSize})
 		if err != nil {
 			return err
 		}
-		for _, file := range files {
-			err = fs.fileRepo.Update(ctx, file.ID.Hex(), bson.M{"is_deleted": true})
-			if err != nil {
-				return err
-			}
-		}
-
-		// Fetch all subdirectories of the current directory
-		subdirs, err := fs.directoryRepo.ListByDirectoryIDUserID(ctx, currentID, userID)
+		// Move to parent
+		dir, err := fs.directoryRepo.ReadByIDUserID(ctx, currentID, userID)
 		if err != nil {
-			return err
+			break
 		}
-
-		// Enqueue all subdirectory IDs
-		for _, subdir := range subdirs {
-			queue = append(queue, subdir.ID.Hex())
+		if dir == nil || dir.DirectoryID == nil {
+			break
 		}
+		currentID = dir.DirectoryID.Hex()
 	}
-
 	return nil
+}
+
+func (fs *FSService) DeleteDirectory(ctx context.Context, ID string, userID string) error {
+    // Fetch the directory from the repository
+    directory, err := fs.directoryRepo.ReadByIDUserID(ctx, ID, userID)
+    if err != nil {
+        return err
+    }
+
+    // Check if the directory exists
+    if directory == nil {
+        return errors.New("directory not found")
+    }
+
+    // Check if the directory is not the root directory
+    if directory.Name == "root" {
+        return errors.New("cannot delete root directory")
+    }
+
+    // Initialize a queue for BFS traversal
+    queue := []string{ID}
+
+    for len(queue) > 0 {
+        currentID := queue[0]
+        queue = queue[1:]
+
+        // Mark the current directory as deleted
+        err = fs.directoryRepo.Update(ctx, currentID, bson.M{"is_deleted": true})
+        if err != nil {
+            return err
+        }
+
+        // Mark all files in the current directory as deleted
+        files, err := fs.fileRepo.ListByDirectoryIDUserID(ctx, currentID, userID)
+        if err != nil {
+            return err
+        }
+        for _, file := range files {
+            err = fs.fileRepo.Update(ctx, file.ID.Hex(), bson.M{"is_deleted": true})
+            if err != nil {
+                return err
+            }
+        }
+
+        // Fetch all subdirectories of the current directory
+        subdirs, err := fs.directoryRepo.ListByDirectoryIDUserID(ctx, currentID, userID)
+        if err != nil {
+            return err
+        }
+
+        // Enqueue all subdirectory IDs
+        for _, subdir := range subdirs {
+            queue = append(queue, subdir.ID.Hex())
+        }
+    }
+
+    // Set the deleted directory's size to 0
+    err = fs.directoryRepo.Update(ctx, ID, bson.M{"size": 0})
+    if err != nil {
+        return err
+    }
+
+    // Recalculate all parent directories' sizes
+    if directory.DirectoryID != nil {
+        err = fs.RecalculateDirectorySizeAndParents(ctx, directory.DirectoryID.Hex(), userID)
+        if err != nil {
+            return fmt.Errorf("failed to recalculate parent directories' sizes: %w", err)
+        }
+    }
+
+    return nil
 }
 
 func (fs *FSService) CheckDirectoryOwnership(ctx context.Context, ID string, userID string) (bool, error) {
