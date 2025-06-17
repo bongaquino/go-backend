@@ -51,7 +51,6 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 			return
 		}
 		directoryID = rootDir.ID.Hex()
-		println("Using root directory ID:", directoryID)
 	}
 
 	// Check if user has access to the directory
