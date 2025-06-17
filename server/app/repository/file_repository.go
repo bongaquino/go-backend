@@ -15,14 +15,12 @@ import (
 
 type FileRepository struct {
 	collection *mongoDriver.Collection
-	directoryRepo *DirectoryRepository
 }
 
-func NewFileRepository(mongoProvider *provider.MongoProvider, directoryRepo *DirectoryRepository) *FileRepository {
+func NewFileRepository(mongoProvider *provider.MongoProvider) *FileRepository {
 	db := mongoProvider.GetDB()
 	return &FileRepository{
 		collection:   db.Collection("files"),
-		directoryRepo: directoryRepo,
 	}
 }
 
@@ -234,63 +232,4 @@ func (r *FileRepository) CountByUserID(ctx context.Context, userID string) (int6
 		return 0, err
 	}
 	return count, nil
-}
-
-// SumSizeByDirectorySubtree returns the sum of all non-deleted files' sizes in the given directory and its descendants.
-func (r *FileRepository) SumSizeByDirectorySubtree(ctx context.Context, directoryID, userID string) (int64, error) {
-	// Get all descendant directory IDs (including nested children)
-	directoryIDs, err := r.directoryRepo.FindAllDescendantIDs(ctx, directoryID, userID)
-	if err != nil {
-		logger.Log.Error("error finding descendant directory IDs", logger.Error(err))
-		return 0, err
-	}
-
-	directoryIDs = append(directoryIDs, directoryID) // include the directory itself
-
-	// Convert to ObjectIDs
-	var objIDs []primitive.ObjectID
-	for _, id := range directoryIDs {
-		objID, err := primitive.ObjectIDFromHex(id)
-		if err != nil {
-			logger.Log.Error("invalid directory ID in list", logger.String("id", id), logger.Error(err))
-			return 0, err
-		}
-		objIDs = append(objIDs, objID)
-	}
-
-	// Convert userID to ObjectID
-	userObjID, err := primitive.ObjectIDFromHex(userID)
-	if err != nil {
-		logger.Log.Error("invalid user ID format", logger.Error(err))
-		return 0, err
-	}
-
-	// Build filter for files in any of these directories, not deleted, and owned by user
-	filter := bson.M{
-		"directory_id": bson.M{"$in": objIDs},
-		"user_id":      userObjID,
-		"is_deleted":   false,
-	}
-	// Use MongoDB aggregation to sum the sizes
-	cursor, err := r.collection.Aggregate(ctx, []bson.M{
-		{"$match": filter},
-		{"$group": bson.M{"_id": nil, "total": bson.M{"$sum": "$size"}}},
-	})
-	if err != nil {
-		logger.Log.Error("error running aggregation", logger.Error(err))
-		return 0, err
-	}
-	defer cursor.Close(ctx)
-
-	var result struct {
-		Total int64 `bson:"total"`
-	}
-	if cursor.Next(ctx) {
-		if err := cursor.Decode(&result); err != nil {
-			logger.Log.Error("error decoding aggregation result", logger.Error(err))
-			return 0, err
-		}
-		return result.Total, nil
-	}
-	return 0, nil
 }

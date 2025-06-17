@@ -144,30 +144,49 @@ func (fs *FSService) UpdateDirectory(ctx context.Context, ID string, userID stri
 }
 
 func (fs *FSService) RecalculateDirectorySizeAndParents(ctx context.Context, directoryID, userID string) error {
-	currentID := directoryID
-	for currentID != "" {
-		// Get the sum of all non-deleted files in the subtree
-		totalSize, err := fs.fileRepo.SumSizeByDirectorySubtree(ctx, currentID, userID)
-		if err != nil {
-			return err
-		}
-		
-		// Update the directory's size
-		err = fs.directoryRepo.Update(ctx, currentID, bson.M{"size": totalSize})
-		if err != nil {
-			return err
-		}
-		// Move to parent
-		dir, err := fs.directoryRepo.ReadByIDUserID(ctx, currentID, userID)
-		if err != nil {
-			break
-		}
-		if dir == nil || dir.DirectoryID == nil {
-			break
-		}
-		currentID = dir.DirectoryID.Hex()
-	}
-	return nil
+    currentID := directoryID
+    for currentID != "" {
+        // Use the service-layer sum function
+        totalSize, err := fs.SumSizeByDirectorySubtree(ctx, currentID, userID)
+        if err != nil {
+            return err
+        }
+        // Update the directory's size
+        err = fs.directoryRepo.Update(ctx, currentID, bson.M{"size": totalSize})
+        if err != nil {
+            return err
+        }
+        // Move to parent
+        dir, err := fs.directoryRepo.ReadByIDUserID(ctx, currentID, userID)
+        if err != nil || dir == nil || dir.DirectoryID == nil {
+            break
+        }
+        currentID = dir.DirectoryID.Hex()
+    }
+    return nil
+}
+
+func (fs *FSService) SumSizeByDirectorySubtree(ctx context.Context, directoryID, userID string) (int64, error) {
+    // Get all descendant directory IDs (including nested children)
+    descendantIDs, err := fs.directoryRepo.FindAllDescendantIDs(ctx, directoryID, userID)
+    if err != nil {
+        return 0, err
+    }
+    allIDs := append(descendantIDs, directoryID) // include self
+
+    var total int64 = 0
+    for _, dirID := range allIDs {
+        files, err := fs.fileRepo.ListByDirectoryIDUserID(ctx, dirID, userID)
+        if err != nil {
+            return 0, err
+        }
+        for _, file := range files {
+            if !file.IsDeleted {
+                total += file.Size
+            }
+        }
+    }
+    return total, nil
 }
 
 func (fs *FSService) DeleteDirectory(ctx context.Context, ID string, userID string) error {

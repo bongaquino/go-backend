@@ -189,7 +189,7 @@ func initRepositories(p Providers) Repositories {
 		OrganizationUserRole: repository.NewOrganizationUserRoleRepository(p.Mongo),
 		Limit:                repository.NewLimitRepository(p.Mongo),
 		Directory:            repository.NewDirectoryRepository(p.Mongo),
-		File:                 repository.NewFileRepository(p.Mongo, repository.NewDirectoryRepository(p.Mongo)),
+		File:                 repository.NewFileRepository(p.Mongo),
 	}
 }
 
