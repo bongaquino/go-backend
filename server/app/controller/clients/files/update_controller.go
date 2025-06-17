@@ -50,8 +50,21 @@ func (uc *UpdateController) Handle(ctx *gin.Context) {
 		return
 	}
 
+	// Fetch the file to get its size
+	file, err := uc.fsService.ReadFileByIDUserID(ctx, fileID, userID.(string))
+	if err != nil {
+		if err.Error() == "file not found" {
+			helper.FormatResponse(ctx, "error", http.StatusNotFound, "file not found", nil, nil)
+			return
+		}
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error reading file", nil, nil)
+		return
+	}
+
+	oldDirectoryID := file.DirectoryID.Hex()
+
 	// Update the file using the fsService
-	err := uc.fsService.UpdateFile(ctx, fileID, userID.(string), &request)
+	err = uc.fsService.UpdateFile(ctx, fileID, userID.(string), &request)
 	if err != nil {
 		if err.Error() == "file not found" {
 			helper.FormatResponse(ctx, "error", http.StatusNotFound, "file not found", nil, nil)
@@ -70,6 +83,33 @@ func (uc *UpdateController) Handle(ctx *gin.Context) {
 			return
 		}
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error updating file", nil, nil)
+		return
+	}
+
+	// Fetch the file to get its size
+	updatedFile, err := uc.fsService.ReadFileByIDUserID(ctx, fileID, userID.(string))
+	if err != nil {
+		if err.Error() == "file not found" {
+			helper.FormatResponse(ctx, "error", http.StatusNotFound, "file not found", nil, nil)
+			return
+		}
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error reading file", nil, nil)
+		return
+	}
+
+	newDirectoryID := updatedFile.DirectoryID.Hex()
+
+	if oldDirectoryID != newDirectoryID {
+		err := uc.fsService.RecalculateDirectorySizeAndParents(ctx, oldDirectoryID, userID.(string))
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to recalculate directory sizes", nil, nil)
+			return
+		}
+	}
+
+	err = uc.fsService.RecalculateDirectorySizeAndParents(ctx, newDirectoryID, userID.(string))
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to recalculate directory sizes", nil, nil)
 		return
 	}
 
