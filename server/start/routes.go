@@ -148,6 +148,6 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 	// Public Routes
 	publicGroup := engine.Group("/public")
 	{
-		publicGroup.GET("/files/:fileID/download", container.Controllers.Public.Files.Download.Handle)
+		publicGroup.GET("/files/:fileID", container.Controllers.Public.Files.Download.Handle)
 	}
 }
