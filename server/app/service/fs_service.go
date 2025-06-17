@@ -287,6 +287,21 @@ func (fs *FSService) CreateFile(ctx context.Context, file *model.File) error {
 	return nil
 }
 
+func (fs *FSService) ReadFileByID(ctx context.Context, ID string) (*model.File, error) {
+	// Fetch the file from the repository
+	file, err := fs.fileRepo.Read(ctx, ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check if the file exists
+	if file == nil {
+		return nil, errors.New("file not found")
+	}
+
+	return file, nil
+}
+
 func (fs *FSService) ReadFileByIDUserID(ctx context.Context, ID string, userID string) (*model.File, error) {
 	// Fetch the file from the repository
 	file, err := fs.fileRepo.ReadByIDUserID(ctx, ID, userID)
