@@ -138,6 +138,12 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 		return
 	}
 
+	err = uc.fsService.RecalculateDirectorySizeAndParents(ctx, directoryID, userID.(string))
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to recalculate directory sizes", nil, nil)
+		return
+	}
+
 	// Compute the new usage
 	newUsage := userLimit.BytesUsage + fileSize
 
