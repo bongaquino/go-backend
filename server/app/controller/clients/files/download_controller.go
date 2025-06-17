@@ -59,7 +59,8 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	if ctx.DefaultQuery("stream", "false") == "true" {
+	// Change default value of stream query param to "true"
+	if ctx.DefaultQuery("stream", "true") == "true" {
 		url := dc.ipfsService.GetFileURL(fileHash)
 		resp, err := dc.ipfsService.GetHTTPClient().Get(url)
 		if err != nil {
