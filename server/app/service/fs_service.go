@@ -319,7 +319,7 @@ func (fs *FSService) ReadFileByIDUserID(ctx context.Context, ID string, userID s
 
 func (fs *FSService) UpdateFile(ctx context.Context, ID string, userID string, request *dto.UpdateFileDTO) error {
 	// Check if there is anything to update
-	if request.Name == "" && request.DirectoryID == nil {
+	if request.Name == "" && request.DirectoryID == nil && request.IsShared == nil {
 		return errors.New("no fields to update")
 	}
 
@@ -340,9 +340,16 @@ func (fs *FSService) UpdateFile(ctx context.Context, ID string, userID string, r
 		fileName = request.Name
 	}
 
+	// If the request contains a new shared status, use it; otherwise, keep the existing status
+	fileIsShared := file.IsShared
+	if request.IsShared != nil {
+		fileIsShared = *request.IsShared
+	}
+
 	// Prepare update data
 	updateData := bson.M{
-		"name": fileName,
+		"name":      fileName,
+		"is_shared": fileIsShared,
 	}
 
 	// If a new directory ID is provided, validate and include it
