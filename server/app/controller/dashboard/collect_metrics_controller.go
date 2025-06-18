@@ -40,7 +40,7 @@ func (cmc *CollectMetricsController) Handle(ctx *gin.Context) {
 	data := gin.H{
 		"byte_limit":            limit.BytesLimit,
 		"byte_usage":            limit.BytesUsage,
-		"directory_count":       directoryCount,
+		"directory_count":       directoryCount - 1, // Exclude the root directory
 		"file_count":            fileCount,
 		"service_account_count": svcAccCount,
 	}
