@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-
+	"net/url"
 	"koneksi/server/core/env"
 )
 
