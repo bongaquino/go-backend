@@ -32,11 +32,15 @@ func LoadMongoConfig() *MongoConfig {
 }
 
 func (config *MongoConfig) GetMongoUri() string {
-	if config.MongoConnectionString != "" {
+    if config.MongoConnectionString != "" {
         return config.MongoConnectionString
     }
 
+    // URL-encode username and password to handle special characters
+    encodedUser := url.QueryEscape(config.MongoUser)
+    encodedPassword := url.QueryEscape(config.MongoPassword)
+
     return fmt.Sprintf("mongodb://%s:%s@%s:%d/%s?authSource=%s",
-        config.MongoUser, config.MongoPassword, config.MongoHost, config.MongoPort, config.MongoDatabase, config.MongoDatabase)
+        encodedUser, encodedPassword, config.MongoHost, config.MongoPort, config.MongoDatabase, config.MongoDatabase)
 
 }
