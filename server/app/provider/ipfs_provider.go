@@ -140,3 +140,54 @@ func (p *IPFSProvider) GetInternalNodeURL() string {
 func (p *IPFSProvider) Client() *http.Client {
 	return p.client
 }
+
+// ListFileChunks returns the list of chunk links for a given IPFS CID
+func (p *IPFSProvider) ListFileChunks(cid string) ([]map[string]any, error) {
+	url := fmt.Sprintf("%s/api/v0/ls?arg=%s", p.nodeURL, cid)
+
+	// Make the HTTP request
+	resp, err := p.client.Post(url, "application/json", nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to call IPFS /ls API: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Check for non-200 status codes
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("unexpected status code: %d, body: %s", resp.StatusCode, string(body))
+	}
+
+	// Decode the response
+	var result struct {
+		Objects []struct {
+			Hash  string `json:"Hash"`
+			Links []struct {
+				Name string `json:"Name"`
+				Hash string `json:"Hash"`
+				Size int64  `json:"Size"`
+				Type int    `json:"Type"` // 1 = dir, 2 = file
+			} `json:"Links"`
+		} `json:"Objects"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	if len(result.Objects) == 0 {
+		return nil, fmt.Errorf("no object data returned for CID: %s", cid)
+	}
+
+	// Convert Links to generic map output (for flexibility)
+	var chunks []map[string]any
+	for _, link := range result.Objects[0].Links {
+		chunks = append(chunks, map[string]any{
+			"name": link.Name,
+			"hash": link.Hash,
+			"size": link.Size,
+			"type": link.Type,
+		})
+	}
+
+	return chunks, nil
+}

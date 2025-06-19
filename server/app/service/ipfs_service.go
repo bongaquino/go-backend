@@ -84,3 +84,8 @@ func (s *IPFSService) DownloadFile(hash string) ([]byte, error) {
 func (s *IPFSService) GetHTTPClient() *http.Client {
 	return s.ipfsProvider.Client()
 }
+
+// ListFileChunks retrieves the list of chunk links for a given IPFS CID
+func (s *IPFSService) ListFileChunks(cid string) ([]map[string]any, error) {
+	return s.ipfsProvider.ListFileChunks(cid)
+}
