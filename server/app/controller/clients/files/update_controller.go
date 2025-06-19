@@ -82,6 +82,10 @@ func (uc *UpdateController) Handle(ctx *gin.Context) {
 			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "no fields to update", nil, nil)
 			return
 		}
+		if err.Error() == "cannot change file extension" {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "cannot change file extension", nil, nil)
+			return
+		}
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error updating file", nil, nil)
 		return
 	}
