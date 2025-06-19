@@ -58,8 +58,19 @@ func (uc *UpdateController) Handle(ctx *gin.Context) {
 		}
 	}
 
+	// Fetch the directory before update to get its parent
+	dir, _, _, err := uc.fsService.ReadDirectory(ctx, directoryID, userID.(string))
+	if err != nil || dir == nil {
+		helper.FormatResponse(ctx, "error", http.StatusNotFound, "directory not found", nil, nil)
+		return
+	}
+	oldParentID := ""
+	if dir.DirectoryID != nil {
+		oldParentID = dir.DirectoryID.Hex()
+	}
+
 	// Update the directory using the fsService
-	err := uc.fsService.UpdateDirectory(ctx, directoryID, userID.(string), &request)
+	err = uc.fsService.UpdateDirectory(ctx, directoryID, userID.(string), &request)
 	if err != nil {
 		if err.Error() == "directory not found" {
 			helper.FormatResponse(ctx, "error", http.StatusNotFound, "directory not found", nil, nil)
@@ -73,8 +84,41 @@ func (uc *UpdateController) Handle(ctx *gin.Context) {
 			helper.FormatResponse(ctx, "error", http.StatusNotFound, "parent directory not found", nil, nil)
 			return
 		}
+		if err.Error() == "no fields to update" {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "no fields to update", nil, nil)
+			return
+		}
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to update directory", nil, nil)
 		return
+	}
+
+	// Fetch the directory again after update to get its new parent
+	updatedDir, _, _, err := uc.fsService.ReadDirectory(ctx, directoryID, userID.(string))
+	if err != nil || updatedDir == nil {
+		helper.FormatResponse(ctx, "error", http.StatusNotFound, "directory not found after update", nil, nil)
+		return
+	}
+	newParentID := ""
+	if updatedDir.DirectoryID != nil {
+		newParentID = updatedDir.DirectoryID.Hex()
+	}
+
+	// Recalculate old parent if changed
+	if oldParentID != "" && oldParentID != newParentID {
+		err := uc.fsService.RecalculateDirectorySizeAndParents(ctx, oldParentID, userID.(string))
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to recalculate old parent directory sizes", nil, nil)
+			return
+		}
+	}
+
+	// Always recalculate new parent
+	if newParentID != "" {
+		err = uc.fsService.RecalculateDirectorySizeAndParents(ctx, newParentID, userID.(string))
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to recalculate new parent directory sizes", nil, nil)
+			return
+		}
 	}
 
 	// Return success response

@@ -106,13 +106,9 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./gateway/apps/koneksi-server-local.json:/opt/tyk-gateway/apps/koneksi-server.json
-      - ./gateway/apps/koneksi-ipfs-gateway.json:/opt/tyk-gateway/apps/koneksi-ipfs-gateway.json
-      - ./gateway/apps/koneksi-ipfs.json:/opt/tyk-gateway/apps/koneksi-ipfs.json
-      - ./gateway/apps/koneksi-ipfs-upload.json:/opt/tyk-gateway/apps/koneksi-ipfs-upload.json
+      - ./gateway/apps/koneksi-server.json:/opt/tyk-gateway/apps/koneksi-server.json
       - ./gateway/templates:/opt/tyk-gateway/templates
-      - ./gateway/tyk-local.conf:/opt/tyk-gateway/tyk.conf
-      - ./gateway/policies/policies.json:/opt/tyk-gateway/policies/policies.json
+      - ./gateway/tyk.conf:/opt/tyk-gateway/tyk.conf
     environment:
       TYK_GW_SECRET: "352d20ee67be67f6340b4c0605b044b7"
       TYK_GW_STORAGE_HOST: "redis"

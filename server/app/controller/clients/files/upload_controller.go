@@ -1,6 +1,7 @@
 package files
 
 import (
+	"koneksi/server/app/dto"
 	"koneksi/server/app/helper"
 	"koneksi/server/app/model"
 	"koneksi/server/app/service"
@@ -36,11 +37,20 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	// Extract directory ID from the query parameters
-	directoryID := ctx.Query("directory_id")
-	if directoryID == ":directory" {
-		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "directory ID is required", nil, nil)
-		return
+	// Get directory_id from request body
+	var request dto.UploadFileDTO
+	_ = ctx.ShouldBind(&request)
+
+	// Only use directoryID from request body
+	directoryID := request.DirectoryID
+	if directoryID == "" {
+		// Get the user's root directory
+		rootDir, _, _, err := uc.fsService.ReadRootDirectory(ctx, userID.(string))
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to get root directory", nil, nil)
+			return
+		}
+		directoryID = rootDir.ID.Hex()
 	}
 
 	// Check if user has access to the directory
@@ -125,6 +135,12 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 	err = uc.fsService.CreateFile(ctx, fileModel)
 	if err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to save file metadata", nil, nil)
+		return
+	}
+
+	err = uc.fsService.RecalculateDirectorySizeAndParents(ctx, directoryID, userID.(string))
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to recalculate directory sizes", nil, nil)
 		return
 	}
 

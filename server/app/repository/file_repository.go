@@ -20,7 +20,7 @@ type FileRepository struct {
 func NewFileRepository(mongoProvider *provider.MongoProvider) *FileRepository {
 	db := mongoProvider.GetDB()
 	return &FileRepository{
-		collection: db.Collection("files"),
+		collection:   db.Collection("files"),
 	}
 }
 

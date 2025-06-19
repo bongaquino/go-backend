@@ -62,5 +62,8 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 		"size":         file.Size,
 		"hash":         file.Hash,
 		"content_type": file.ContentType,
+		"is_shared":    file.IsShared,
+		"created_at":   file.CreatedAt,
+		"updated_at":   file.UpdatedAt,
 	}, nil)
 }

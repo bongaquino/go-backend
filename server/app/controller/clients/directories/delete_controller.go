@@ -43,8 +43,15 @@ func (dc *DeleteController) Handle(ctx *gin.Context) {
 		return
 	}
 
+	// Read the directory to get its parent before deletion
+	dir, _, _, err := dc.fsService.ReadDirectory(ctx, directoryID, userID.(string))
+	if err != nil || dir == nil {
+		helper.FormatResponse(ctx, "error", http.StatusNotFound, "directory not found", nil, nil)
+		return
+	}
+
 	// Delete the directory using the fsService
-	err := dc.fsService.DeleteDirectory(ctx, directoryID, userID.(string))
+	err= dc.fsService.DeleteDirectory(ctx, directoryID, userID.(string))
 	if err != nil {
 		if err.Error() == "directory not found" {
 			helper.FormatResponse(ctx, "error", http.StatusNotFound, "directory not found", nil, nil)
@@ -56,6 +63,14 @@ func (dc *DeleteController) Handle(ctx *gin.Context) {
 		}
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to delete directory", nil, nil)
 		return
+	}
+
+    if dir.DirectoryID != nil {
+		err := dc.fsService.RecalculateDirectorySizeAndParents(ctx, dir.DirectoryID.Hex(), userID.(string))
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to recalculate parent directory sizes", nil, nil)
+			return
+		}
 	}
 
 	// If the directory is deleted successfully, return a success response

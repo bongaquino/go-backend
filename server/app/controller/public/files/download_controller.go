@@ -25,12 +25,6 @@ func NewDownloadController(fsService *service.FSService, ipfsService *service.IP
 }
 
 func (dc *DownloadController) Handle(ctx *gin.Context) {
-	userID, exists := ctx.Get("userID")
-	if !exists {
-		helper.FormatResponse(ctx, "error", http.StatusUnauthorized, "user ID not found in context", nil, nil)
-		return
-	}
-
 	fileID := ctx.Param("fileID")
 	if fileID == "" {
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "file ID is required", nil, nil)
@@ -41,7 +35,7 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	file, err := dc.fsService.ReadFileByIDUserID(ctx, fileID, userID.(string))
+	file, err := dc.fsService.ReadFileByID(ctx, fileID)
 	if err != nil {
 		status := http.StatusInternalServerError
 		message := "error reading file"
@@ -53,14 +47,19 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 		return
 	}
 
+	fileIsShared := file.IsShared
+	if !fileIsShared {
+		helper.FormatResponse(ctx, "error", http.StatusNotFound, "file not found", nil, nil)
+		return
+	}
+
 	fileHash := file.Hash
 	if fileHash == "" {
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "file hash is required for download", nil, nil)
 		return
 	}
 
-	// Change default value of stream query param to "true"
-	if ctx.DefaultQuery("stream", "true") == "true" {
+	if ctx.DefaultQuery("stream", "false") == "true" {
 		url := dc.ipfsService.GetFileURL(fileHash)
 		resp, err := dc.ipfsService.GetHTTPClient().Get(url)
 		if err != nil {

@@ -13,14 +13,15 @@ import (
 type DeleteController struct {
 	fsService   *service.FSService
 	ipfsService *service.IPFSService
-	userService  *service.UserService
+	userService *service.UserService
 }
 
 // NewDeleteController initializes a new DeleteController
-func NewDeleteController(fsService *service.FSService, ipfsService *service.IPFSService) *DeleteController {
+func NewDeleteController(fsService *service.FSService, ipfsService *service.IPFSService, userService *service.UserService) *DeleteController {
 	return &DeleteController{
 		fsService:   fsService,
 		ipfsService: ipfsService,
+		userService: userService,
 	}
 }
 
@@ -67,25 +68,31 @@ func (dc *DeleteController) Handle(ctx *gin.Context) {
 		return
 	}
 
+	err = dc.fsService.RecalculateDirectorySizeAndParents(ctx, file.DirectoryID.Hex(), userID.(string))
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to recalculate directory sizes", nil, nil)
+		return
+	}
+
 	// Get user limits (usage)
-    userLimit, err := dc.userService.GetUserLimits(ctx, userID.(string))
-    if err != nil {
-        helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to get user limits", nil, nil)
-        return
-    }
+	userLimit, err := dc.userService.GetUserLimits(ctx, userID.(string))
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to get user limits", nil, nil)
+		return
+	}
 
-    // Compute the new usage
-    newUsage := userLimit.BytesUsage - file.Size
-    if newUsage < 0 {
-        newUsage = 0
-    }
+	// Compute the new usage
+	newUsage := userLimit.BytesUsage - file.Size
+	if newUsage < 0 {
+		newUsage = 0
+	}
 
-    // Update user usage
-    err = dc.userService.UpdateUserUsage(ctx, userID.(string), newUsage)
-    if err != nil {
-        helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to update user usage", nil, nil)
-        return
-    }
+	// Update user usage
+	err = dc.userService.UpdateUserUsage(ctx, userID.(string), newUsage)
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to update user usage", nil, nil)
+		return
+	}
 
 	// If the file is successfully deleted, return a success response
 	helper.FormatResponse(ctx, "success", http.StatusOK, "file deleted successfully", nil, nil)

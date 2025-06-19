@@ -13,6 +13,7 @@ import (
 	"koneksi/server/app/controller/health"
 	"koneksi/server/app/controller/network"
 	"koneksi/server/app/controller/profile"
+	publicFiles "koneksi/server/app/controller/public/files"
 	"koneksi/server/app/controller/serviceaccounts"
 	"koneksi/server/app/controller/settings"
 	"koneksi/server/app/controller/settings/mfa"
@@ -152,6 +153,11 @@ type Controllers struct {
 				UpdateRole *members.UpdateRoleController
 				Remove     *members.RemoveController
 			}
+		}
+	}
+	Public struct {
+		Files struct {
+			Download *publicFiles.DownloadController
 		}
 	}
 }
@@ -343,7 +349,7 @@ func initControllers(s Services) Controllers {
 				Download: files.NewDownloadController(s.FS, s.IPFS),
 				Read:     files.NewReadController(s.FS, s.IPFS),
 				Update:   files.NewUpdateController(s.FS, s.IPFS),
-				Delete:   files.NewDeleteController(s.FS, s.IPFS),
+				Delete:   files.NewDeleteController(s.FS, s.IPFS, s.User),
 			},
 		},
 		Admin: struct {
@@ -414,6 +420,17 @@ func initControllers(s Services) Controllers {
 					UpdateRole: members.NewUpdateRoleController(s.Organization),
 					Remove:     members.NewRemoveController(s.Organization),
 				},
+			},
+		},
+		Public: struct {
+			Files struct {
+				Download *publicFiles.DownloadController
+			}
+		}{
+			Files: struct {
+				Download *publicFiles.DownloadController
+			}{
+				Download: publicFiles.NewDownloadController(s.FS, s.IPFS),
 			},
 		},
 	}

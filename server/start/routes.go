@@ -124,8 +124,7 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 
 	// Admin Routes
 	adminGroup := engine.Group("/admin")
-	// adminGroup.Use(container.Middleware.Authn.Handle, container.Middleware.Authz.Handle([]string{"system_admin"}))
-	adminGroup.Use(container.Middleware.Authn.Handle)
+	adminGroup.Use(container.Middleware.Authn.Handle, container.Middleware.Authz.Handle([]string{"system_admin"}))
 	{
 		// User Management Routes
 		adminGroup.GET("users/list", container.Controllers.Admin.Users.List.Handle)
@@ -144,5 +143,11 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 		adminGroup.POST("organizations/:orgID/members/add", container.Controllers.Admin.Organizations.Members.Add.Handle)
 		adminGroup.PUT("organizations/:orgID/members/:userID/update-role", container.Controllers.Admin.Organizations.Members.UpdateRole.Handle)
 		adminGroup.DELETE("organizations/:orgID/members/:userID/remove", container.Controllers.Admin.Organizations.Members.Remove.Handle)
+	}
+
+	// Public Routes
+	publicGroup := engine.Group("/public")
+	{
+		publicGroup.GET("/files/:fileID", container.Controllers.Public.Files.Download.Handle)
 	}
 }
