@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"net/url"
 	"koneksi/server/core/env"
 )
 
@@ -36,11 +35,6 @@ func (config *MongoConfig) GetMongoUri() string {
         return config.MongoConnectionString
     }
 
-    // URL-encode username and password to handle special characters
-    encodedUser := url.QueryEscape(config.MongoUser)
-    encodedPassword := url.QueryEscape(config.MongoPassword)
-
-    return fmt.Sprintf("mongodb://%s:%s@%s:%d/%s?authSource=%s",
-        encodedUser, encodedPassword, config.MongoHost, config.MongoPort, config.MongoDatabase, config.MongoDatabase)
-
+    return fmt.Sprintf("mongodb://%s:%s@%s:%d/%s?authSource=%s&authMechanism=SCRAM-SHA-1",
+        config.MongoUser, config.MongoPassword, config.MongoHost, config.MongoPort, config.MongoDatabase, config.MongoDatabase)
 }
