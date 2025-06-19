@@ -2,6 +2,7 @@ package env
 
 import (
 	"koneksi/server/core/logger"
+	"os"
 
 	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
@@ -37,9 +38,17 @@ type Env struct {
 func LoadEnv() *Env {
 	var env Env
 
-	// Load environment variables from .env file
-	if err := godotenv.Load(); err != nil {
-		logger.Log.Fatal("no .env file found")
+	// Check MODE from environment first
+	mode := os.Getenv("MODE")
+	if mode == "" {
+		mode = "debug" // fallback default
+	}
+
+	// Only load .env file if not in release mode
+	if mode != "release" {
+		if err := godotenv.Load(); err != nil {
+			logger.Log.Fatal("no .env file found")
+		}
 	}
 
 	// Load environment variables into the struct
