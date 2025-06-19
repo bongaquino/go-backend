@@ -54,7 +54,7 @@ func LoadEnv() *Env {
 	// Load environment variables into the struct
 	err := envconfig.Process("", &env)
 	if err != nil {
-		logger.Log.Fatal("failed to load environment variables: " + err.Error())
+		logger.Log.Info("failed to load environment variables: " + err.Error())
 	}
 
 	return &env
