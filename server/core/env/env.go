@@ -1,6 +1,7 @@
 package env
 
 import (
+	"fmt"
 	"koneksi/server/core/logger"
 	"os"
 
@@ -55,6 +56,13 @@ func LoadEnv() *Env {
 	err := envconfig.Process("", &env)
 	if err != nil {
 		logger.Log.Info("failed to load environment variables: " + err.Error())
+	}
+
+	// Debug: Log JWT_SECRET value (masked for security)
+	if env.JWTSecret != "" {
+		logger.Log.Info("JWT_SECRET loaded successfully", logger.String("length", fmt.Sprintf("%d", len(env.JWTSecret))))
+	} else {
+		logger.Log.Error("JWT_SECRET is empty or not found")
 	}
 
 	return &env
