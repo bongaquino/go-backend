@@ -1,6 +1,7 @@
 package env
 
 import (
+	"fmt"
 	"koneksi/server/core/logger"
 	"os"
 
@@ -23,7 +24,7 @@ type Env struct {
 	MongoConnectionString string `envconfig:"MONGO_CONNECTION_STRING" default:""`
 	RedisHost             string `envconfig:"REDIS_HOST" default:"redis"`
 	RedisPort             int    `envconfig:"REDIS_PORT" default:"6379"`
-	RedisPassword         string `envconfig:"REDIS_PASSWORD" required:"true"`
+	RedisPassword         string `envconfig:"REDIS_PASSWORD"`
 	RedisPrefix           string `envconfig:"REDIS_PREFIX" required:"true"`
 	JWTSecret             string `envconfig:"JWT_SECRET" required:"true"`
 	JWTTokenExpiration    int    `envconfig:"JWT_TOKEN_EXPIRATION" default:"3600"`
@@ -55,6 +56,13 @@ func LoadEnv() *Env {
 	err := envconfig.Process("", &env)
 	if err != nil {
 		logger.Log.Info("failed to load environment variables: " + err.Error())
+	}
+
+	// Debug: Log JWT_SECRET value (masked for security)
+	if env.JWTSecret != "" {
+		logger.Log.Info("JWT_SECRET loaded successfully", logger.String("length", fmt.Sprintf("%d", len(env.JWTSecret))))
+	} else {
+		logger.Log.Error("JWT_SECRET is empty or not found")
 	}
 
 	return &env
