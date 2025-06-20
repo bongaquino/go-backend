@@ -12,13 +12,15 @@ import (
 type DeleteController struct {
 	fsService   *service.FSService
 	ipfsService *service.IPFSService
+	userService *service.UserService
 }
 
 // NewDeleteController initializes a new DeleteController
-func NewDeleteController(fsService *service.FSService, ipfsService *service.IPFSService) *DeleteController {
+func NewDeleteController(fsService *service.FSService, ipfsService *service.IPFSService, userService *service.UserService) *DeleteController {
 	return &DeleteController{
 		fsService:   fsService,
 		ipfsService: ipfsService,
+		userService: userService,
 	}
 }
 
@@ -71,6 +73,27 @@ func (dc *DeleteController) Handle(ctx *gin.Context) {
 			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to recalculate parent directory sizes", nil, nil)
 			return
 		}
+	}
+	// Get user limits
+	userLimit, err := dc.userService.GetUserLimits(ctx, userID.(string))
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to get user limits", nil, nil)
+		return
+	}
+
+	// Compute the new usage by subtracting the directory size from the current usage
+	// Since the directory is deleted, we need to decrease the usage
+	dirSize := dir.Size
+	newUsage := userLimit.BytesUsage - dirSize
+	if newUsage < 0 {
+		newUsage = 0 // Ensure usage doesn't go negative
+	}
+
+	// Update user usage
+	err = dc.userService.UpdateUserUsage(ctx, userID.(string), newUsage)
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to update user usage", nil, nil)
+		return
 	}
 
 	// If the directory is deleted successfully, return a success response

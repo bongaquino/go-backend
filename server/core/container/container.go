@@ -336,7 +336,7 @@ func initControllers(s Services) Controllers {
 				Create: directories.NewCreateController(s.FS, s.IPFS),
 				Read:   directories.NewReadController(s.FS, s.IPFS),
 				Update: directories.NewUpdateController(s.FS, s.IPFS),
-				Delete: directories.NewDeleteController(s.FS, s.IPFS),
+				Delete: directories.NewDeleteController(s.FS, s.IPFS, s.User),
 			},
 			Files: struct {
 				Upload   *files.UploadController
