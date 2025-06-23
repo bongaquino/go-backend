@@ -122,6 +122,7 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 	stream := ctx.Query("stream")
 	if stream == "false" {
 		// Non-streaming mode: read the entire file into memory first.
+		ctx.Writer.Header().Set("X-Upload-Mode", "non-stream")
 		fileBytes, err := io.ReadAll(src)
 		if err != nil {
 			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to read file content for non-streaming upload", nil, nil)
@@ -130,6 +131,7 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 		cid, uploadErr = uc.ipfsService.UploadFile(fileName, bytes.NewReader(fileBytes))
 	} else {
 		// Streaming mode (default): pass the file stream directly.
+		ctx.Writer.Header().Set("X-Upload-Mode", "stream")
 		cid, uploadErr = uc.ipfsService.UploadFile(fileName, src)
 	}
 
