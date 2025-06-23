@@ -68,19 +68,25 @@ func (p *IPFSProvider) Pin(filename string, file io.Reader) (string, error) {
 	pr, pw := io.Pipe()
 	writer := multipart.NewWriter(pw)
 
+	errChan := make(chan error, 1)
+
 	// Write the multipart form in a goroutine
 	go func() {
 		defer pw.Close()
 		defer writer.Close()
 		part, err := writer.CreateFormFile("file", filepath.Base(filename))
 		if err != nil {
-			pw.CloseWithError(fmt.Errorf("failed to create form file: %w", err))
+			pw.CloseWithError(err)
+			errChan <- fmt.Errorf("failed to create form file: %w", err)
 			return
 		}
-		if _, err = io.Copy(part, file); err != nil {
-			pw.CloseWithError(fmt.Errorf("failed to copy file content: %w", err))
+		_, err = io.Copy(part, file)
+		if err != nil {
+			pw.CloseWithError(err)
+			errChan <- fmt.Errorf("failed to copy file content: %w", err)
 			return
 		}
+		errChan <- nil
 	}()
 
 	// Create the HTTP request
@@ -97,24 +103,29 @@ func (p *IPFSProvider) Pin(filename string, file io.Reader) (string, error) {
 	}
 	defer resp.Body.Close()
 
+	if err := <-errChan; err != nil {
+		return "", err
+	}
+
 	// Check for non-200 status codes
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		body, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("unexpected status code: %d, body: %s", resp.StatusCode, string(body))
 	}
 
 	// Parse the response body
-	var result struct {
+	var apiResult struct {
 		Hash string `json:"Hash"`
 	}
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&apiResult); err != nil {
 		return "", fmt.Errorf("failed to decode response: %w", err)
 	}
 
-	if result.Hash == "" {
+	if apiResult.Hash == "" {
 		return "", fmt.Errorf("empty hash in response")
 	}
 
-	return result.Hash, nil
+	return apiResult.Hash, nil
 }
 
 // GetFileURL returns the public URL to access a pinned file using its IPFS hash

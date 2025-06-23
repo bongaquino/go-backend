@@ -1,6 +1,8 @@
 package files
 
 import (
+	"bytes"
+	"io"
 	"koneksi/server/app/dto"
 	"koneksi/server/app/helper"
 	"koneksi/server/app/model"
@@ -37,6 +39,12 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 		return
 	}
 
+	userObjID, err := primitive.ObjectIDFromHex(userID.(string))
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid user ID format", nil, nil)
+		return
+	}
+
 	// Get directory_id from request body
 	var request dto.UploadFileDTO
 	_ = ctx.ShouldBind(&request)
@@ -51,6 +59,12 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 			return
 		}
 		directoryID = rootDir.ID.Hex()
+	}
+
+	dirObjID, err := primitive.ObjectIDFromHex(directoryID)
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid directory ID format", nil, nil)
+		return
 	}
 
 	// Check if user has access to the directory
@@ -93,35 +107,39 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	// Stream the file and upload directly to IPFS
-	uploadedFile, err := file.Open()
+	// Open the uploaded file
+	src, err := file.Open()
 	if err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to open uploaded file", nil, nil)
 		return
 	}
-	defer uploadedFile.Close()
-	cid, err := uc.ipfsService.UploadFile(file.Filename, uploadedFile)
-	if err != nil {
+	defer src.Close()
+
+	var cid string
+	var uploadErr error
+
+	// Check for stream query param to decide upload mode
+	stream := ctx.Query("stream")
+	if stream == "false" {
+		// Non-streaming mode: read the entire file into memory first.
+		fileBytes, err := io.ReadAll(src)
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to read file content for non-streaming upload", nil, nil)
+			return
+		}
+		cid, uploadErr = uc.ipfsService.UploadFile(fileName, bytes.NewReader(fileBytes))
+	} else {
+		// Streaming mode (default): pass the file stream directly.
+		cid, uploadErr = uc.ipfsService.UploadFile(fileName, src)
+	}
+
+	if uploadErr != nil {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to upload file to IPFS", nil, nil)
 		return
 	}
 
-	// Convert userID string to primitive.ObjectID
-	userObjID, err := primitive.ObjectIDFromHex(userID.(string))
-	if err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "invalid user ID format", nil, nil)
-		return
-	}
-
-	// Convert directoryID string to primitive.ObjectID
-	dirObjID, err := primitive.ObjectIDFromHex(directoryID)
-	if err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "invalid directory ID format", nil, nil)
-		return
-	}
-
-	// Build the file model
-	fileModel := &model.File{
+	// Create a new file model
+	newFile := &model.File{
 		UserID:      userObjID,
 		DirectoryID: &dirObjID,
 		Name:        fileName,
@@ -132,7 +150,7 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 	}
 
 	// Save the file metadata to the database
-	err = uc.fsService.CreateFile(ctx, fileModel)
+	err = uc.fsService.CreateFile(ctx, newFile)
 	if err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to save file metadata", nil, nil)
 		return
@@ -157,7 +175,7 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 	// Return response
 	helper.FormatResponse(ctx, "success", http.StatusOK, "file uploaded successfully", gin.H{
 		"directory_id": directoryID,
-		"file_id":      fileModel.ID.Hex(),
+		"file_id":      newFile.ID.Hex(),
 		"name":         fileName,
 		"hash":         cid,
 		"size":         fileSize,
