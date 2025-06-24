@@ -132,7 +132,7 @@ func (uc *UpdateController) Handle(ctx *gin.Context) {
 		meta := map[string]interface{}{
 			"is_trimmed": true,
 		}
-		helper.FormatResponse(ctx, "success", http.StatusOK, "directory updated successfully", nil, meta)
+		helper.FormatResponse(ctx, "success", http.StatusOK, "directory created successfully", nil, meta)
 		return
 	}
 
