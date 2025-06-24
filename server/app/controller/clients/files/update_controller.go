@@ -5,6 +5,8 @@ import (
 	"koneksi/server/app/helper"
 	"koneksi/server/app/service"
 	"net/http"
+	"path/filepath"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -28,6 +30,32 @@ func (uc *UpdateController) Handle(ctx *gin.Context) {
 	var request dto.UpdateFileDTO
 	if err := uc.validatePayload(ctx, &request); err != nil {
 		return
+	}
+	// Limit file name length to 255 characters while preserving extension
+	isTrimmed := false
+	if request.Name != "" && len(request.Name) > 255 {
+		// Get the file extension
+		ext := filepath.Ext(request.Name)
+		
+		// Calculate the base name (filename without extension)
+		baseName := strings.TrimSuffix(request.Name, ext)
+		
+		// Calculate how much we need to trim from the base name
+		maxBaseNameLength := 255 - len(ext)
+		
+		if maxBaseNameLength > 0 {
+			// Trim the base name if it's too long
+			if len(baseName) > maxBaseNameLength {
+				baseName = baseName[:maxBaseNameLength]
+			}
+			// Reconstruct the filename with preserved extension
+			request.Name = baseName + ext
+		} else {
+			// If extension itself is >= 255 characters, just truncate the whole name
+			request.Name = request.Name[:255]
+		}
+		
+		isTrimmed = true
 	}
 
 	// Extract user ID from the context
@@ -114,6 +142,14 @@ func (uc *UpdateController) Handle(ctx *gin.Context) {
 	err = uc.fsService.RecalculateDirectorySizeAndParents(ctx, newDirectoryID, userID.(string))
 	if err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to recalculate directory sizes", nil, nil)
+		return
+	}
+
+	if isTrimmed {
+		meta := map[string]interface{}{
+			"is_trimmed": true,
+		}
+		helper.FormatResponse(ctx, "success", http.StatusOK, "file updated successfully", nil, meta)
 		return
 	}
 

@@ -8,6 +8,8 @@ import (
 	"koneksi/server/app/model"
 	"koneksi/server/app/service"
 	"net/http"
+	"path/filepath"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -88,11 +90,37 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "failed to get uploaded file", nil, nil)
 		return
 	}
-
 	// Get file metadata
 	fileName := file.Filename
 	fileSize := file.Size
 	fileType := file.Header.Get("Content-Type")
+
+	// Limit file name length to 255 characters while preserving extension
+	isTrimmed := false
+	if fileName != "" && len(fileName) > 255 {
+		// Get the file extension
+		ext := filepath.Ext(fileName)
+		
+		// Calculate the base name (filename without extension)
+		baseName := strings.TrimSuffix(fileName, ext)
+		
+		// Calculate how much we need to trim from the base name
+		maxBaseNameLength := 255 - len(ext)
+		
+		if maxBaseNameLength > 0 {
+			// Trim the base name if it's too long
+			if len(baseName) > maxBaseNameLength {
+				baseName = baseName[:maxBaseNameLength]
+			}
+			// Reconstruct the filename with preserved extension
+			fileName = baseName + ext
+		} else {
+			// If extension itself is >= 255 characters, just truncate the whole name
+			fileName = fileName[:255]
+		}
+		
+		isTrimmed = true
+	}
 
 	// Get user limits
 	userLimit, err := uc.userService.GetUserLimits(ctx, userID.(string))
@@ -171,6 +199,21 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 	err = uc.userService.UpdateUserUsage(ctx, userID.(string), newUsage)
 	if err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to update user usage", nil, nil)
+		return
+	}
+
+	if isTrimmed {
+		meta := map[string]interface{}{
+			"is_trimmed": true,
+		}
+		helper.FormatResponse(ctx, "success", http.StatusOK, "file uploaded successfully", gin.H{
+			"directory_id": directoryID,
+			"file_id":      newFile.ID.Hex(),
+			"name":         fileName,
+			"hash":         cid,
+			"size":         fileSize,
+			"content_type": fileType,
+		}, meta)
 		return
 	}
 

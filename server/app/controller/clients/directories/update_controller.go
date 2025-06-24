@@ -30,6 +30,13 @@ func (uc *UpdateController) Handle(ctx *gin.Context) {
 		return
 	}
 
+	// Limit directory name length to 255 characters
+	isTrimmed := false
+	if request.Name != "" && len(request.Name) > 255 {
+		request.Name = request.Name[:255]
+		isTrimmed = true
+	}
+
 	// Extract user ID from the context
 	userID, exists := ctx.Get("userID")
 	if !exists {
@@ -119,6 +126,14 @@ func (uc *UpdateController) Handle(ctx *gin.Context) {
 			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to recalculate new parent directory sizes", nil, nil)
 			return
 		}
+	}
+
+	if isTrimmed {
+		meta := map[string]interface{}{
+			"is_trimmed": true,
+		}
+		helper.FormatResponse(ctx, "success", http.StatusOK, "directory created successfully", nil, meta)
+		return
 	}
 
 	// Return success response
