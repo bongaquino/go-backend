@@ -31,6 +31,13 @@ func (cc *CreateController) Handle(ctx *gin.Context) {
 		return
 	}
 
+	// Limit directory name length to 255 characters
+	isTrimmed := false
+	if request.Name != "" && len(request.Name) > 255 {
+		request.Name = request.Name[:255]
+		isTrimmed = true
+	}
+
 	// Extract user ID from the context
 	userID, exists := ctx.Get("userID")
 	if !exists {
@@ -88,6 +95,14 @@ func (cc *CreateController) Handle(ctx *gin.Context) {
 			"createdAt": directory.CreatedAt,
 			"updatedAt": directory.UpdatedAt,
 		},
+	}
+
+	if isTrimmed {
+		meta := map[string]interface{}{
+			"is_trimmed": true,
+		}
+		helper.FormatResponse(ctx, "success", http.StatusOK, "directory created successfully", response, meta)
+		return
 	}
 
 	// Return success response
