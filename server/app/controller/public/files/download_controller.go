@@ -90,7 +90,7 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "password is required for password-protected access", nil, nil)
 			return
 		}
-		// Check the password against stored hash
+		// Get the file access record to retrieve the hashed password
 		fileAccess, err := dc.fsService.ReadFileAccessByFileID(ctx, fileID)
 		if err != nil {
 			if err.Error() == "file access not found" {
@@ -101,7 +101,13 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 			return
 		}
 		hashedPassword := fileAccess.Password
-		isHashValid := helper.CheckHash(password, hashedPassword)
+		// If no password is set, return an error
+		if hashedPassword == nil {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid password", nil, nil)
+			return
+		}
+		// Validate the provided password against the stored hash
+		isHashValid := helper.CheckHash(password, *hashedPassword)
 		if !isHashValid {
 			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid password", nil, nil)
 			return
