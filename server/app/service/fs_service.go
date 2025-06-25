@@ -458,6 +458,21 @@ func (fs *FSService) CreateFileAccess(ctx context.Context, fileAccess *model.Fil
 	return nil
 }
 
+func (fs *FSService) ReadFileAccessByFileID(ctx context.Context, fileID string) (*model.FileAccess, error) {
+	// Fetch the file access record by file ID from the repository
+	fileAccess, err := fs.fileAccessRepo.ReadByFileID(ctx, fileID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check if the file access record exists
+	if fileAccess == nil {
+		return nil, errors.New("file access not found")
+	}
+
+	return fileAccess, nil
+}
+
 func (fs *FSService) DeleteFileAccessByFileID(ctx context.Context, fileID string) error {
 	// Delete all file access records for the specified file ID
 	err := fs.fileAccessRepo.DeleteByFileID(ctx, fileID)

@@ -110,12 +110,8 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 			return
 		}
 		// Validate the password
-		isValid, err := helper.ValidatePassword(password)
+		_, err := helper.ValidatePassword(password)
 		if err != nil {
-			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to validate password", nil, nil)
-			return
-		}
-		if !isValid {
 			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid password format", nil, nil)
 			return
 		}

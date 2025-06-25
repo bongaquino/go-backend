@@ -29,6 +29,7 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 	// Load file configuration
 	fileConfig := config.LoadFileConfig()
 
+	// Extract user ID from the context
 	fileID := ctx.Param("fileID")
 	if fileID == "" {
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "file ID is required", nil, nil)
@@ -39,6 +40,7 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 		return
 	}
 
+	// Read file by ID
 	file, err := dc.fsService.ReadFileByID(ctx, fileID)
 	if err != nil {
 		status := http.StatusInternalServerError
@@ -51,9 +53,10 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 		return
 	}
 
+	// Get file hash
 	fileHash := file.Hash
 	if fileHash == "" {
-		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "file hash is required for download", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusNotFound, "file hash not found", nil, nil)
 		return
 	}
 
@@ -78,6 +81,29 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 		}
 		if fileIDFromKey != fileID {
 			helper.FormatResponse(ctx, "error", http.StatusNotFound, "file not found", nil, nil)
+			return
+		}
+	// If file is password-protected, validate the password
+	case fileConfig.PasswordAccess:
+		password := ctx.Query("password")
+		if password == "" {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "password is required for password-protected access", nil, nil)
+			return
+		}
+		// Check the password against stored hash
+		fileAccess, err := dc.fsService.ReadFileAccessByFileID(ctx, fileID)
+		if err != nil {
+			if err.Error() == "file access not found" {
+				helper.FormatResponse(ctx, "error", http.StatusNotFound, "file access not found", nil, nil)
+				return
+			}
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to read file access", nil, nil)
+			return
+		}
+		hashedPassword := fileAccess.Password
+		isHashValid := helper.CheckHash(password, hashedPassword)
+		if !isHashValid {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid password", nil, nil)
 			return
 		}
 	}
