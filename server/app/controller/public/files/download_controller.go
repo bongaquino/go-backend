@@ -59,13 +59,28 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 
 	// Get file access
 	fileAccess := file.Access
-
-	// Check if access is allowed
-	if fileAccess == fileConfig.PrivateAccess {
+	switch fileAccess {
+	// If file is private, no access is allowed
+	case fileConfig.PrivateAccess:
 		helper.FormatResponse(ctx, "error", http.StatusNotFound, "file not found", nil, nil)
 		return
+	// If file is temporary, validate the file key
+	case fileConfig.TemporaryAccess:
+		fileKey := ctx.Query("key")
+		if fileKey == "" {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "file key is required for temporary access", nil, nil)
+			return
+		}
+		fileIDFromKey, err := dc.fsService.GetTemporaryFileKey(ctx, fileKey)
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid or expired file key", nil, nil)
+			return
+		}
+		if fileIDFromKey != fileID {
+			helper.FormatResponse(ctx, "error", http.StatusNotFound, "file not found", nil, nil)
+			return
+		}
 	}
-
 	if ctx.DefaultQuery("stream", "false") == "true" {
 		url := dc.ipfsService.GetFileURL(fileHash)
 		resp, err := dc.ipfsService.GetHTTPClient().Get(url)

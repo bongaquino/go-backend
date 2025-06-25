@@ -431,11 +431,20 @@ func (fs *FSService) UpdateFileAccess(ctx context.Context, ID string, userID str
 	return nil
 }
 
-func (fs *FSService) SaveTemporaryFileKey(ctx context.Context, fileKey string, fileID string, duration time.Duration) error {
+func (fs *FSService) SetTemporaryFileKey(ctx context.Context, fileKey string, fileID string, duration time.Duration) error {
 	// Save the temporary access key in Redis
 	err := fs.redisProvider.Set(ctx, "file_key:"+fileKey, fileID, duration)
 	if err != nil {
 		return fmt.Errorf("failed to save temporary file key: %w", err)
 	}
 	return nil
+}
+
+func (fs *FSService) GetTemporaryFileKey(ctx context.Context, fileKey string) (string, error) {
+	// Retrieve the temporary access key from Redis
+	fileID, err := fs.redisProvider.Get(ctx, "file_key:"+fileKey)
+	if err != nil {
+		return "", fmt.Errorf("failed to retrieve temporary file key: %w", err)
+	}
+	return fileID, nil
 }

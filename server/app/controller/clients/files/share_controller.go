@@ -49,6 +49,7 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 
 	// Validate the access type and prepare the request body if needed
 	var requestBody map[string]any
+	var responseBody map[string]any
 	switch accessType {
 	case fileConfig.PublicAccess, fileConfig.PrivateAccess:
 		// No body needed
@@ -64,7 +65,7 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 			return
 		}
 		// Generate a temporary file key
-		fileKey, err := helper.GenerateOTPSecret(fileID)
+		fileKey, err := helper.GenerateFileKey(fileID)
 		if err != nil {
 			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to generate temporary file key", nil, nil)
 			return
@@ -76,9 +77,13 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 			return
 		}
 		duration := time.Duration(int(durationVal)) * time.Second
-		if err := sc.fsService.SaveTemporaryFileKey(ctx, fileKey, fileID, duration); err != nil {
+		if err := sc.fsService.SetTemporaryFileKey(ctx, fileKey, fileID, duration); err != nil {
 			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to save temporary file key", nil, nil)
 			return
+		}
+		responseBody = map[string]any{
+			"file_key": fileKey,
+			"duration": duration.String(),
 		}
 	case fileConfig.PasswordAccess:
 		requestBody = make(map[string]any)
@@ -125,8 +130,5 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 	}
 
 	// Return success response
-	if accessType == fileConfig.EmailAccess {
-		helper.FormatResponse(ctx, "success", http.StatusOK, "file shared successfully", nil, requestBody)
-	}
-	helper.FormatResponse(ctx, "success", http.StatusOK, "file shared successfully", nil, nil)
+	helper.FormatResponse(ctx, "success", http.StatusOK, "file shared successfully", responseBody, nil)
 }
