@@ -191,6 +191,10 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 				helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to get user by email", nil, nil)
 				return
 			}
+			// Skip if the user ID is the same as the owner ID
+			if user.ID.Hex() == ownerObjID.Hex() {
+				continue
+			}
 			// Create the file access record
 			fileAccess := &model.FileAccess{
 				FileID:      fileObjID,

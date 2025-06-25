@@ -24,6 +24,28 @@ func NewFileAccessRepository(mongoProvider *provider.MongoProvider) *FileAccessR
 	}
 }
 
+func (r *FileAccessRepository) ListByFileID(ctx context.Context, fileID string) ([]model.FileAccess, error) {
+	objectID, err := primitive.ObjectIDFromHex(fileID)
+	if err != nil {
+		logger.Log.Error("invalid file ID format", logger.Error(err))
+		return nil, err
+	}
+
+	cursor, err := r.collection.Find(ctx, bson.M{"file_id": objectID})
+	if err != nil {
+		logger.Log.Error("error listing file access by file ID", logger.Error(err))
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var fileAccessList []model.FileAccess
+	if err = cursor.All(ctx, &fileAccessList); err != nil {
+		logger.Log.Error("error decoding file access list", logger.Error(err))
+		return nil, err
+	}
+	return fileAccessList, nil
+}
+
 func (r *FileAccessRepository) Create(ctx context.Context, fileAccess *model.FileAccess) error {
 	fileAccess.ID = primitive.NewObjectID()
 	fileAccess.CreatedAt = time.Now()

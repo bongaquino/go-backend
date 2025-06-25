@@ -64,7 +64,7 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 	fileAccess := file.Access
 	switch fileAccess {
 	// If file is private, no access is allowed
-	case fileConfig.PrivateAccess:
+	case fileConfig.PrivateAccess, fileConfig.EmailAccess:
 		helper.FormatResponse(ctx, "error", http.StatusNotFound, "file not found", nil, nil)
 		return
 	// If file is temporary, validate the file key
