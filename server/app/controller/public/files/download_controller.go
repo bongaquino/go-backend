@@ -47,12 +47,6 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	fileIsShared := file.IsShared
-	if !fileIsShared {
-		helper.FormatResponse(ctx, "error", http.StatusNotFound, "file not found", nil, nil)
-		return
-	}
-
 	fileHash := file.Hash
 	if fileHash == "" {
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "file hash is required for download", nil, nil)

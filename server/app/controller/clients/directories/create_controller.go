@@ -64,10 +64,10 @@ func (cc *CreateController) Handle(ctx *gin.Context) {
 		dirObjectID = &tmpID
 	} else {
 		rootDir, _, _, err := cc.fsService.ReadRootDirectory(ctx, userID.(string))
-        if err != nil {
-            helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to get root directory", nil, nil)
-            return
-        }
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to get root directory", nil, nil)
+			return
+		}
 		dirObjectID = &rootDir.ID
 	}
 
@@ -89,11 +89,11 @@ func (cc *CreateController) Handle(ctx *gin.Context) {
 	// Prepare the response data
 	response := gin.H{
 		"directory": gin.H{
-			"id":        directory.ID.Hex(),
-			"name":      directory.Name,
-			"size":      directory.Size,
-			"createdAt": directory.CreatedAt,
-			"updatedAt": directory.UpdatedAt,
+			"id":         directory.ID.Hex(),
+			"name":       directory.Name,
+			"size":       directory.Size,
+			"created_at": directory.CreatedAt,
+			"updated_at": directory.UpdatedAt,
 		},
 	}
 

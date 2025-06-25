@@ -348,16 +348,9 @@ func (fs *FSService) UpdateFile(ctx context.Context, ID string, userID string, r
 		fileName = request.Name
 	}
 
-	// If the request contains a new shared status, use it; otherwise, keep the existing status
-	fileIsShared := file.IsShared
-	if request.IsShared != nil {
-		fileIsShared = *request.IsShared
-	}
-
 	// Prepare update data
 	updateData := bson.M{
-		"name":      fileName,
-		"is_shared": fileIsShared,
+		"name": fileName,
 	}
 
 	// If a new directory ID is provided, validate and include it

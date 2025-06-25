@@ -14,8 +14,8 @@ type File struct {
 	Hash        string              `bson:"hash"`
 	Size        int64               `bson:"size"`
 	ContentType string              `bson:"content_type"`
+	Access      string              `bson:"access"` // "private", "public", "password", "email"
 	IsDeleted   bool                `bson:"is_deleted"`
-	IsShared    bool                `bson:"is_shared"`
 	CreatedAt   time.Time           `bson:"created_at"`
 	UpdatedAt   time.Time           `bson:"updated_at"`
 }

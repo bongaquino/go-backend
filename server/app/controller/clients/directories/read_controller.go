@@ -62,22 +62,22 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 
 		// Format the directory data
 		directoryData := gin.H{
-			"id":        directory.ID.Hex(),
-			"name":      directory.Name,
-			"size":      directory.Size,
-			"createdAt": directory.CreatedAt,
-			"updatedAt": directory.UpdatedAt,
+			"id":         directory.ID.Hex(),
+			"name":       directory.Name,
+			"size":       directory.Size,
+			"created_at": directory.CreatedAt,
+			"updated_at": directory.UpdatedAt,
 		}
 
 		// Format the subdirectories
 		subDirectoriesData := make([]gin.H, len(subDirectories))
 		for i, subDir := range subDirectories {
 			subDirectoriesData[i] = gin.H{
-				"id":        subDir.ID.Hex(),
-				"name":      subDir.Name,
-				"size":      subDir.Size,
-				"createdAt": subDir.CreatedAt,
-				"updatedAt": subDir.UpdatedAt,
+				"id":         subDir.ID.Hex(),
+				"name":       subDir.Name,
+				"size":       subDir.Size,
+				"created_at": subDir.CreatedAt,
+				"updated_at": subDir.UpdatedAt,
 			}
 		}
 
@@ -85,15 +85,15 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 		filesData := make([]gin.H, len(files))
 		for i, file := range files {
 			filesData[i] = gin.H{
-				"id":          file.ID.Hex(),
-				"directoryId": file.DirectoryID.Hex(),
-				"name":        file.Name,
-				"hash":        file.Hash,
-				"size":        file.Size,
-				"contentType": file.ContentType,
-				"isShared":    file.IsShared,
-				"createdAt":   file.CreatedAt,
-				"updatedAt":   file.UpdatedAt,
+				"id":           file.ID.Hex(),
+				"directory_id": file.DirectoryID.Hex(),
+				"name":         file.Name,
+				"hash":         file.Hash,
+				"size":         file.Size,
+				"content_type": file.ContentType,
+				"access":       file.Access,
+				"created_at":   file.CreatedAt,
+				"updated_at":   file.UpdatedAt,
 			}
 		}
 
@@ -138,22 +138,22 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 
 		// Format the directory data
 		directoryData := gin.H{
-			"id":        directory.ID.Hex(),
-			"name":      directory.Name,
-			"size":      directory.Size,
-			"createdAt": directory.CreatedAt,
-			"updatedAt": directory.UpdatedAt,
+			"id":         directory.ID.Hex(),
+			"name":       directory.Name,
+			"size":       directory.Size,
+			"created_at": directory.CreatedAt,
+			"updated_at": directory.UpdatedAt,
 		}
 
 		// Format the subdirectories
 		subDirectoriesData := make([]gin.H, len(subDirectories))
 		for i, subDir := range subDirectories {
 			subDirectoriesData[i] = gin.H{
-				"id":        subDir.ID.Hex(),
-				"name":      subDir.Name,
-				"size":      subDir.Size,
-				"createdAt": subDir.CreatedAt,
-				"updatedAt": subDir.UpdatedAt,
+				"id":         subDir.ID.Hex(),
+				"name":       subDir.Name,
+				"size":       subDir.Size,
+				"created_at": subDir.CreatedAt,
+				"updated_at": subDir.UpdatedAt,
 			}
 		}
 
@@ -161,15 +161,15 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 		filesData := make([]gin.H, len(files))
 		for i, file := range files {
 			filesData[i] = gin.H{
-				"id":          file.ID.Hex(),
-				"directoryId": file.DirectoryID.Hex(),
-				"name":        file.Name,
-				"hash":        file.Hash,
-				"size":        file.Size,
-				"contentType": file.ContentType,
-				"isShared":    file.IsShared,
-				"createdAt":   file.CreatedAt,
-				"updatedAt":   file.UpdatedAt,
+				"id":           file.ID.Hex(),
+				"directory_id": file.DirectoryID.Hex(),
+				"name":         file.Name,
+				"hash":         file.Hash,
+				"size":         file.Size,
+				"content_type": file.ContentType,
+				"access":       file.Access,
+				"created_at":   file.CreatedAt,
+				"updated_at":   file.UpdatedAt,
 			}
 		}
 

@@ -80,7 +80,7 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 		"hash":         file.Hash,
 		"content_type": file.ContentType,
 		"chunks":       chunks,
-		"is_shared":    file.IsShared,
+		"access":       file.Access,
 		"created_at":   file.CreatedAt,
 		"updated_at":   file.UpdatedAt,
 	}, nil)
