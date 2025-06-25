@@ -54,6 +54,23 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 		return
 	}
 
+	// Check for optional include_chunks query param (default: false)
+	includeChunks := false
+	if val, ok := ctx.GetQuery("include_chunks"); ok && (val == "true") {
+		includeChunks = true
+	}
+
+	var chunks any = nil
+	if includeChunks {
+		// List file chunks
+		var err error
+		chunks, err = rc.ipfsService.ListFileChunks(file.Hash)
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error listing file chunks", nil, nil)
+			return
+		}
+	}
+
 	// Return the file details
 	helper.FormatResponse(ctx, "success", http.StatusOK, "file read successfully", gin.H{
 		"id":           file.ID.Hex(),
@@ -62,6 +79,7 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 		"size":         file.Size,
 		"hash":         file.Hash,
 		"content_type": file.ContentType,
+		"chunks":       chunks,
 		"is_shared":    file.IsShared,
 		"created_at":   file.CreatedAt,
 		"updated_at":   file.UpdatedAt,
