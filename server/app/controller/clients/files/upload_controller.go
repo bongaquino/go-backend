@@ -7,6 +7,7 @@ import (
 	"koneksi/server/app/helper"
 	"koneksi/server/app/model"
 	"koneksi/server/app/service"
+	"koneksi/server/config"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -34,6 +35,9 @@ func NewUploadController(fsService *service.FSService,
 }
 
 func (uc *UploadController) Handle(ctx *gin.Context) {
+	// Load file configuration
+	fileConfig := config.LoadFileConfig()
+
 	// Extract user ID from the context
 	userID, exists := ctx.Get("userID")
 	if !exists {
@@ -100,13 +104,13 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 	if fileName != "" && len(fileName) > 255 {
 		// Get the file extension
 		ext := filepath.Ext(fileName)
-		
+
 		// Calculate the base name (filename without extension)
 		baseName := strings.TrimSuffix(fileName, ext)
-		
+
 		// Calculate how much we need to trim from the base name
 		maxBaseNameLength := 255 - len(ext)
-		
+
 		if maxBaseNameLength > 0 {
 			// Trim the base name if it's too long
 			if len(baseName) > maxBaseNameLength {
@@ -118,7 +122,7 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 			// If extension itself is >= 255 characters, just truncate the whole name
 			fileName = fileName[:255]
 		}
-		
+
 		isTrimmed = true
 	}
 
@@ -176,6 +180,7 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 		Hash:        cid,
 		Size:        fileSize,
 		ContentType: fileType,
+		Access:      fileConfig.DefaultAccess,
 		IsDeleted:   false,
 	}
 
@@ -213,6 +218,7 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 			"hash":         cid,
 			"size":         fileSize,
 			"content_type": fileType,
+			"access":       fileConfig.DefaultAccess,
 		}, meta)
 		return
 	}
@@ -225,5 +231,6 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 		"hash":         cid,
 		"size":         fileSize,
 		"content_type": fileType,
+		"access":       fileConfig.DefaultAccess,
 	}, nil)
 }
