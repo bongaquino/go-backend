@@ -129,6 +129,7 @@ type Controllers struct {
 			Download *files.DownloadController
 			Read     *files.ReadController
 			Update   *files.UpdateController
+			Share    *files.ShareController
 			Delete   *files.DeleteController
 		}
 	}
@@ -320,6 +321,7 @@ func initControllers(s Services) Controllers {
 				Download *files.DownloadController
 				Read     *files.ReadController
 				Update   *files.UpdateController
+				Share    *files.ShareController
 				Delete   *files.DeleteController
 			}
 		}{
@@ -344,12 +346,14 @@ func initControllers(s Services) Controllers {
 				Download *files.DownloadController
 				Read     *files.ReadController
 				Update   *files.UpdateController
+				Share    *files.ShareController
 				Delete   *files.DeleteController
 			}{
 				Upload:   files.NewUploadController(s.FS, s.IPFS, s.User),
 				Download: files.NewDownloadController(s.FS, s.IPFS),
 				Read:     files.NewReadController(s.FS, s.IPFS),
 				Update:   files.NewUpdateController(s.FS, s.IPFS),
+				Share:    files.NewShareController(s.FS, s.IPFS),
 				Delete:   files.NewDeleteController(s.FS, s.IPFS, s.User),
 			},
 		},
