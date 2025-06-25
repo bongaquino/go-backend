@@ -51,6 +51,16 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 	switch accessType {
 	case fileConfig.PublicAccess, fileConfig.PrivateAccess:
 		// No body needed
+	case fileConfig.TemporaryAccess:
+		requestBody = make(map[string]any)
+		if err := ctx.ShouldBindJSON(&requestBody); err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "duration is required for temporary access", nil, nil)
+			return
+		}
+		if _, ok := requestBody["duration"]; !ok || requestBody["duration"] == "" {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "duration is required for temporary access", nil, nil)
+			return
+		}
 	case fileConfig.PasswordAccess:
 		requestBody = make(map[string]any)
 		if err := ctx.ShouldBindJSON(&requestBody); err != nil {
