@@ -50,6 +50,7 @@ type Repositories struct {
 	Directory            *repository.DirectoryRepository
 	File                 *repository.FileRepository
 	Setting              *repository.SettingRepository
+	FileAccess           *repository.FileAccessRepository
 }
 
 type Services struct {
@@ -198,6 +199,7 @@ func initRepositories(p Providers) Repositories {
 		Limit:                repository.NewLimitRepository(p.Mongo),
 		Directory:            repository.NewDirectoryRepository(p.Mongo),
 		File:                 repository.NewFileRepository(p.Mongo),
+		FileAccess:           repository.NewFileAccessRepository(p.Mongo),
 	}
 }
 
@@ -211,7 +213,7 @@ func initServices(p Providers, r Repositories) Services {
 	organization := service.NewOrganizationService(r.Organization, r.Policy, r.Permission,
 		r.OrganizationUserRole, r.User, r.Role)
 	serviceAccount := service.NewServiceAccountService(r.ServiceAccount, r.User, r.Limit)
-	fs := service.NewFSService(r.Directory, r.File)
+	fs := service.NewFSService(r.Directory, r.File, r.FileAccess)
 	return Services{user, token, mfa, email, ipfs, organization, serviceAccount, fs}
 }
 
