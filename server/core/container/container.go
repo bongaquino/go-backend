@@ -158,6 +158,7 @@ type Controllers struct {
 	Public struct {
 		Files struct {
 			Download *publicFiles.DownloadController
+			Read     *publicFiles.ReadController
 		}
 	}
 }
@@ -425,12 +426,15 @@ func initControllers(s Services) Controllers {
 		Public: struct {
 			Files struct {
 				Download *publicFiles.DownloadController
+				Read     *publicFiles.ReadController
 			}
 		}{
 			Files: struct {
 				Download *publicFiles.DownloadController
+				Read     *publicFiles.ReadController
 			}{
 				Download: publicFiles.NewDownloadController(s.FS, s.IPFS),
+				Read:     publicFiles.NewReadController(s.FS, s.IPFS),
 			},
 		},
 	}
