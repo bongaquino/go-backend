@@ -1,7 +1,6 @@
 package files
 
 import (
-	"fmt"
 	"koneksi/server/app/helper"
 	"koneksi/server/app/service"
 	"koneksi/server/config"
@@ -47,6 +46,34 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 		return
 	}
 
+	// Validate the access type and prepare the request body if needed
+	var requestBody map[string]any
+	switch accessType {
+	case fileConfig.PublicAccess, fileConfig.PrivateAccess:
+		// No body needed
+	case fileConfig.PasswordAccess:
+		requestBody = make(map[string]any)
+		if err := ctx.ShouldBindJSON(&requestBody); err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "password is required for password access", nil, nil)
+			return
+		}
+		if _, ok := requestBody["password"]; !ok || requestBody["password"] == "" {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "password is required for password access", nil, nil)
+			return
+		}
+	case fileConfig.EmailAccess:
+		requestBody = make(map[string]any)
+		if err := ctx.ShouldBindJSON(&requestBody); err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "emails are required for email access", nil, nil)
+			return
+		}
+		emails, ok := requestBody["emails"].([]any)
+		if !ok || len(emails) == 0 {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "at least one email is required for email access", nil, nil)
+			return
+		}
+	}
+
 	// Check if the file ID is in valid format
 	if fileID == "" {
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "file ID is required", nil, nil)
@@ -57,20 +84,20 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	// Fetch the file to get its size
-	file, err := sc.fsService.ReadFileByIDUserID(ctx, fileID, userID.(string))
+	// Update the file's access type using the FS service
+	err := sc.fsService.UpdateFileAccess(ctx, fileID, userID.(string), accessType)
 	if err != nil {
 		if err.Error() == "file not found" {
 			helper.FormatResponse(ctx, "error", http.StatusNotFound, "file not found", nil, nil)
 			return
 		}
-		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error reading file", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error updating file access", nil, nil)
 		return
 	}
 
-	// Share the file using the fsService
-	fmt.Println(file)
-
 	// Return success response
+	if accessType == fileConfig.EmailAccess {
+		helper.FormatResponse(ctx, "success", http.StatusOK, "file shared successfully", nil, requestBody)
+	}
 	helper.FormatResponse(ctx, "success", http.StatusOK, "file shared successfully", nil, nil)
 }

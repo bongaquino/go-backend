@@ -396,3 +396,28 @@ func (fs *FSService) DeleteFile(ctx context.Context, ID string, userID string) e
 
 	return nil
 }
+
+func (fs *FSService) UpdateFileAccess(ctx context.Context, ID string, userID string, access string) error {
+	// Fetch the file from the repository
+	file, err := fs.fileRepo.ReadByIDUserID(ctx, ID, userID)
+	if err != nil {
+		return err
+	}
+
+	// Check if the file exists
+	if file == nil {
+		return errors.New("file not found")
+	}
+
+	// Update the file's access type
+	updateData := bson.M{
+		"access": access,
+	}
+
+	err = fs.fileRepo.Update(ctx, ID, updateData)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
