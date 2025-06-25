@@ -17,10 +17,5 @@ type FileAccess struct {
 }
 
 func (FileAccess) GetIndexes() []primitive.D {
-	return []primitive.D{
-		{{Key: "file_id", Value: 1}},
-		{{Key: "owner_id", Value: 1}},
-		{{Key: "recipient_id", Value: 1}},
-		{{Key: "expires_at", Value: 1}},
-	}
+	return nil
 }

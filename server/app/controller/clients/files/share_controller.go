@@ -15,13 +15,19 @@ import (
 type ShareController struct {
 	fsService   *service.FSService
 	ipfsService *service.IPFSService
+	userService *service.UserService
 }
 
 // NewShareController initializes a new ShareController
-func NewShareController(fsService *service.FSService, ipfsService *service.IPFSService) *ShareController {
+func NewShareController(
+	fsService *service.FSService,
+	ipfsService *service.IPFSService,
+	userService *service.UserService,
+) *ShareController {
 	return &ShareController{
 		fsService:   fsService,
 		ipfsService: ipfsService,
+		userService: userService,
 	}
 }
 
@@ -135,8 +141,8 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 		fileAccess := &model.FileAccess{
 			FileID:      fileObjID,
 			OwnerID:     ownerObjID,
-			RecipientID: nil, // No recipient for password access
-			Password:    hashedPassword,
+			RecipientID: nil,
+			Password:    &hashedPassword,
 			CreatedAt:   time.Now(),
 			UpdatedAt:   time.Now(),
 		}
@@ -147,13 +153,57 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 	case fileConfig.EmailAccess:
 		requestBody = make(map[string]any)
 		if err := ctx.ShouldBindJSON(&requestBody); err != nil {
-			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "emails are required for email access", nil, nil)
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "at least one email is required for email access", nil, nil)
 			return
 		}
 		emails, ok := requestBody["emails"].([]any)
 		if !ok || len(emails) == 0 {
 			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "at least one email is required for email access", nil, nil)
 			return
+		}
+		// Check if all emails exist in the user service using UserExists method
+		for _, email := range emails {
+			exists, err := sc.userService.UserExists(ctx, email.(string))
+			if err != nil {
+				helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to verify emails", nil, nil)
+				return
+			}
+			if !exists {
+				helper.FormatResponse(ctx, "error", http.StatusBadRequest, "one or more provided emails are invalid", nil, nil)
+				return
+			}
+		}
+		// Create file access records for each email
+		fileObjID, err := primitive.ObjectIDFromHex(fileID)
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid file ID format", nil, nil)
+			return
+		}
+		ownerObjID, err := primitive.ObjectIDFromHex(userID.(string))
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid user ID format", nil, nil)
+			return
+		}
+		for _, email := range emails {
+			// Get the user ID for the email
+			user, _, err := sc.userService.GetUserProfileByEmail(ctx, email.(string))
+			if err != nil {
+				helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to get user by email", nil, nil)
+				return
+			}
+			// Create the file access record
+			fileAccess := &model.FileAccess{
+				FileID:      fileObjID,
+				OwnerID:     ownerObjID,
+				RecipientID: &user.ID,
+				Password:    nil, // No password for email access
+				CreatedAt:   time.Now(),
+				UpdatedAt:   time.Now(),
+			}
+			if err := sc.fsService.CreateFileAccess(ctx, fileAccess); err != nil {
+				helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to create file access", nil, nil)
+				return
+			}
 		}
 	}
 

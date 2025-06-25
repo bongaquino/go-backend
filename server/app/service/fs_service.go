@@ -452,6 +452,7 @@ func (fs *FSService) GetTemporaryFileKey(ctx context.Context, fileKey string) (s
 func (fs *FSService) CreateFileAccess(ctx context.Context, fileAccess *model.FileAccess) error {
 	// Create the file access record in the repository
 	err := fs.fileAccessRepo.Create(ctx, fileAccess)
+
 	if err != nil {
 		return err
 	}
