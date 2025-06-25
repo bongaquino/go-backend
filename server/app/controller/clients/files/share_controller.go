@@ -1,8 +1,8 @@
 package files
 
 import (
-	"fmt"
 	"koneksi/server/app/helper"
+	"koneksi/server/app/model"
 	"koneksi/server/app/service"
 	"koneksi/server/config"
 	"net/http"
@@ -48,6 +48,12 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 		return
 	}
 
+	// Delete all existing file access records for the file ID (if any)
+	if err := sc.fsService.DeleteFileAccessByFileID(ctx, fileID); err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error deleting existing file access records", nil, nil)
+		return
+	}
+
 	// Validate the access type and prepare the request body if needed
 	var requestBody map[string]any
 	var responseBody map[string]any
@@ -55,7 +61,6 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 	case fileConfig.PublicAccess, fileConfig.PrivateAccess:
 		// No body needed
 	case fileConfig.TemporaryAccess:
-		// @TODO: Remove all existing file access records for the file ID (if any)
 		// Verify if duration is provided in the request body
 		requestBody = make(map[string]any)
 		if err := ctx.ShouldBindJSON(&requestBody); err != nil {
@@ -88,7 +93,6 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 			"duration": duration.String(),
 		}
 	case fileConfig.PasswordAccess:
-		// @TODO: Remove all existing file access records for the file ID (if any)
 		// Verify if password is provided in the request body
 		requestBody = make(map[string]any)
 		if err := ctx.ShouldBindJSON(&requestBody); err != nil {
@@ -121,7 +125,29 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to hash password", nil, nil)
 			return
 		}
-		fmt.Println("Hashed Password:", hashedPassword)
+		// Create the file access record
+		fileObjID, err := primitive.ObjectIDFromHex(fileID)
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid file ID format", nil, nil)
+			return
+		}
+		ownerObjID, err := primitive.ObjectIDFromHex(userID.(string))
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid user ID format", nil, nil)
+			return
+		}
+		fileAccess := &model.FileAccess{
+			FileID:      fileObjID,
+			OwnerID:     ownerObjID,
+			RecipientID: nil, // No recipient for password access
+			Password:    hashedPassword,
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+		}
+		if err := sc.fsService.CreateFileAccess(ctx, fileAccess); err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to create file access", nil, nil)
+			return
+		}
 	case fileConfig.EmailAccess:
 		requestBody = make(map[string]any)
 		if err := ctx.ShouldBindJSON(&requestBody); err != nil {

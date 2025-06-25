@@ -125,3 +125,18 @@ func (r *FileAccessRepository) Delete(ctx context.Context, id string) error {
 	}
 	return nil
 }
+
+func (r *FileAccessRepository) DeleteByFileID(ctx context.Context, fileID string) error {
+	objectID, err := primitive.ObjectIDFromHex(fileID)
+	if err != nil {
+		logger.Log.Error("invalid file ID format", logger.Error(err))
+		return err
+	}
+
+	_, err = r.collection.DeleteMany(ctx, bson.M{"file_id": objectID})
+	if err != nil {
+		logger.Log.Error("error deleting file access by file ID", logger.Error(err))
+		return err
+	}
+	return nil
+}

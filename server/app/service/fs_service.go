@@ -448,3 +448,21 @@ func (fs *FSService) GetTemporaryFileKey(ctx context.Context, fileKey string) (s
 	}
 	return fileID, nil
 }
+
+func (fs *FSService) CreateFileAccess(ctx context.Context, fileAccess *model.FileAccess) error {
+	// Create the file access record in the repository
+	err := fs.fileAccessRepo.Create(ctx, fileAccess)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (fs *FSService) DeleteFileAccessByFileID(ctx context.Context, fileID string) error {
+	// Delete all file access records for the specified file ID
+	err := fs.fileAccessRepo.DeleteByFileID(ctx, fileID)
+	if err != nil {
+		return fmt.Errorf("failed to delete file access records: %w", err)
+	}
+	return nil
+}
