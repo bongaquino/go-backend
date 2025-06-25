@@ -1,6 +1,7 @@
 package files
 
 import (
+	"fmt"
 	"koneksi/server/app/helper"
 	"koneksi/server/app/service"
 	"koneksi/server/config"
@@ -54,6 +55,7 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 	case fileConfig.PublicAccess, fileConfig.PrivateAccess:
 		// No body needed
 	case fileConfig.TemporaryAccess:
+		// @TODO: Remove all existing file access records for the file ID (if any)
 		// Verify if duration is provided in the request body
 		requestBody = make(map[string]any)
 		if err := ctx.ShouldBindJSON(&requestBody); err != nil {
@@ -86,6 +88,8 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 			"duration": duration.String(),
 		}
 	case fileConfig.PasswordAccess:
+		// @TODO: Remove all existing file access records for the file ID (if any)
+		// Verify if password is provided in the request body
 		requestBody = make(map[string]any)
 		if err := ctx.ShouldBindJSON(&requestBody); err != nil {
 			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "password is required for password access", nil, nil)
@@ -95,6 +99,29 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "password is required for password access", nil, nil)
 			return
 		}
+		// Extract the password from the request body
+		password, ok := requestBody["password"].(string)
+		if !ok || password == "" {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "password must be a non-empty string", nil, nil)
+			return
+		}
+		// Validate the password
+		isValid, err := helper.ValidatePassword(password)
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to validate password", nil, nil)
+			return
+		}
+		if !isValid {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid password format", nil, nil)
+			return
+		}
+		// Hash the password
+		hashedPassword, err := helper.Hash(password)
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to hash password", nil, nil)
+			return
+		}
+		fmt.Println("Hashed Password:", hashedPassword)
 	case fileConfig.EmailAccess:
 		requestBody = make(map[string]any)
 		if err := ctx.ShouldBindJSON(&requestBody); err != nil {
