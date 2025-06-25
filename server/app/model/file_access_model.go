@@ -12,7 +12,6 @@ type FileAccess struct {
 	OwnerID     primitive.ObjectID  `bson:"owner_id"`               // Who created the share
 	RecipientID *primitive.ObjectID `bson:"recipient_id,omitempty"` // Nil if public/password-based share
 	Password    string              `bson:"password,omitempty"`     // Hashed password if set
-	ExpiresAt   *time.Time          `bson:"expires_at,omitempty"`   // Optional expiration
 	CreatedAt   time.Time           `bson:"created_at"`
 	UpdatedAt   time.Time           `bson:"updated_at"`
 }
