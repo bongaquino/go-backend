@@ -6,25 +6,31 @@ import (
 	"fmt"
 	"koneksi/server/app/dto"
 	"koneksi/server/app/model"
+	"koneksi/server/app/provider"
 	"koneksi/server/app/repository"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 type FSService struct {
+	redisProvider  *provider.RedisProvider
 	directoryRepo  *repository.DirectoryRepository
 	fileRepo       *repository.FileRepository
 	fileAccessRepo *repository.FileAccessRepository
 }
 
 // NewFSService initializes a new FSService
-func NewFSService(directoryRepo *repository.DirectoryRepository,
+func NewFSService(
+	redisProvider *provider.RedisProvider,
+	directoryRepo *repository.DirectoryRepository,
 	fileRepo *repository.FileRepository,
 	fileAccessRepo *repository.FileAccessRepository,
 ) *FSService {
 	return &FSService{
+		redisProvider:  redisProvider,
 		directoryRepo:  directoryRepo,
 		fileRepo:       fileRepo,
 		fileAccessRepo: fileAccessRepo,
@@ -422,5 +428,14 @@ func (fs *FSService) UpdateFileAccess(ctx context.Context, ID string, userID str
 		return err
 	}
 
+	return nil
+}
+
+func (fs *FSService) SaveTemporaryFileKey(ctx context.Context, fileKey string, fileID string, duration time.Duration) error {
+	// Save the temporary access key in Redis
+	err := fs.redisProvider.Set(ctx, "file_key:"+fileKey, fileID, duration)
+	if err != nil {
+		return fmt.Errorf("failed to save temporary file key: %w", err)
+	}
 	return nil
 }

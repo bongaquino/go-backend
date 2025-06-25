@@ -213,7 +213,7 @@ func initServices(p Providers, r Repositories) Services {
 	organization := service.NewOrganizationService(r.Organization, r.Policy, r.Permission,
 		r.OrganizationUserRole, r.User, r.Role)
 	serviceAccount := service.NewServiceAccountService(r.ServiceAccount, r.User, r.Limit)
-	fs := service.NewFSService(r.Directory, r.File, r.FileAccess)
+	fs := service.NewFSService(p.Redis, r.Directory, r.File, r.FileAccess)
 	return Services{user, token, mfa, email, ipfs, organization, serviceAccount, fs}
 }
 

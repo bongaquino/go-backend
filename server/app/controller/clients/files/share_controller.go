@@ -5,6 +5,7 @@ import (
 	"koneksi/server/app/service"
 	"koneksi/server/config"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -52,6 +53,7 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 	case fileConfig.PublicAccess, fileConfig.PrivateAccess:
 		// No body needed
 	case fileConfig.TemporaryAccess:
+		// Verify if duration is provided in the request body
 		requestBody = make(map[string]any)
 		if err := ctx.ShouldBindJSON(&requestBody); err != nil {
 			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "duration is required for temporary access", nil, nil)
@@ -59,6 +61,23 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 		}
 		if _, ok := requestBody["duration"]; !ok || requestBody["duration"] == "" {
 			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "duration is required for temporary access", nil, nil)
+			return
+		}
+		// Generate a temporary file key
+		fileKey, err := helper.GenerateOTPSecret(fileID)
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to generate temporary file key", nil, nil)
+			return
+		}
+		// Save the file key and file ID in Redis
+		durationVal, ok := requestBody["duration"].(float64)
+		if !ok {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "duration must be a number", nil, nil)
+			return
+		}
+		duration := time.Duration(int(durationVal)) * time.Second
+		if err := sc.fsService.SaveTemporaryFileKey(ctx, fileKey, fileID, duration); err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to save temporary file key", nil, nil)
 			return
 		}
 	case fileConfig.PasswordAccess:
