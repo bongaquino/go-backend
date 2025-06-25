@@ -48,6 +48,6 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 	// Return the file details
 	helper.FormatResponse(ctx, "success", http.StatusOK, "file read successfully", gin.H{
 		"id":     file.ID.Hex(),
-		"access": "private | public | password | email",
+		"access": file.Access,
 	}, nil)
 }

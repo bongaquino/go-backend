@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"koneksi/server/app/helper"
 	"koneksi/server/app/service"
+	"koneksi/server/config"
 	"net/http"
 	"strconv"
 
@@ -25,6 +26,9 @@ func NewDownloadController(fsService *service.FSService, ipfsService *service.IP
 }
 
 func (dc *DownloadController) Handle(ctx *gin.Context) {
+	// Load file configuration
+	fileConfig := config.LoadFileConfig()
+
 	fileID := ctx.Param("fileID")
 	if fileID == "" {
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "file ID is required", nil, nil)
@@ -50,6 +54,15 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 	fileHash := file.Hash
 	if fileHash == "" {
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "file hash is required for download", nil, nil)
+		return
+	}
+
+	// Get file access
+	fileAccess := file.Access
+
+	// Check if access is allowed
+	if fileAccess == fileConfig.PrivateAccess {
+		helper.FormatResponse(ctx, "error", http.StatusNotFound, "file not found", nil, nil)
 		return
 	}
 
