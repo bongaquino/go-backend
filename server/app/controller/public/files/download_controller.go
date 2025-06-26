@@ -128,7 +128,6 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 		}
 
 		// Set headers, but skip Content-Length to enable chunked transfer
-		ctx.Header("Content-Disposition", "attachment; filename="+file.Name)
 		ctx.Header("Content-Type", file.ContentType)
 		ctx.Header("Cache-Control", "no-cache, no-store, must-revalidate")
 		ctx.Header("Pragma", "no-cache")
@@ -160,7 +159,6 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Header("Content-Disposition", "attachment; filename="+file.Name)
 	ctx.Header("Content-Length", strconv.Itoa(len(fileContent)))
 	ctx.Header("Cache-Control", "no-cache, no-store, must-revalidate")
 	ctx.Header("Pragma", "no-cache")
