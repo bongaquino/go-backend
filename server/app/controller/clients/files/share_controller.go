@@ -102,11 +102,11 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 		// Verify if password is provided in the request body
 		requestBody = make(map[string]any)
 		if err := ctx.ShouldBindJSON(&requestBody); err != nil {
-			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "password is required for password access", nil, nil)
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "password is required for password-protected access", nil, nil)
 			return
 		}
 		if _, ok := requestBody["password"]; !ok || requestBody["password"] == "" {
-			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "password is required for password access", nil, nil)
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "password is required for password-protected access", nil, nil)
 			return
 		}
 		// Extract the password from the request body
