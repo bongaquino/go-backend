@@ -98,8 +98,6 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 			"file_key": fileKey,
 			"duration": duration.String(),
 		}
-		// force access type to private for temporary access
-		accessType = fileConfig.PrivateAccess
 	case fileConfig.PasswordAccess:
 		// Verify if password is provided in the request body
 		requestBody = make(map[string]any)
@@ -223,15 +221,17 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	// Update the file's access type using the FS service
-	err := sc.fsService.UpdateFileAccess(ctx, fileID, userID.(string), accessType)
-	if err != nil {
-		if err.Error() == "file not found" {
-			helper.FormatResponse(ctx, "error", http.StatusNotFound, "file not found", nil, nil)
+	// Only update file access if not TemporaryAccess
+	if accessType != fileConfig.TemporaryAccess {
+		err := sc.fsService.UpdateFileAccess(ctx, fileID, userID.(string), accessType)
+		if err != nil {
+			if err.Error() == "file not found" {
+				helper.FormatResponse(ctx, "error", http.StatusNotFound, "file not found", nil, nil)
+				return
+			}
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error updating file access", nil, nil)
 			return
 		}
-		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error updating file access", nil, nil)
-		return
 	}
 
 	// Return success response
