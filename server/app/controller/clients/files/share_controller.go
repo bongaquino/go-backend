@@ -98,6 +98,8 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 			"file_key": fileKey,
 			"duration": duration.String(),
 		}
+		// force access type to private for temporary access
+		accessType = fileConfig.PrivateAccess
 	case fileConfig.PasswordAccess:
 		// Verify if password is provided in the request body
 		requestBody = make(map[string]any)
