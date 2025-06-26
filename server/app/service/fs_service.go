@@ -503,3 +503,24 @@ func (fs *FSService) ValidateFileAccess(ctx context.Context, fileID string, user
 
 	return errors.New("file access not found")
 }
+
+func (fs *FSService) ListFileAccessByFileID(ctx context.Context, fileID string) ([]*model.FileAccess, error) {
+	// Fetch all file access records by file ID from the repository
+	fileAccessList, err := fs.fileAccessRepo.ListByFileID(ctx, fileID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch file access records: %w", err)
+	}
+
+	// Check if any records were found
+	if len(fileAccessList) == 0 {
+		return nil, errors.New("no file access records found")
+	}
+
+	// Convert []model.FileAccess to []*model.FileAccess
+	result := make([]*model.FileAccess, len(fileAccessList))
+	for i := range fileAccessList {
+		result[i] = &fileAccessList[i]
+	}
+
+	return result, nil
+}

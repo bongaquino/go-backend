@@ -339,7 +339,7 @@ func initControllers(s Services) Controllers {
 				Delete *directories.DeleteController
 			}{
 				Create: directories.NewCreateController(s.FS, s.IPFS),
-				Read:   directories.NewReadController(s.FS, s.IPFS),
+				Read:   directories.NewReadController(s.FS, s.IPFS, s.User),
 				Update: directories.NewUpdateController(s.FS, s.IPFS),
 				Delete: directories.NewDeleteController(s.FS, s.IPFS, s.User),
 			},
@@ -353,7 +353,7 @@ func initControllers(s Services) Controllers {
 			}{
 				Upload:   files.NewUploadController(s.FS, s.IPFS, s.User),
 				Download: files.NewDownloadController(s.FS, s.IPFS),
-				Read:     files.NewReadController(s.FS, s.IPFS),
+				Read:     files.NewReadController(s.FS, s.IPFS, s.User),
 				Update:   files.NewUpdateController(s.FS, s.IPFS),
 				Share:    files.NewShareController(s.FS, s.IPFS, s.User),
 				Delete:   files.NewDeleteController(s.FS, s.IPFS, s.User),
