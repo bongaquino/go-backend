@@ -29,3 +29,8 @@ func (es *EmailService) SendPasswordResetCode(to, code string) error {
 	body := "<h1>Password Reset Code</h1><p>Your password reset code is: " + code + "</p>"
 	return es.postmarkProvider.SendEmail(to, subject, body)
 }
+func (es *EmailService) SendFileShareNotification(to, fileName string) error {
+	subject := "File Shared: " + fileName
+	body := "<h1>File Shared</h1><p>A file named '" + fileName + "' has been shared with you.</p>"
+	return es.postmarkProvider.SendEmail(to, subject, body)
+}

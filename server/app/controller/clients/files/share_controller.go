@@ -13,9 +13,10 @@ import (
 )
 
 type ShareController struct {
-	fsService   *service.FSService
-	ipfsService *service.IPFSService
-	userService *service.UserService
+	fsService    *service.FSService
+	ipfsService  *service.IPFSService
+	userService  *service.UserService
+	emailService *service.EmailService
 }
 
 // NewShareController initializes a new ShareController
@@ -23,11 +24,13 @@ func NewShareController(
 	fsService *service.FSService,
 	ipfsService *service.IPFSService,
 	userService *service.UserService,
+	emailService *service.EmailService,
 ) *ShareController {
 	return &ShareController{
-		fsService:   fsService,
-		ipfsService: ipfsService,
-		userService: userService,
+		fsService:    fsService,
+		ipfsService:  ipfsService,
+		userService:  userService,
+		emailService: emailService,
 	}
 }
 
@@ -223,6 +226,14 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 				helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to create file access", nil, nil)
 				return
 			}
+			// Send email notification to the recipient, skipping if the email is the same as the owner email
+			if user.ID.Hex() == ownerObjID.Hex() {
+				continue
+			}
+			go func() {
+				_ = sc.emailService.SendFileShareNotification(email.(string), fileID)
+			}()
+
 		}
 	}
 

@@ -355,7 +355,7 @@ func initControllers(s Services) Controllers {
 				Download: files.NewDownloadController(s.FS, s.IPFS),
 				Read:     files.NewReadController(s.FS, s.IPFS, s.User),
 				Update:   files.NewUpdateController(s.FS, s.IPFS),
-				Share:    files.NewShareController(s.FS, s.IPFS, s.User),
+				Share:    files.NewShareController(s.FS, s.IPFS, s.User, s.Email),
 				Delete:   files.NewDeleteController(s.FS, s.IPFS, s.User),
 			},
 		},
