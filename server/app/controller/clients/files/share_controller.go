@@ -54,19 +54,23 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	// Delete all existing file access records for the file ID (if any)
-	if err := sc.fsService.DeleteFileAccessByFileID(ctx, fileID); err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error deleting existing file access records", nil, nil)
-		return
-	}
-
 	// Validate the access type and prepare the request body if needed
 	var requestBody map[string]any
 	var responseBody map[string]any
 	switch accessType {
 	case fileConfig.PublicAccess, fileConfig.PrivateAccess:
-		// No body needed
+		// Delete all existing file access records for the file ID (if any)
+		if err := sc.fsService.DeleteFileAccessByFileID(ctx, fileID); err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error deleting existing file access records", nil, nil)
+			return
+		}
 	case fileConfig.TemporaryAccess:
+		// Delete all existing file access records for the file ID (if any)
+		if err := sc.fsService.DeleteFileAccessByFileID(ctx, fileID); err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error deleting existing file access records", nil, nil)
+			return
+		}
+
 		// Verify if duration is provided in the request body
 		requestBody = make(map[string]any)
 		if err := ctx.ShouldBindJSON(&requestBody); err != nil {
@@ -99,6 +103,12 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 			"duration": duration.String(),
 		}
 	case fileConfig.PasswordAccess:
+		// Delete all existing file access records for the file ID (if any)
+		if err := sc.fsService.DeleteFileAccessByFileID(ctx, fileID); err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error deleting existing file access records", nil, nil)
+			return
+		}
+
 		// Verify if password is provided in the request body
 		requestBody = make(map[string]any)
 		if err := ctx.ShouldBindJSON(&requestBody); err != nil {
@@ -172,6 +182,11 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 				helper.FormatResponse(ctx, "error", http.StatusBadRequest, "one or more provided emails are invalid", nil, nil)
 				return
 			}
+		}
+		// Delete all existing file access records for the file ID (if any)
+		if err := sc.fsService.DeleteFileAccessByFileID(ctx, fileID); err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error deleting existing file access records", nil, nil)
+			return
 		}
 		// Create file access records for each email
 		fileObjID, err := primitive.ObjectIDFromHex(fileID)
