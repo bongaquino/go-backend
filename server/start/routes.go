@@ -122,6 +122,7 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 		clientsGroup.GET("/files/:fileID", container.Controllers.Clients.Files.Read.Handle)
 		clientsGroup.PUT("/files/:fileID", container.Controllers.Clients.Files.Update.Handle)
 		clientsGroup.POST("/files/:fileID/share", container.Controllers.Clients.Files.Share.Handle)
+		clientsGroup.POST("/files/:fileID/generate-link", container.Controllers.Clients.Files.GenerateLink.Handle)
 		clientsGroup.DELETE("/files/:fileID", container.Controllers.Clients.Files.Delete.Handle)
 	}
 
