@@ -67,44 +67,6 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error deleting existing file access records", nil, nil)
 			return
 		}
-	case fileConfig.TemporaryAccess:
-		// Delete all existing file access records for the file ID (if any)
-		if err := sc.fsService.DeleteFileAccessByFileID(ctx, fileID); err != nil {
-			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error deleting existing file access records", nil, nil)
-			return
-		}
-
-		// Verify if duration is provided in the request body
-		requestBody = make(map[string]any)
-		if err := ctx.ShouldBindJSON(&requestBody); err != nil {
-			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "duration is required for temporary access", nil, nil)
-			return
-		}
-		if _, ok := requestBody["duration"]; !ok || requestBody["duration"] == "" {
-			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "duration is required for temporary access", nil, nil)
-			return
-		}
-		// Generate a temporary file key
-		fileKey, err := helper.GenerateFileKey(fileID)
-		if err != nil {
-			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to generate temporary file key", nil, nil)
-			return
-		}
-		// Save the file key and file ID in Redis
-		durationVal, ok := requestBody["duration"].(float64)
-		if !ok {
-			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "duration must be a number", nil, nil)
-			return
-		}
-		duration := time.Duration(int(durationVal)) * time.Second
-		if err := sc.fsService.SetTemporaryFileKey(ctx, fileKey, fileID, duration); err != nil {
-			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to save temporary file key", nil, nil)
-			return
-		}
-		responseBody = map[string]any{
-			"file_key": fileKey,
-			"duration": duration.String(),
-		}
 	case fileConfig.PasswordAccess:
 		// Delete all existing file access records for the file ID (if any)
 		if err := sc.fsService.DeleteFileAccessByFileID(ctx, fileID); err != nil {

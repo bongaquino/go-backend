@@ -19,14 +19,12 @@ func LoadFileConfig() *FileConfig {
 		AccessOptions: []string{
 			"private",
 			"public",
-			"temporary",
 			"password",
 			"email",
 		},
-		PrivateAccess:   "private",
-		PublicAccess:    "public",
-		TemporaryAccess: "temporary",
-		PasswordAccess:  "password",
-		EmailAccess:     "email",
+		PrivateAccess:  "private",
+		PublicAccess:   "public",
+		PasswordAccess: "password",
+		EmailAccess:    "email",
 	}
 }
