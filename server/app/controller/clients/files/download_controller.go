@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"koneksi/server/app/helper"
 	"koneksi/server/app/service"
-	"koneksi/server/config"
 	"net/http"
 	"strconv"
 
@@ -26,9 +25,6 @@ func NewDownloadController(fsService *service.FSService, ipfsService *service.IP
 }
 
 func (dc *DownloadController) Handle(ctx *gin.Context) {
-	// Load file configuration
-	fileConfig := config.LoadFileConfig()
-
 	userID, exists := ctx.Get("userID")
 	if !exists {
 		helper.FormatResponse(ctx, "error", http.StatusUnauthorized, "user ID not found in context", nil, nil)
@@ -45,32 +41,25 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	file, err := dc.fsService.ReadFileByIDUserID(ctx, fileID, userID.(string))
+	file, err := dc.fsService.ReadFileByID(ctx, fileID)
+
 	if err != nil {
-		status := http.StatusInternalServerError
-		message := "error reading file"
 		if err.Error() == "file not found" {
-			status = http.StatusNotFound
-			message = "file not found"
+			helper.FormatResponse(ctx, "error", http.StatusNotFound, "file not found", nil, nil)
+			return
 		}
-		helper.FormatResponse(ctx, "error", status, message, nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error reading file", nil, nil)
 		return
 	}
 
-	fileAccess := file.Access
-	if fileAccess == fileConfig.EmailAccess {
-		// Check if the user has access to the file
-		err := dc.fsService.ValidateFileAccess(ctx, fileID, userID.(string))
-		if err != nil {
-			if err.Error() == "file access not found" {
-				helper.FormatResponse(ctx, "error", http.StatusNotFound, "file not found", nil, nil)
-				return
-			}
-			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error validating file access", nil, nil)
-			return
-		}
+	// Check if the user has access to the file
+	isValid := dc.fsService.ValidateFileAccess(ctx, fileID, userID.(string))
+	if !isValid {
+		helper.FormatResponse(ctx, "error", http.StatusNotFound, "file not found", nil, nil)
+		return
 	}
 
+	// Get file hash
 	fileHash := file.Hash
 	if fileHash == "" {
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "file hash is required for download", nil, nil)

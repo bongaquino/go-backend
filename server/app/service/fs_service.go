@@ -500,25 +500,32 @@ func (fs *FSService) DeleteFileAccessByFileID(ctx context.Context, fileID string
 	return nil
 }
 
-func (fs *FSService) ValidateFileAccess(ctx context.Context, fileID string, userID string) error {
-	// Fetch all file access records by file ID
-	fileAccessList, err := fs.fileAccessRepo.ListByFileID(ctx, fileID)
-	if err != nil {
-		return fmt.Errorf("failed to fetch file access records: %w", err)
+func (fs *FSService) ValidateFileAccess(ctx context.Context, fileID string, userID string) bool {
+	// Check file ID owner
+	file, err := fs.fileRepo.Read(ctx, fileID)
+	if err != nil || file == nil {
+		return false
 	}
 
-	if len(fileAccessList) == 0 {
-		return errors.New("file access not found")
+	// If the user is the owner of the file, they have access
+	if file.UserID.Hex() == userID {
+		return true
+	}
+
+	// Fetch all file access records by file ID
+	fileAccessList, err := fs.fileAccessRepo.ListByFileID(ctx, fileID)
+	if err != nil || len(fileAccessList) == 0 {
+		return false
 	}
 
 	// Loop through the records to find a match
 	for _, access := range fileAccessList {
 		if access.OwnerID.Hex() == userID || (access.RecipientID != nil && access.RecipientID.Hex() == userID) {
-			return nil
+			return true
 		}
 	}
 
-	return errors.New("file access not found")
+	return false
 }
 
 func (fs *FSService) ListFileAccessByFileID(ctx context.Context, fileID string) ([]*model.FileAccess, error) {
