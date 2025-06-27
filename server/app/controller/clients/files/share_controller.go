@@ -14,7 +14,6 @@ import (
 
 type ShareController struct {
 	fsService    *service.FSService
-	ipfsService  *service.IPFSService
 	userService  *service.UserService
 	emailService *service.EmailService
 }
@@ -22,13 +21,11 @@ type ShareController struct {
 // NewShareController initializes a new ShareController
 func NewShareController(
 	fsService *service.FSService,
-	ipfsService *service.IPFSService,
 	userService *service.UserService,
 	emailService *service.EmailService,
 ) *ShareController {
 	return &ShareController{
 		fsService:    fsService,
-		ipfsService:  ipfsService,
 		userService:  userService,
 		emailService: emailService,
 	}
@@ -47,6 +44,13 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 
 	// Get the file ID from the URL parameters
 	fileID := ctx.Param("fileID")
+
+	// Check if user ID owns the file ID
+	isOwned, _ := sc.fsService.CheckFileOwnership(ctx, fileID, userID.(string))
+	if !isOwned {
+		helper.FormatResponse(ctx, "error", http.StatusNotFound, "file not found", nil, nil)
+		return
+	}
 
 	// Get the access type from the query parameters (default: "private")
 	accessType := ctx.DefaultQuery("access", fileConfig.DefaultAccess)
@@ -209,17 +213,15 @@ func (sc *ShareController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	// Only update file access if not TemporaryAccess
-	if accessType != fileConfig.TemporaryAccess {
-		err := sc.fsService.UpdateFileAccess(ctx, fileID, userID.(string), accessType)
-		if err != nil {
-			if err.Error() == "file not found" {
-				helper.FormatResponse(ctx, "error", http.StatusNotFound, "file not found", nil, nil)
-				return
-			}
-			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error updating file access", nil, nil)
+	// Update file access
+	err := sc.fsService.UpdateFileAccess(ctx, fileID, userID.(string), accessType)
+	if err != nil {
+		if err.Error() == "file not found" {
+			helper.FormatResponse(ctx, "error", http.StatusNotFound, "file not found", nil, nil)
 			return
 		}
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error updating file access", nil, nil)
+		return
 	}
 
 	// Return success response

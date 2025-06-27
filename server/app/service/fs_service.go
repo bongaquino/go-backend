@@ -288,6 +288,23 @@ func (fs *FSService) CheckDirectoryOwnership(ctx context.Context, ID string, use
 	return true, nil
 }
 
+// CheckFileOwnership checks if the user owns the file with the given ID
+func (fs *FSService) CheckFileOwnership(ctx context.Context, ID string, userID string) (bool, error) {
+	// Fetch the file from the repository
+	file, err := fs.fileRepo.ReadByIDUserID(ctx, ID, userID)
+	if err != nil {
+		return false, err
+	}
+
+	// Check if the file exists
+	if file == nil {
+		return false, errors.New("file not found")
+	}
+
+	// Return true if the user owns the file
+	return true, nil
+}
+
 func (fs *FSService) CreateFile(ctx context.Context, file *model.File) error {
 	// Create the file in the repository
 	err := fs.fileRepo.Create(ctx, file)

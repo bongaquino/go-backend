@@ -126,12 +126,13 @@ type Controllers struct {
 			Delete *directories.DeleteController
 		}
 		Files struct {
-			Upload   *files.UploadController
-			Download *files.DownloadController
-			Read     *files.ReadController
-			Update   *files.UpdateController
-			Share    *files.ShareController
-			Delete   *files.DeleteController
+			Upload       *files.UploadController
+			Download     *files.DownloadController
+			Read         *files.ReadController
+			Update       *files.UpdateController
+			Share        *files.ShareController
+			GenerateLink *files.GenerateLinkController
+			Delete       *files.DeleteController
 		}
 	}
 	Admin struct {
@@ -319,12 +320,13 @@ func initControllers(s Services) Controllers {
 				Delete *directories.DeleteController
 			}
 			Files struct {
-				Upload   *files.UploadController
-				Download *files.DownloadController
-				Read     *files.ReadController
-				Update   *files.UpdateController
-				Share    *files.ShareController
-				Delete   *files.DeleteController
+				Upload       *files.UploadController
+				Download     *files.DownloadController
+				Read         *files.ReadController
+				Update       *files.UpdateController
+				Share        *files.ShareController
+				GenerateLink *files.GenerateLinkController
+				Delete       *files.DeleteController
 			}
 		}{
 			Peers: struct {
@@ -344,19 +346,21 @@ func initControllers(s Services) Controllers {
 				Delete: directories.NewDeleteController(s.FS, s.IPFS, s.User),
 			},
 			Files: struct {
-				Upload   *files.UploadController
-				Download *files.DownloadController
-				Read     *files.ReadController
-				Update   *files.UpdateController
-				Share    *files.ShareController
-				Delete   *files.DeleteController
+				Upload       *files.UploadController
+				Download     *files.DownloadController
+				Read         *files.ReadController
+				Update       *files.UpdateController
+				Share        *files.ShareController
+				GenerateLink *files.GenerateLinkController
+				Delete       *files.DeleteController
 			}{
-				Upload:   files.NewUploadController(s.FS, s.IPFS, s.User),
-				Download: files.NewDownloadController(s.FS, s.IPFS),
-				Read:     files.NewReadController(s.FS, s.IPFS, s.User),
-				Update:   files.NewUpdateController(s.FS, s.IPFS),
-				Share:    files.NewShareController(s.FS, s.IPFS, s.User, s.Email),
-				Delete:   files.NewDeleteController(s.FS, s.IPFS, s.User),
+				Upload:       files.NewUploadController(s.FS, s.IPFS, s.User),
+				Download:     files.NewDownloadController(s.FS, s.IPFS),
+				Read:         files.NewReadController(s.FS, s.IPFS, s.User),
+				Update:       files.NewUpdateController(s.FS, s.IPFS),
+				Share:        files.NewShareController(s.FS, s.User, s.Email),
+				GenerateLink: files.NewGenerateLinkController(s.FS),
+				Delete:       files.NewDeleteController(s.FS, s.IPFS, s.User),
 			},
 		},
 		Admin: struct {

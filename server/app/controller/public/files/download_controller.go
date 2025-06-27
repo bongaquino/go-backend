@@ -29,7 +29,7 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 	// Load file configuration
 	fileConfig := config.LoadFileConfig()
 
-	// Extract user ID from the context
+	// Extract file ID from the context
 	fileID := ctx.Param("fileID")
 	if fileID == "" {
 		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "file ID is required", nil, nil)
@@ -56,63 +56,51 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 	// Get file hash
 	fileHash := file.Hash
 	if fileHash == "" {
-		helper.FormatResponse(ctx, "error", http.StatusNotFound, "file hash not found", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "file hash not found", nil, nil)
 		return
 	}
 
-	// Get file access
-	fileAccess := file.Access
-	switch fileAccess {
-	// If file is private, no access is allowed
-	case fileConfig.PrivateAccess, fileConfig.EmailAccess:
-		helper.FormatResponse(ctx, "error", http.StatusNotFound, "file not found", nil, nil)
-		return
-	// If file is temporary, validate the file key
-	case fileConfig.TemporaryAccess:
-		fileKey := ctx.Query("key")
-		if fileKey == "" {
-			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "file key is required for temporary access", nil, nil)
-			return
-		}
-		fileIDFromKey, err := dc.fsService.GetTemporaryFileKey(ctx, fileKey)
-		if err != nil {
-			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid or expired file key", nil, nil)
-			return
-		}
-		if fileIDFromKey != fileID {
+	// Check if file key is passed from the query parameters
+	var fileIDFromKey string
+	fileKey := ctx.Query("key")
+	if fileKey != "" {
+		// Check if the file ID is cached
+		fileIDFromKey, _ = dc.fsService.GetTemporaryFileKey(ctx, fileKey)
+	}
+
+	// If the fileID is NOT found in the cache, perform access checks
+	if fileIDFromKey == "" {
+		// Access-restricted logic
+		switch file.Access {
+		case fileConfig.PrivateAccess, fileConfig.EmailAccess:
 			helper.FormatResponse(ctx, "error", http.StatusNotFound, "file not found", nil, nil)
 			return
-		}
-	// If file is password-protected, validate the password
-	case fileConfig.PasswordAccess:
-		password := ctx.Query("password")
-		if password == "" {
-			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "password is required for password-protected access", nil, nil)
-			return
-		}
-		// Get the file access record to retrieve the hashed password
-		fileAccess, err := dc.fsService.ReadFileAccessByFileID(ctx, fileID)
-		if err != nil {
-			if err.Error() == "file access not found" {
-				helper.FormatResponse(ctx, "error", http.StatusNotFound, "file access not found", nil, nil)
+		case fileConfig.PasswordAccess:
+			// If the file is password-protected, check for the password in the query parameters
+			password := ctx.Query("password")
+			if password == "" {
+				helper.FormatResponse(ctx, "error", http.StatusBadRequest, "password is required for password-protected access", nil, nil)
 				return
 			}
-			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to read file access", nil, nil)
-			return
-		}
-		hashedPassword := fileAccess.Password
-		// If no password is set, return an error
-		if hashedPassword == nil {
-			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid password", nil, nil)
-			return
-		}
-		// Validate the provided password against the stored hash
-		isHashValid := helper.CheckHash(password, *hashedPassword)
-		if !isHashValid {
-			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid password", nil, nil)
-			return
+
+			// Read file access by file ID to verify the password
+			fileAccess, err := dc.fsService.ReadFileAccessByFileID(ctx, fileID)
+			if err != nil {
+				if err.Error() == "file access not found" {
+					helper.FormatResponse(ctx, "error", http.StatusNotFound, "file access not found", nil, nil)
+					return
+				}
+				helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to read file access", nil, nil)
+				return
+			}
+			hashedPassword := fileAccess.Password
+			if hashedPassword == nil || !helper.CheckHash(password, *hashedPassword) {
+				helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid password", nil, nil)
+				return
+			}
 		}
 	}
+
 	if ctx.DefaultQuery("stream", "false") == "true" {
 		url := dc.ipfsService.GetFileURL(fileHash)
 		resp, err := dc.ipfsService.GetHTTPClient().Get(url)
