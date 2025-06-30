@@ -212,7 +212,7 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 				// Loop thru file access list to get recipient IDs then use recipient ID to get user email
 				for j, fileAccess := range fileAccessList {
 					// Get user email from fsService using recipient ID
-					user, profile, _ := rc.userService.GetUserProfileByEmail(ctx, fileAccess.RecipientID.Hex())
+					user, profile, _, _, _, _ := rc.userService.GetUserInfo(ctx, fileAccess.RecipientID.Hex())
 					filesData[i]["recipients"].([]gin.H)[j] = gin.H{
 						"id":          user.ID.Hex(),
 						"email":       user.Email,
