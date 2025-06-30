@@ -68,6 +68,7 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 
 	// Change default value of stream query param to "true"
 	if ctx.DefaultQuery("stream", "true") == "true" {
+		// Stream mode: stream file content from IPFS
 		url := dc.ipfsService.GetFileURL(fileHash)
 		resp, err := dc.ipfsService.GetHTTPClient().Get(url)
 		if err != nil {
@@ -105,20 +106,21 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 			}
 		}
 		return
+	} else {
+		// Non-stream mode: download and send full file
+		fileContent, err := dc.ipfsService.DownloadFile(fileHash)
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error downloading file from IPFS", nil, nil)
+			return
+		}
+
+		ctx.Header("Content-Disposition", "attachment; filename="+file.Name)
+		ctx.Header("Content-Type", file.ContentType)
+		ctx.Header("Content-Length", strconv.Itoa(len(fileContent)))
+		ctx.Header("Cache-Control", "no-cache, no-store, must-revalidate")
+		ctx.Header("Pragma", "no-cache")
+		ctx.Header("Expires", "0")
+
+		ctx.Data(http.StatusOK, file.ContentType, fileContent)
 	}
-
-	// Non-stream mode: download and send full file
-	fileContent, err := dc.ipfsService.DownloadFile(fileHash)
-	if err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error downloading file from IPFS", nil, nil)
-		return
-	}
-
-	ctx.Header("Content-Disposition", "attachment; filename="+file.Name)
-	ctx.Header("Content-Length", strconv.Itoa(len(fileContent)))
-	ctx.Header("Cache-Control", "no-cache, no-store, must-revalidate")
-	ctx.Header("Pragma", "no-cache")
-	ctx.Header("Expires", "0")
-
-	ctx.Data(http.StatusOK, file.ContentType, fileContent)
 }
