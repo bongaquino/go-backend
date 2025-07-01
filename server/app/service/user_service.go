@@ -584,22 +584,11 @@ func (us *UserService) Update(ctx context.Context, userID string, request *dto.U
 		"last_name":   request.LastName,
 		"suffix":      request.Suffix,
 		"email":       request.Email,
-		"password":    request.Password,
 		"role":        request.Role,
 		"is_verified": request.IsVerified,
 		"is_locked":   request.IsLocked,
 		"is_deleted":  request.IsDeleted,
 		"updated_at":  time.Now(),
-	}
-
-	// Hash the password if it is being updated
-	if request.Password != "" {
-		hashedPassword, err := helper.Hash(request.Password)
-		if err != nil {
-			logger.Log.Error("failed to hash password", logger.Error(err))
-			return errors.New("failed to hash password")
-		}
-		update["password"] = hashedPassword
 	}
 
 	// Call the repository to update the user
@@ -655,16 +644,6 @@ func (us *UserService) UpdateUser(ctx context.Context, userID string, dto *dto.U
 		"is_verified": dto.IsVerified,
 		"is_locked":   dto.IsLocked,
 		"is_deleted":  dto.IsDeleted,
-	}
-
-	// Hash the password if it is being updated
-	if dto.Password != "" {
-		hashedPassword, err := helper.Hash(dto.Password)
-		if err != nil {
-			logger.Log.Error("failed to hash password", logger.Error(err))
-			return nil, nil, nil, "", errors.New("failed to hash password")
-		}
-		userUpdate["password"] = hashedPassword
 	}
 
 	if err := us.userRepo.Update(ctx, userID, userUpdate); err != nil {
