@@ -120,9 +120,7 @@ func GenerateNonce() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to generate random bytes: %w", err)
 	}
-
+	// Use standard base64 encoding with no padding, do not remove dashes/underscores
 	encoded := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(randomBytes)
-	cleaned := removeDashesAndUnderscores(encoded)
-
-	return cleaned, nil
+	return encoded, nil
 }

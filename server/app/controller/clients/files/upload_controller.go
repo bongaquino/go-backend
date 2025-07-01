@@ -326,6 +326,7 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 			"size":         fileSize,
 			"content_type": fileType,
 			"access":       fileConfig.DefaultAccess,
+			"is_encrypted": isEncrypted,
 		}, meta)
 		return
 	}
@@ -339,5 +340,6 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 		"size":         fileSize,
 		"content_type": fileType,
 		"access":       fileConfig.DefaultAccess,
+		"is_encrypted": isEncrypted,
 	}, nil)
 }
