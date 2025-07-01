@@ -2,6 +2,8 @@ package files
 
 import (
 	"bytes"
+	"crypto/cipher"
+	"encoding/base64"
 	"io"
 	"koneksi/server/app/dto"
 	"koneksi/server/app/helper"
@@ -51,11 +53,58 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	// Get directory_id from request body
+	// Initialize request DTO
 	var request dto.UploadFileDTO
 	_ = ctx.ShouldBind(&request)
 
-	// Only use directoryID from request body
+	// Initialize is encrypted flag
+	isEncrypted := false
+	passphrase := request.Passphrase
+
+	// Check if file is for encrypted upload by checking if passphrase is provided
+	if passphrase != "" {
+		// Validate passphrase length
+		_, err := helper.ValidatePassword(passphrase)
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid passphrase format", nil, nil)
+			return
+		}
+		isEncrypted = true
+	}
+
+	// Generate salt and nonce if the file is encrypted
+	var salt, nonce string
+	var keyBytes []byte
+	if isEncrypted {
+		// Generate salt
+		salt, err = helper.GenerateSalt()
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to generate salt", nil, nil)
+			return
+		}
+		// Generate nonce
+		nonce, err = helper.GenerateNonce()
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to generate nonce", nil, nil)
+			return
+		}
+		// Derive key from passphrase using the salt
+		keyBytes, err = helper.DeriveKey(passphrase, salt)
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to derive key from passphrase", nil, nil)
+			return
+		}
+		// Create AES-GCM Cipher
+		aesGCM, err := helper.CreateAesGcmCipher(keyBytes)
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to create AES-GCM cipher", nil, nil)
+			return
+		}
+		// Set the AES-GCM cipher in the context for later use
+		ctx.Set("aesGCM", aesGCM)
+	}
+
+	// Get directory_id from request body
 	directoryID := request.DirectoryID
 	if directoryID == "" {
 		// Get the user's root directory
@@ -160,11 +209,64 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to read file content for non-streaming upload", nil, nil)
 			return
 		}
-		cid, uploadErr = uc.ipfsService.UploadFile(fileName, bytes.NewReader(fileBytes))
+		if isEncrypted {
+			aesGCMVal, exists := ctx.Get("aesGCM")
+			if !exists {
+				helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "encryption cipher not found in context", nil, nil)
+				return
+			}
+			aesGCM := aesGCMVal.(cipher.AEAD)
+			nonceBytes, err := base64.URLEncoding.WithPadding(base64.NoPadding).DecodeString(nonce)
+			if err != nil {
+				helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "invalid nonce encoding", nil, nil)
+				return
+			}
+			ciphertext := aesGCM.Seal(nil, nonceBytes, fileBytes, nil)
+			cid, uploadErr = uc.ipfsService.UploadFile(fileName, bytes.NewReader(ciphertext))
+		} else {
+			cid, uploadErr = uc.ipfsService.UploadFile(fileName, bytes.NewReader(fileBytes))
+		}
 	} else {
 		// Streaming mode (default): pass the file stream directly.
 		ctx.Writer.Header().Set("X-Upload-Mode", "stream")
-		cid, uploadErr = uc.ipfsService.UploadFile(fileName, src)
+		if isEncrypted {
+			aesGCMVal, exists := ctx.Get("aesGCM")
+			if !exists {
+				helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "encryption cipher not found in context", nil, nil)
+				return
+			}
+			aesGCM := aesGCMVal.(cipher.AEAD)
+			pr, pw := io.Pipe()
+			go func() {
+				defer pw.Close()
+				nonceBytes, err := base64.URLEncoding.WithPadding(base64.NoPadding).DecodeString(nonce)
+				if err != nil {
+					pw.CloseWithError(err)
+					return
+				}
+				buf := make([]byte, 32*1024) // 32KB buffer
+				for {
+					n, err := src.Read(buf)
+					if n > 0 {
+						chunk := buf[:n]
+						sealed := aesGCM.Seal(nil, nonceBytes, chunk, nil)
+						_, werr := pw.Write(sealed)
+						if werr != nil {
+							return
+						}
+					}
+					if err == io.EOF {
+						break
+					}
+					if err != nil {
+						return
+					}
+				}
+			}()
+			cid, uploadErr = uc.ipfsService.UploadFile(fileName, pr)
+		} else {
+			cid, uploadErr = uc.ipfsService.UploadFile(fileName, src)
+		}
 	}
 
 	if uploadErr != nil {
@@ -182,6 +284,11 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 		ContentType: fileType,
 		Access:      fileConfig.DefaultAccess,
 		IsDeleted:   false,
+	}
+	if isEncrypted {
+		newFile.IsEncrypted = true
+		newFile.Salt = salt
+		newFile.Nonce = nonce
 	}
 
 	// Save the file metadata to the database

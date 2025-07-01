@@ -4,10 +4,13 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
 	"errors"
 	"io"
 	"koneksi/server/config"
+
+	"golang.org/x/crypto/pbkdf2"
 )
 
 // Encrypt encrypts the given
@@ -60,4 +63,26 @@ func Decrypt(encryptedData string) (string, error) {
 	stream.XORKeyStream(ciphertext, ciphertext)
 
 	return string(ciphertext), nil
+}
+
+// DeriveKey derives a key from the passphrase and salt using PBKDF2
+func DeriveKey(passphrase, salt string) ([]byte, error) {
+	// Use PBKDF2 to derive a key from the passphrase and salt
+	key := pbkdf2.Key([]byte(passphrase), []byte(salt), 4096, 32, sha256.New)
+	return key, nil
+}
+
+// Create AES-GCM Cipher
+func CreateAesGcmCipher(key []byte) (cipher.AEAD, error) {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+
+	aesGcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, err
+	}
+
+	return aesGcm, nil
 }
