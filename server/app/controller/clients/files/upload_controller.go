@@ -210,37 +210,28 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 	var cid string
 	var uploadErr error
 
-	// Check for stream query param to decide upload mode
-	stream := ctx.Query("stream")
-	if stream == "false" {
-		// Non-streaming mode: read the entire file into memory first.
-		ctx.Writer.Header().Set("X-Upload-Mode", "non-stream")
-		fileBytes, err := io.ReadAll(src)
-		if err != nil {
-			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to read file content for non-streaming upload", nil, nil)
+	// Always read the entire file into memory first.
+	fileBytes, err := io.ReadAll(src)
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to read file content for upload", nil, nil)
+		return
+	}
+	if isEncrypted {
+		aesGCMVal, exists := ctx.Get("aesGCM")
+		if !exists {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "encryption cipher not found in context", nil, nil)
 			return
 		}
-		if isEncrypted {
-			aesGCMVal, exists := ctx.Get("aesGCM")
-			if !exists {
-				helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "encryption cipher not found in context", nil, nil)
-				return
-			}
-			aesGCM := aesGCMVal.(cipher.AEAD)
-			nonceBytes, err := base64.URLEncoding.WithPadding(base64.NoPadding).DecodeString(nonce)
-			if err != nil {
-				helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "invalid nonce encoding", nil, nil)
-				return
-			}
-			ciphertext := aesGCM.Seal(nil, nonceBytes, fileBytes, nil)
-			cid, uploadErr = uc.ipfsService.UploadFile(fileName, bytes.NewReader(ciphertext))
-		} else {
-			cid, uploadErr = uc.ipfsService.UploadFile(fileName, bytes.NewReader(fileBytes))
+		aesGCM := aesGCMVal.(cipher.AEAD)
+		nonceBytes, err := base64.URLEncoding.WithPadding(base64.NoPadding).DecodeString(nonce)
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "invalid nonce encoding", nil, nil)
+			return
 		}
+		ciphertext := aesGCM.Seal(nil, nonceBytes, fileBytes, nil)
+		cid, uploadErr = uc.ipfsService.UploadFile(fileName, bytes.NewReader(ciphertext))
 	} else {
-		// Streaming mode (default): pass the file stream directly.
-		ctx.Writer.Header().Set("X-Upload-Mode", "stream")
-		cid, uploadErr = uc.ipfsService.UploadFile(fileName, src)
+		cid, uploadErr = uc.ipfsService.UploadFile(fileName, bytes.NewReader(fileBytes))
 	}
 
 	if uploadErr != nil {
