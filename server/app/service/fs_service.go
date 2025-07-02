@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"koneksi/server/app/dto"
+	"koneksi/server/app/helper"
 	"koneksi/server/app/model"
 	"koneksi/server/app/provider"
 	"koneksi/server/app/repository"
@@ -547,4 +549,70 @@ func (fs *FSService) ListFileAccessByFileID(ctx context.Context, fileID string) 
 	}
 
 	return result, nil
+}
+
+// EncryptFileForUpload handles encryption for file uploads
+func (fs *FSService) EncryptFileForUpload(fileBytes []byte, passphrase string) (ciphertext []byte, salt string, nonce string, err error) {
+	// Generate salt
+	salt, err = helper.GenerateSalt()
+	if err != nil {
+		return nil, "", "", err
+	}
+	// Generate nonce
+	nonce, err = helper.GenerateNonce()
+	if err != nil {
+		return nil, "", "", err
+	}
+	// Derive key from passphrase using the salt
+	keyBytes, err := helper.DeriveKey(passphrase, salt)
+	if err != nil {
+		return nil, "", "", err
+	}
+	// Create AES-GCM Cipher
+	aesGCM, err := helper.CreateAesGcmCipher(keyBytes)
+	if err != nil {
+		return nil, "", "", err
+	}
+	// Decode nonce for AES-GCM
+	nonceBytes, err := base64.URLEncoding.WithPadding(base64.NoPadding).DecodeString(nonce)
+	if err != nil {
+		return nil, "", "", err
+	}
+	ciphertext = aesGCM.Seal(nil, nonceBytes, fileBytes, nil)
+	return ciphertext, salt, nonce, nil
+}
+
+// DecryptFileForDownload handles decryption for file downloads
+func (fs *FSService) DecryptFileForDownload(encryptedFile []byte, encryptedSalt, encryptedNonce, passphrase string) ([]byte, error) {
+	// Decrypt salt
+	decryptedSalt, err := helper.Decrypt(encryptedSalt)
+	if err != nil {
+		return nil, err
+	}
+	// Decrypt nonce
+	decryptedNonce, err := helper.Decrypt(encryptedNonce)
+	if err != nil {
+		return nil, err
+	}
+	// Derive key
+	keyBytes, err := helper.DeriveKey(passphrase, decryptedSalt)
+	if err != nil {
+		return nil, err
+	}
+	// Create AES-GCM cipher
+	aesGCM, err := helper.CreateAesGcmCipher(keyBytes)
+	if err != nil {
+		return nil, err
+	}
+	// Decode nonce
+	nonceBytes, err := base64.URLEncoding.WithPadding(base64.NoPadding).DecodeString(decryptedNonce)
+	if err != nil {
+		return nil, err
+	}
+	// Decrypt file
+	plaintext, decErr := aesGCM.Open(nil, nonceBytes, encryptedFile, nil)
+	if decErr != nil {
+		return nil, decErr
+	}
+	return plaintext, nil
 }

@@ -2,15 +2,14 @@ package files
 
 import (
 	"bufio"
-	"crypto/cipher"
-	"encoding/base64"
-	"koneksi/server/app/helper"
-	"koneksi/server/app/service"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+
+	"koneksi/server/app/helper"
+	"koneksi/server/app/service"
 )
 
 type DownloadController struct {
@@ -68,43 +67,8 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 		return
 	}
 
+	// Check if file is encrypted
 	isEncrypted := file.IsEncrypted
-	var aesGCM cipher.AEAD
-	var nonceBytes []byte
-	var decryptedSalt, decryptedNonce string
-	if isEncrypted {
-		passphrase := ctx.GetHeader("passphrase")
-		if passphrase != "" {
-			// Decrypt the salt if the file is encrypted
-			var err error
-			decryptedSalt, err = helper.Decrypt(file.Salt)
-			if err != nil {
-				helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to decrypt salt", nil, nil)
-				return
-			}
-			// Decrypt the nonce if the file is encrypted
-			decryptedNonce, err = helper.Decrypt(file.Nonce)
-			if err != nil {
-				helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to decrypt nonce", nil, nil)
-				return
-			}
-			keyBytes, err := helper.DeriveKey(passphrase, decryptedSalt)
-			if err != nil {
-				helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to derive key", nil, nil)
-				return
-			}
-			aesGCM, err = helper.CreateAesGcmCipher(keyBytes)
-			if err != nil {
-				helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to create AES-GCM cipher", nil, nil)
-				return
-			}
-			nonceBytes, err = base64.URLEncoding.WithPadding(base64.NoPadding).DecodeString(decryptedNonce)
-			if err != nil {
-				helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "invalid nonce encoding", nil, nil)
-				return
-			}
-		}
-	}
 
 	// Check if stream mode is enabled and file is encrypted
 	stream := ctx.DefaultQuery("stream", "true")
@@ -160,7 +124,7 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 		return
 	}
 	if isEncrypted && ctx.GetHeader("passphrase") != "" {
-		plaintext, decErr := aesGCM.Open(nil, nonceBytes, fileContent, nil)
+		plaintext, decErr := dc.fsService.DecryptFileForDownload(fileContent, file.Salt, file.Nonce, ctx.GetHeader("passphrase"))
 		if decErr != nil {
 			helper.FormatResponse(ctx, "error", http.StatusForbidden, "failed to decrypt file", nil, nil)
 			return

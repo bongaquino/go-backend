@@ -2,8 +2,6 @@ package files
 
 import (
 	"bytes"
-	"crypto/cipher"
-	"encoding/base64"
 	"io"
 	"koneksi/server/app/dto"
 	"koneksi/server/app/helper"
@@ -116,9 +114,24 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 	fileSize := file.Size
 	fileType := file.Header.Get("Content-Type")
 
+	// Open the uploaded file
+	src, err := file.Open()
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to open uploaded file", nil, nil)
+		return
+	}
+	defer src.Close()
+
+	// Always read the entire file into memory first.
+	fileBytes, err := io.ReadAll(src)
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to read file content for upload", nil, nil)
+		return
+	}
+
 	// Generate salt and nonce if the file is encrypted
 	var salt, nonce string
-	var keyBytes []byte
+	var encryptedFileBytes []byte
 	if isEncrypted {
 		// Check if stream mode is enabled
 		stream := ctx.Query("stream")
@@ -131,32 +144,13 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "file size exceeds the limit for encrypted uploads", nil, nil)
 			return
 		}
-		// Generate salt
-		salt, err = helper.GenerateSalt()
-		if err != nil {
-			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to generate salt", nil, nil)
+		// Encrypt file using FSService
+		var encErr error
+		encryptedFileBytes, salt, nonce, encErr = uc.fsService.EncryptFileForUpload(fileBytes, passphrase)
+		if encErr != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to encrypt file", nil, nil)
 			return
 		}
-		// Generate nonce
-		nonce, err = helper.GenerateNonce()
-		if err != nil {
-			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to generate nonce", nil, nil)
-			return
-		}
-		// Derive key from passphrase using the salt
-		keyBytes, err = helper.DeriveKey(passphrase, salt)
-		if err != nil {
-			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to derive key from passphrase", nil, nil)
-			return
-		}
-		// Create AES-GCM Cipher
-		aesGCM, err := helper.CreateAesGcmCipher(keyBytes)
-		if err != nil {
-			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to create AES-GCM cipher", nil, nil)
-			return
-		}
-		// Set the AES-GCM cipher in the context for later use
-		ctx.Set("aesGCM", aesGCM)
 	}
 
 	// Limit file name length to 255 characters while preserving extension
@@ -199,37 +193,11 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	// Open the uploaded file
-	src, err := file.Open()
-	if err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to open uploaded file", nil, nil)
-		return
-	}
-	defer src.Close()
-
 	var cid string
 	var uploadErr error
 
-	// Always read the entire file into memory first.
-	fileBytes, err := io.ReadAll(src)
-	if err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to read file content for upload", nil, nil)
-		return
-	}
 	if isEncrypted {
-		aesGCMVal, exists := ctx.Get("aesGCM")
-		if !exists {
-			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "encryption cipher not found in context", nil, nil)
-			return
-		}
-		aesGCM := aesGCMVal.(cipher.AEAD)
-		nonceBytes, err := base64.URLEncoding.WithPadding(base64.NoPadding).DecodeString(nonce)
-		if err != nil {
-			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "invalid nonce encoding", nil, nil)
-			return
-		}
-		ciphertext := aesGCM.Seal(nil, nonceBytes, fileBytes, nil)
-		cid, uploadErr = uc.ipfsService.UploadFile(fileName, bytes.NewReader(ciphertext))
+		cid, uploadErr = uc.ipfsService.UploadFile(fileName, bytes.NewReader(encryptedFileBytes))
 	} else {
 		cid, uploadErr = uc.ipfsService.UploadFile(fileName, bytes.NewReader(fileBytes))
 	}
