@@ -36,13 +36,13 @@ func (uc *UpdateController) Handle(ctx *gin.Context) {
 	if request.Name != "" && len(request.Name) > 255 {
 		// Get the file extension
 		ext := filepath.Ext(request.Name)
-		
+
 		// Calculate the base name (filename without extension)
 		baseName := strings.TrimSuffix(request.Name, ext)
-		
+
 		// Calculate how much we need to trim from the base name
 		maxBaseNameLength := 255 - len(ext)
-		
+
 		if maxBaseNameLength > 0 {
 			// Trim the base name if it's too long
 			if len(baseName) > maxBaseNameLength {
@@ -54,7 +54,7 @@ func (uc *UpdateController) Handle(ctx *gin.Context) {
 			// If extension itself is >= 255 characters, just truncate the whole name
 			request.Name = request.Name[:255]
 		}
-		
+
 		isTrimmed = true
 	}
 
@@ -146,7 +146,7 @@ func (uc *UpdateController) Handle(ctx *gin.Context) {
 	}
 
 	if isTrimmed {
-		meta := map[string]interface{}{
+		meta := map[string]any{
 			"is_trimmed": true,
 		}
 		helper.FormatResponse(ctx, "success", http.StatusOK, "file updated successfully", nil, meta)

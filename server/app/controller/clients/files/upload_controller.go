@@ -300,7 +300,7 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 	}
 
 	if isTrimmed {
-		meta := map[string]interface{}{
+		meta := map[string]any{
 			"is_trimmed": true,
 		}
 		helper.FormatResponse(ctx, "success", http.StatusOK, "file uploaded successfully", gin.H{

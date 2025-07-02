@@ -129,7 +129,7 @@ func (uc *UpdateController) Handle(ctx *gin.Context) {
 	}
 
 	if isTrimmed {
-		meta := map[string]interface{}{
+		meta := map[string]any{
 			"is_trimmed": true,
 		}
 		helper.FormatResponse(ctx, "success", http.StatusOK, "directory updated successfully", nil, meta)
