@@ -584,7 +584,6 @@ func (us *UserService) Update(ctx context.Context, userID string, request *dto.U
 		"last_name":   request.LastName,
 		"suffix":      request.Suffix,
 		"email":       request.Email,
-		"password":    request.Password,
 		"role":        request.Role,
 		"is_verified": request.IsVerified,
 		"is_locked":   request.IsLocked,
