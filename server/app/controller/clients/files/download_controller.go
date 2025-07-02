@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"crypto/cipher"
 	"encoding/base64"
-	"fmt"
 	"koneksi/server/app/helper"
 	"koneksi/server/app/service"
 	"net/http"
@@ -162,7 +161,6 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 	}
 	if isEncrypted && ctx.GetHeader("passphrase") != "" {
 		plaintext, decErr := aesGCM.Open(nil, nonceBytes, fileContent, nil)
-		fmt.Println(decErr)
 		if decErr != nil {
 			helper.FormatResponse(ctx, "error", http.StatusForbidden, "failed to decrypt file", nil, nil)
 			return

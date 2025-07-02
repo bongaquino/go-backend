@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"crypto/cipher"
 	"encoding/base64"
-	"fmt"
 	"koneksi/server/app/helper"
 	"koneksi/server/app/service"
 	"koneksi/server/config"
@@ -114,7 +113,6 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 			// Decrypt the salt if the file is encrypted
 			var err error
 			decryptedSalt, err = helper.Decrypt(file.Salt)
-			fmt.Println(err)
 			if err != nil {
 				helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to decrypt salt", nil, nil)
 				return
