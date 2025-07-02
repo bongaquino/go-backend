@@ -2,6 +2,8 @@ package files
 
 import (
 	"bufio"
+	"crypto/cipher"
+	"encoding/base64"
 	"koneksi/server/app/helper"
 	"koneksi/server/app/service"
 	"koneksi/server/config"
@@ -76,8 +78,8 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 			helper.FormatResponse(ctx, "error", http.StatusNotFound, "file not found", nil, nil)
 			return
 		case fileConfig.PasswordAccess:
-			// If the file is password-protected, check for the password in the query parameters
-			password := ctx.Query("password")
+			// If the file is password-protected, check for the password in the header
+			password := ctx.GetHeader("password")
 			if password == "" {
 				helper.FormatResponse(ctx, "error", http.StatusBadRequest, "password is required for password-protected access", nil, nil)
 				return
@@ -101,7 +103,40 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 		}
 	}
 
-	if ctx.DefaultQuery("stream", "false") == "true" {
+	isEncrypted := file.IsEncrypted
+	var aesGCM cipher.AEAD
+	var nonceBytes []byte
+	if isEncrypted {
+		passphrase := ctx.GetHeader("passphrase")
+		if passphrase == "" {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "passphrase required for encrypted file", nil, nil)
+			return
+		}
+		keyBytes, err := helper.DeriveKey(passphrase, file.Salt)
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to derive key", nil, nil)
+			return
+		}
+		aesGCM, err = helper.CreateAesGcmCipher(keyBytes)
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to create AES-GCM cipher", nil, nil)
+			return
+		}
+		nonceBytes, err = base64.URLEncoding.WithPadding(base64.NoPadding).DecodeString(file.Nonce)
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "invalid nonce encoding", nil, nil)
+			return
+		}
+	}
+
+	// Check if stream mode is enabled and file is encrypted
+	stream := ctx.DefaultQuery("stream", "false")
+	if stream == "true" && isEncrypted {
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "stream mode is not supported for encrypted downloads", nil, nil)
+		return
+	}
+
+	if stream == "true" {
 		url := dc.ipfsService.GetFileURL(fileHash)
 		resp, err := dc.ipfsService.GetHTTPClient().Get(url)
 		if err != nil {
@@ -115,7 +150,6 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 			return
 		}
 
-		// Set headers, but skip Content-Length to enable chunked transfer
 		ctx.Header("Content-Type", file.ContentType)
 		ctx.Header("Cache-Control", "no-cache, no-store, must-revalidate")
 		ctx.Header("Pragma", "no-cache")
@@ -140,11 +174,19 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	// Non-stream mode: download and send full file
+	// Non-stream mode: download and send full file, decrypt if needed
 	fileContent, err := dc.ipfsService.DownloadFile(fileHash)
 	if err != nil {
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "error downloading file from IPFS", nil, nil)
 		return
+	}
+	if isEncrypted {
+		plaintext, decErr := aesGCM.Open(nil, nonceBytes, fileContent, nil)
+		if decErr != nil {
+			helper.FormatResponse(ctx, "error", http.StatusForbidden, "decryption failed", nil, nil)
+			return
+		}
+		fileContent = plaintext
 	}
 
 	ctx.Header("Content-Length", strconv.Itoa(len(fileContent)))

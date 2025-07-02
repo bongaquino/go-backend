@@ -76,6 +76,12 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 	var salt, nonce string
 	var keyBytes []byte
 	if isEncrypted {
+		// Check if stream mode is enabled
+		stream := ctx.Query("stream")
+		if stream == "true" {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "stream mode is not supported for encrypted uploads", nil, nil)
+			return
+		}
 		// Generate salt
 		salt, err = helper.GenerateSalt()
 		if err != nil {
@@ -229,44 +235,7 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 	} else {
 		// Streaming mode (default): pass the file stream directly.
 		ctx.Writer.Header().Set("X-Upload-Mode", "stream")
-		if isEncrypted {
-			aesGCMVal, exists := ctx.Get("aesGCM")
-			if !exists {
-				helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "encryption cipher not found in context", nil, nil)
-				return
-			}
-			aesGCM := aesGCMVal.(cipher.AEAD)
-			pr, pw := io.Pipe()
-			go func() {
-				defer pw.Close()
-				nonceBytes, err := base64.URLEncoding.WithPadding(base64.NoPadding).DecodeString(nonce)
-				if err != nil {
-					pw.CloseWithError(err)
-					return
-				}
-				buf := make([]byte, 32*1024) // 32KB buffer
-				for {
-					n, err := src.Read(buf)
-					if n > 0 {
-						chunk := buf[:n]
-						sealed := aesGCM.Seal(nil, nonceBytes, chunk, nil)
-						_, werr := pw.Write(sealed)
-						if werr != nil {
-							return
-						}
-					}
-					if err == io.EOF {
-						break
-					}
-					if err != nil {
-						return
-					}
-				}
-			}()
-			cid, uploadErr = uc.ipfsService.UploadFile(fileName, pr)
-		} else {
-			cid, uploadErr = uc.ipfsService.UploadFile(fileName, src)
-		}
+		cid, uploadErr = uc.ipfsService.UploadFile(fileName, src)
 	}
 
 	if uploadErr != nil {
