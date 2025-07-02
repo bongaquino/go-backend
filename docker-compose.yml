@@ -58,6 +58,8 @@ services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.9.0
     container_name: elasticsearch
+    env_file:
+      - .env.elk
     environment:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
@@ -95,6 +97,8 @@ services:
   kibana:
     image: docker.elastic.co/kibana/kibana:8.9.0
     container_name: kibana
+    env_file:
+      - .env.elk
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
       - ELASTICSEARCH_USERNAME=kibana_system
@@ -113,10 +117,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./gateway/apps/koneksi-server-local.json:/opt/tyk-gateway/apps/koneksi-server.json
-      - ./gateway/apps/koneksi-ipfs-gateway.json:/opt/tyk-gateway/apps/koneksi-ipfs-gateway.json
-      - ./gateway/apps/koneksi-ipfs.json:/opt/tyk-gateway/apps/koneksi-ipfs.json
-      - ./gateway/apps/koneksi-ipfs-upload.json:/opt/tyk-gateway/apps/koneksi-ipfs-upload.json
+      - ./gateway/apps:/opt/tyk-gateway/apps
       - ./gateway/templates:/opt/tyk-gateway/templates
       - ./gateway/tyk.conf:/opt/tyk-gateway/tyk.conf
       - ./gateway/policies/policies.json:/opt/tyk-gateway/policies/policies.json
