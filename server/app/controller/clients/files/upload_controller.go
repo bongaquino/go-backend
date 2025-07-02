@@ -72,44 +72,6 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 		isEncrypted = true
 	}
 
-	// Generate salt and nonce if the file is encrypted
-	var salt, nonce string
-	var keyBytes []byte
-	if isEncrypted {
-		// Check if stream mode is enabled
-		stream := ctx.Query("stream")
-		if stream == "true" {
-			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "stream mode is not supported for encrypted uploads", nil, nil)
-			return
-		}
-		// Generate salt
-		salt, err = helper.GenerateSalt()
-		if err != nil {
-			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to generate salt", nil, nil)
-			return
-		}
-		// Generate nonce
-		nonce, err = helper.GenerateNonce()
-		if err != nil {
-			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to generate nonce", nil, nil)
-			return
-		}
-		// Derive key from passphrase using the salt
-		keyBytes, err = helper.DeriveKey(passphrase, salt)
-		if err != nil {
-			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to derive key from passphrase", nil, nil)
-			return
-		}
-		// Create AES-GCM Cipher
-		aesGCM, err := helper.CreateAesGcmCipher(keyBytes)
-		if err != nil {
-			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to create AES-GCM cipher", nil, nil)
-			return
-		}
-		// Set the AES-GCM cipher in the context for later use
-		ctx.Set("aesGCM", aesGCM)
-	}
-
 	// Get directory_id from request body
 	directoryID := request.DirectoryID
 	if directoryID == "" {
@@ -153,6 +115,49 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 	fileName := file.Filename
 	fileSize := file.Size
 	fileType := file.Header.Get("Content-Type")
+
+	// Generate salt and nonce if the file is encrypted
+	var salt, nonce string
+	var keyBytes []byte
+	if isEncrypted {
+		// Check if stream mode is enabled
+		stream := ctx.Query("stream")
+		if stream == "true" {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "stream mode is not supported for encrypted uploads", nil, nil)
+			return
+		}
+		// Check file size against the default encrypted size limit
+		if fileSize > fileConfig.DefaultEncryptedSize {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "file size exceeds the limit for encrypted uploads", nil, nil)
+			return
+		}
+		// Generate salt
+		salt, err = helper.GenerateSalt()
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to generate salt", nil, nil)
+			return
+		}
+		// Generate nonce
+		nonce, err = helper.GenerateNonce()
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to generate nonce", nil, nil)
+			return
+		}
+		// Derive key from passphrase using the salt
+		keyBytes, err = helper.DeriveKey(passphrase, salt)
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to derive key from passphrase", nil, nil)
+			return
+		}
+		// Create AES-GCM Cipher
+		aesGCM, err := helper.CreateAesGcmCipher(keyBytes)
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to create AES-GCM cipher", nil, nil)
+			return
+		}
+		// Set the AES-GCM cipher in the context for later use
+		ctx.Set("aesGCM", aesGCM)
+	}
 
 	// Limit file name length to 255 characters while preserving extension
 	isTrimmed := false
