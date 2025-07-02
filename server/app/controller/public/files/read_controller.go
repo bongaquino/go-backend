@@ -1,7 +1,6 @@
 package files
 
 import (
-	"fmt"
 	"koneksi/server/app/helper"
 	"koneksi/server/app/service"
 	"net/http"
@@ -40,15 +39,15 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 	// Read the file from the FS service
 	file, err := rc.fsService.ReadFileByID(ctx, fileID)
 	if err != nil {
-		fmt.Println("Error reading file:", err)
 		helper.FormatResponse(ctx, "error", http.StatusNotFound, "file not found", nil, nil)
 		return
 	}
 
 	// Return the file details
 	helper.FormatResponse(ctx, "success", http.StatusOK, "file read successfully", gin.H{
-		"id":     file.ID.Hex(),
-		"access": file.Access,
-		"size":   file.Size,
+		"id":           file.ID.Hex(),
+		"access":       file.Access,
+		"size":         file.Size,
+		"is_encrypted": file.IsEncrypted,
 	}, nil)
 }

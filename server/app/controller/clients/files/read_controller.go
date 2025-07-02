@@ -91,6 +91,7 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 		"content_type": file.ContentType,
 		"chunks":       chunks,
 		"access":       file.Access,
+		"is_encrypted": file.IsEncrypted,
 		"recipients":   nil,
 		"created_at":   file.CreatedAt,
 		"updated_at":   file.UpdatedAt,

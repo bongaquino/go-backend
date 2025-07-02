@@ -2,13 +2,14 @@ package config
 
 // FileConfig holds the File configuration
 type FileConfig struct {
-	DefaultAccess   string
-	AccessOptions   []string
-	PrivateAccess   string
-	PublicAccess    string
-	TemporaryAccess string
-	PasswordAccess  string
-	EmailAccess     string
+	DefaultAccess        string
+	AccessOptions        []string
+	PrivateAccess        string
+	PublicAccess         string
+	TemporaryAccess      string
+	PasswordAccess       string
+	EmailAccess          string
+	DefaultEncryptedSize int64
 }
 
 func LoadFileConfig() *FileConfig {
@@ -22,9 +23,10 @@ func LoadFileConfig() *FileConfig {
 			"password",
 			"email",
 		},
-		PrivateAccess:  "private",
-		PublicAccess:   "public",
-		PasswordAccess: "password",
-		EmailAccess:    "email",
+		PrivateAccess:        "private",
+		PublicAccess:         "public",
+		PasswordAccess:       "password",
+		EmailAccess:          "email",
+		DefaultEncryptedSize: 20 * 1024 * 1024, // 20 MB
 	}
 }

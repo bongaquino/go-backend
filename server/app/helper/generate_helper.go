@@ -100,3 +100,27 @@ func GenerateFileKey(fileID string) (string, error) {
 
 	return fmt.Sprintf("%s_%s", fileID, cleaned), nil
 }
+
+// GenerateSalt generates a secure random salt
+func GenerateSalt() (string, error) {
+	randomBytes, err := generateRandomBytes(16)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate random bytes: %w", err)
+	}
+
+	encoded := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(randomBytes)
+	cleaned := removeDashesAndUnderscores(encoded)
+
+	return cleaned, nil
+}
+
+// GenerateNonce generates a secure random nonce
+func GenerateNonce() (string, error) {
+	randomBytes, err := generateRandomBytes(12)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate random bytes: %w", err)
+	}
+	// Use standard base64 encoding with no padding, do not remove dashes/underscores
+	encoded := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(randomBytes)
+	return encoded, nil
+}

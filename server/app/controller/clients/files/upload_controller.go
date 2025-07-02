@@ -2,6 +2,8 @@ package files
 
 import (
 	"bytes"
+	"crypto/cipher"
+	"encoding/base64"
 	"io"
 	"koneksi/server/app/dto"
 	"koneksi/server/app/helper"
@@ -51,11 +53,26 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	// Get directory_id from request body
+	// Initialize request DTO
 	var request dto.UploadFileDTO
 	_ = ctx.ShouldBind(&request)
 
-	// Only use directoryID from request body
+	// Initialize is encrypted flag
+	isEncrypted := false
+	passphrase := request.Passphrase
+
+	// Check if file is for encrypted upload by checking if passphrase is provided
+	if passphrase != "" {
+		// Validate passphrase length
+		_, err := helper.ValidatePassword(passphrase)
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid passphrase format", nil, nil)
+			return
+		}
+		isEncrypted = true
+	}
+
+	// Get directory_id from request body
 	directoryID := request.DirectoryID
 	if directoryID == "" {
 		// Get the user's root directory
@@ -98,6 +115,49 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 	fileName := file.Filename
 	fileSize := file.Size
 	fileType := file.Header.Get("Content-Type")
+
+	// Generate salt and nonce if the file is encrypted
+	var salt, nonce string
+	var keyBytes []byte
+	if isEncrypted {
+		// Check if stream mode is enabled
+		stream := ctx.Query("stream")
+		if stream == "true" {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "stream mode is not supported for encrypted uploads", nil, nil)
+			return
+		}
+		// Check file size against the default encrypted size limit
+		if fileSize > fileConfig.DefaultEncryptedSize {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "file size exceeds the limit for encrypted uploads", nil, nil)
+			return
+		}
+		// Generate salt
+		salt, err = helper.GenerateSalt()
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to generate salt", nil, nil)
+			return
+		}
+		// Generate nonce
+		nonce, err = helper.GenerateNonce()
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to generate nonce", nil, nil)
+			return
+		}
+		// Derive key from passphrase using the salt
+		keyBytes, err = helper.DeriveKey(passphrase, salt)
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to derive key from passphrase", nil, nil)
+			return
+		}
+		// Create AES-GCM Cipher
+		aesGCM, err := helper.CreateAesGcmCipher(keyBytes)
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to create AES-GCM cipher", nil, nil)
+			return
+		}
+		// Set the AES-GCM cipher in the context for later use
+		ctx.Set("aesGCM", aesGCM)
+	}
 
 	// Limit file name length to 255 characters while preserving extension
 	isTrimmed := false
@@ -160,7 +220,23 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to read file content for non-streaming upload", nil, nil)
 			return
 		}
-		cid, uploadErr = uc.ipfsService.UploadFile(fileName, bytes.NewReader(fileBytes))
+		if isEncrypted {
+			aesGCMVal, exists := ctx.Get("aesGCM")
+			if !exists {
+				helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "encryption cipher not found in context", nil, nil)
+				return
+			}
+			aesGCM := aesGCMVal.(cipher.AEAD)
+			nonceBytes, err := base64.URLEncoding.WithPadding(base64.NoPadding).DecodeString(nonce)
+			if err != nil {
+				helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "invalid nonce encoding", nil, nil)
+				return
+			}
+			ciphertext := aesGCM.Seal(nil, nonceBytes, fileBytes, nil)
+			cid, uploadErr = uc.ipfsService.UploadFile(fileName, bytes.NewReader(ciphertext))
+		} else {
+			cid, uploadErr = uc.ipfsService.UploadFile(fileName, bytes.NewReader(fileBytes))
+		}
 	} else {
 		// Streaming mode (default): pass the file stream directly.
 		ctx.Writer.Header().Set("X-Upload-Mode", "stream")
@@ -182,6 +258,22 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 		ContentType: fileType,
 		Access:      fileConfig.DefaultAccess,
 		IsDeleted:   false,
+	}
+	if isEncrypted {
+		// Encrypt salt and nonce
+		encryptedSalt, err := helper.Encrypt(salt)
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to encrypt salt", nil, nil)
+			return
+		}
+		encryptedNonce, err := helper.Encrypt(nonce)
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to encrypt nonce", nil, nil)
+			return
+		}
+		newFile.IsEncrypted = true
+		newFile.Salt = encryptedSalt
+		newFile.Nonce = encryptedNonce
 	}
 
 	// Save the file metadata to the database
@@ -208,7 +300,7 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 	}
 
 	if isTrimmed {
-		meta := map[string]interface{}{
+		meta := map[string]any{
 			"is_trimmed": true,
 		}
 		helper.FormatResponse(ctx, "success", http.StatusOK, "file uploaded successfully", gin.H{
@@ -219,6 +311,7 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 			"size":         fileSize,
 			"content_type": fileType,
 			"access":       fileConfig.DefaultAccess,
+			"is_encrypted": isEncrypted,
 		}, meta)
 		return
 	}
@@ -232,5 +325,6 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 		"size":         fileSize,
 		"content_type": fileType,
 		"access":       fileConfig.DefaultAccess,
+		"is_encrypted": isEncrypted,
 	}, nil)
 }
