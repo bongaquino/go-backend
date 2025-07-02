@@ -78,7 +78,7 @@ func (ac *UpdateRoleController) Handle(ctx *gin.Context) {
 
 func (rc *UpdateRoleController) validatePayload(ctx *gin.Context, request *UpdateRoleMemberRoleRequest) error {
 	if err := ctx.ShouldBindJSON(request); err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid request body", nil, nil)
 		return err
 	}
 	return nil

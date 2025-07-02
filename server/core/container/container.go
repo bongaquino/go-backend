@@ -13,6 +13,7 @@ import (
 	"koneksi/server/app/controller/health"
 	"koneksi/server/app/controller/network"
 	"koneksi/server/app/controller/profile"
+	publicFiles "koneksi/server/app/controller/public/files"
 	"koneksi/server/app/controller/serviceaccounts"
 	"koneksi/server/app/controller/settings"
 	"koneksi/server/app/controller/settings/mfa"
@@ -48,6 +49,8 @@ type Repositories struct {
 	Limit                *repository.LimitRepository
 	Directory            *repository.DirectoryRepository
 	File                 *repository.FileRepository
+	Setting              *repository.SettingRepository
+	FileAccess           *repository.FileAccessRepository
 }
 
 type Services struct {
@@ -87,12 +90,13 @@ type Controllers struct {
 		ResendVerificationCode *users.ResendVerificationCodeController
 	}
 	Tokens struct {
-		Request *tokens.RequestTokenController
+		Request *tokens.RequestController
 		Verify  *tokens.VerifyOTPController
-		Refresh *tokens.RefreshTokenController
-		Revoke  *tokens.RevokeTokenController
+		Refresh *tokens.RefreshController
+		Revoke  *tokens.RevokeController
 	}
 	Settings struct {
+		Update         *settings.UpdateController
 		ChangePassword *settings.ChangePasswordController
 		MFA            struct {
 			Generate *mfa.GenerateOTPController
@@ -122,10 +126,13 @@ type Controllers struct {
 			Delete *directories.DeleteController
 		}
 		Files struct {
-			Upload *files.UploadController
-			Read   *files.ReadController
-			Update *files.UpdateController
-			Delete *files.DeleteController
+			Upload       *files.UploadController
+			Download     *files.DownloadController
+			Read         *files.ReadController
+			Update       *files.UpdateController
+			Share        *files.ShareController
+			GenerateLink *files.GenerateLinkController
+			Delete       *files.DeleteController
 		}
 	}
 	Admin struct {
@@ -149,6 +156,12 @@ type Controllers struct {
 				UpdateRole *members.UpdateRoleController
 				Remove     *members.RemoveController
 			}
+		}
+	}
+	Public struct {
+		Files struct {
+			Download *publicFiles.DownloadController
+			Read     *publicFiles.ReadController
 		}
 	}
 }
@@ -177,6 +190,7 @@ func initRepositories(p Providers) Repositories {
 		PolicyPermission:     repository.NewPolicyPermissionRepository(p.Mongo),
 		Profile:              repository.NewProfileRepository(p.Mongo),
 		Role:                 repository.NewRoleRepository(p.Mongo),
+		Setting:              repository.NewSettingRepository(p.Mongo),
 		RolePermission:       repository.NewRolePermissionRepository(p.Mongo),
 		ServiceAccount:       repository.NewServiceAccountRepository(p.Mongo),
 		User:                 repository.NewUserRepository(p.Mongo),
@@ -186,20 +200,21 @@ func initRepositories(p Providers) Repositories {
 		Limit:                repository.NewLimitRepository(p.Mongo),
 		Directory:            repository.NewDirectoryRepository(p.Mongo),
 		File:                 repository.NewFileRepository(p.Mongo),
+		FileAccess:           repository.NewFileAccessRepository(p.Mongo),
 	}
 }
 
 func initServices(p Providers, r Repositories) Services {
-	user := service.NewUserService(r.User, r.Profile, r.Role, r.UserRole,
+	user := service.NewUserService(r.User, r.Profile, r.Setting, r.Role, r.UserRole,
 		r.Limit, r.Directory, r.File, r.ServiceAccount, p.Redis)
 	email := service.NewEmailService(p.Postmark)
-	mfa := service.NewMFAService(r.User, p.Redis)
+	mfa := service.NewMFAService(r.User, r.Setting, p.Redis)
 	ipfs := service.NewIPFSService(p.IPFS)
 	token := service.NewTokenService(r.User, p.JWT, mfa, p.Redis)
 	organization := service.NewOrganizationService(r.Organization, r.Policy, r.Permission,
 		r.OrganizationUserRole, r.User, r.Role)
 	serviceAccount := service.NewServiceAccountService(r.ServiceAccount, r.User, r.Limit)
-	fs := service.NewFSService(r.Directory, r.File)
+	fs := service.NewFSService(p.Redis, r.Directory, r.File, r.FileAccess)
 	return Services{user, token, mfa, email, ipfs, organization, serviceAccount, fs}
 }
 
@@ -244,17 +259,18 @@ func initControllers(s Services) Controllers {
 			ResendVerificationCode: users.NewResendVerificationCodeController(s.User, s.Email),
 		},
 		Tokens: struct {
-			Request *tokens.RequestTokenController
+			Request *tokens.RequestController
 			Verify  *tokens.VerifyOTPController
-			Refresh *tokens.RefreshTokenController
-			Revoke  *tokens.RevokeTokenController
+			Refresh *tokens.RefreshController
+			Revoke  *tokens.RevokeController
 		}{
-			Request: tokens.NewRequestTokenController(s.Token, s.User, s.MFA),
+			Request: tokens.NewRequestController(s.Token, s.User, s.MFA),
 			Verify:  tokens.NewVerifyOTPController(s.Token, s.MFA),
-			Refresh: tokens.NewRefreshTokenController(s.Token),
-			Revoke:  tokens.NewRevokeTokenController(s.Token),
+			Refresh: tokens.NewRefreshController(s.Token),
+			Revoke:  tokens.NewRevokeController(s.Token),
 		},
 		Settings: struct {
+			Update         *settings.UpdateController
 			ChangePassword *settings.ChangePasswordController
 			MFA            struct {
 				Generate *mfa.GenerateOTPController
@@ -262,6 +278,7 @@ func initControllers(s Services) Controllers {
 				Disable  *mfa.DisableMFAController
 			}
 		}{
+			Update:         settings.NewUpdateController(s.User),
 			ChangePassword: settings.NewChangePasswordController(s.User),
 			MFA: struct {
 				Generate *mfa.GenerateOTPController
@@ -303,10 +320,13 @@ func initControllers(s Services) Controllers {
 				Delete *directories.DeleteController
 			}
 			Files struct {
-				Upload *files.UploadController
-				Read   *files.ReadController
-				Update *files.UpdateController
-				Delete *files.DeleteController
+				Upload       *files.UploadController
+				Download     *files.DownloadController
+				Read         *files.ReadController
+				Update       *files.UpdateController
+				Share        *files.ShareController
+				GenerateLink *files.GenerateLinkController
+				Delete       *files.DeleteController
 			}
 		}{
 			Peers: struct {
@@ -321,20 +341,26 @@ func initControllers(s Services) Controllers {
 				Delete *directories.DeleteController
 			}{
 				Create: directories.NewCreateController(s.FS, s.IPFS),
-				Read:   directories.NewReadController(s.FS, s.IPFS),
+				Read:   directories.NewReadController(s.FS, s.IPFS, s.User),
 				Update: directories.NewUpdateController(s.FS, s.IPFS),
-				Delete: directories.NewDeleteController(s.FS, s.IPFS),
+				Delete: directories.NewDeleteController(s.FS, s.IPFS, s.User),
 			},
 			Files: struct {
-				Upload *files.UploadController
-				Read   *files.ReadController
-				Update *files.UpdateController
-				Delete *files.DeleteController
+				Upload       *files.UploadController
+				Download     *files.DownloadController
+				Read         *files.ReadController
+				Update       *files.UpdateController
+				Share        *files.ShareController
+				GenerateLink *files.GenerateLinkController
+				Delete       *files.DeleteController
 			}{
-				Upload: files.NewUploadController(s.FS, s.IPFS, s.User),
-				Read:   files.NewReadController(s.FS, s.IPFS),
-				Update: files.NewUpdateController(s.FS, s.IPFS),
-				Delete: files.NewDeleteController(s.FS, s.IPFS),
+				Upload:       files.NewUploadController(s.FS, s.IPFS, s.User),
+				Download:     files.NewDownloadController(s.FS, s.IPFS),
+				Read:         files.NewReadController(s.FS, s.IPFS, s.User),
+				Update:       files.NewUpdateController(s.FS, s.IPFS),
+				Share:        files.NewShareController(s.FS, s.User, s.Email),
+				GenerateLink: files.NewGenerateLinkController(s.FS),
+				Delete:       files.NewDeleteController(s.FS, s.IPFS, s.User),
 			},
 		},
 		Admin: struct {
@@ -405,6 +431,20 @@ func initControllers(s Services) Controllers {
 					UpdateRole: members.NewUpdateRoleController(s.Organization),
 					Remove:     members.NewRemoveController(s.Organization),
 				},
+			},
+		},
+		Public: struct {
+			Files struct {
+				Download *publicFiles.DownloadController
+				Read     *publicFiles.ReadController
+			}
+		}{
+			Files: struct {
+				Download *publicFiles.DownloadController
+				Read     *publicFiles.ReadController
+			}{
+				Download: publicFiles.NewDownloadController(s.FS, s.IPFS),
+				Read:     publicFiles.NewReadController(s.FS, s.IPFS),
 			},
 		},
 	}

@@ -42,7 +42,11 @@ func (cpc *ChangePasswordController) Handle(ctx *gin.Context) {
 	// Change the password using the UserService
 	err := cpc.userService.ChangePassword(ctx.Request.Context(), userID.(string), &request)
 	if err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusUnauthorized, err.Error(), nil, nil)
+		if err.Error() == "new password must be different from the old password" {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "new password must be different from the old password", nil, nil)
+			return
+		}
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "password change failed", nil, nil)
 		return
 	}
 
@@ -53,7 +57,7 @@ func (cpc *ChangePasswordController) Handle(ctx *gin.Context) {
 // validatePayload validates the incoming request payload
 func (cpc *ChangePasswordController) validatePayload(ctx *gin.Context, request *dto.ChangePasswordDTO) error {
 	if err := ctx.ShouldBindJSON(request); err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid request body", nil, nil)
 		return err
 	}
 	if request.NewPassword != request.ConfirmNewPassword {

@@ -38,13 +38,17 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 		tokenGroup.POST("/request", container.Controllers.Tokens.Request.Handle)
 		tokenGroup.POST("/verify-otp", container.Controllers.Tokens.Verify.Handle)
 		tokenGroup.POST("/refresh", container.Controllers.Tokens.Refresh.Handle)
-		tokenGroup.POST("/revoke", container.Controllers.Tokens.Revoke.Handle)
+		tokenGroup.DELETE("/revoke", container.Controllers.Tokens.Revoke.Handle)
 	}
 
 	// Settings Routes
 	settingsGroup := engine.Group("/settings")
 	settingsGroup.Use(container.Middleware.Authn.Handle, container.Middleware.Verified.Handle)
 	{
+		// Update Settings Route
+		settingsGroup.PUT("/update", container.Controllers.Settings.Update.Handle)
+
+		// Change Password Route
 		settingsGroup.POST("/change-password", container.Controllers.Settings.ChangePassword.Handle)
 
 		// MFA Routes
@@ -84,8 +88,11 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 	filesGroup.Use(container.Middleware.Authn.Handle, container.Middleware.Verified.Handle)
 	{
 		filesGroup.POST("/upload", container.Controllers.Clients.Files.Upload.Handle)
+		filesGroup.GET("/:fileID/download", container.Controllers.Clients.Files.Download.Handle)
 		filesGroup.GET("/:fileID/read", container.Controllers.Clients.Files.Read.Handle)
 		filesGroup.PUT("/:fileID/update", container.Controllers.Clients.Files.Update.Handle)
+		filesGroup.POST("/:fileID/share", container.Controllers.Clients.Files.Share.Handle)
+		filesGroup.POST("/:fileID/generate-link", container.Controllers.Clients.Files.GenerateLink.Handle)
 		filesGroup.DELETE("/:fileID/delete", container.Controllers.Clients.Files.Delete.Handle)
 	}
 
@@ -111,15 +118,17 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 		clientsGroup.DELETE("/directories/:directoryID", container.Controllers.Clients.Directories.Delete.Handle)
 		// File Routes
 		clientsGroup.POST("/files", container.Controllers.Clients.Files.Upload.Handle)
+		clientsGroup.GET("/files/:fileID/download", container.Controllers.Clients.Files.Download.Handle)
 		clientsGroup.GET("/files/:fileID", container.Controllers.Clients.Files.Read.Handle)
 		clientsGroup.PUT("/files/:fileID", container.Controllers.Clients.Files.Update.Handle)
+		clientsGroup.POST("/files/:fileID/share", container.Controllers.Clients.Files.Share.Handle)
+		clientsGroup.POST("/files/:fileID/generate-link", container.Controllers.Clients.Files.GenerateLink.Handle)
 		clientsGroup.DELETE("/files/:fileID", container.Controllers.Clients.Files.Delete.Handle)
 	}
 
 	// Admin Routes
 	adminGroup := engine.Group("/admin")
-	// adminGroup.Use(container.Middleware.Authn.Handle, container.Middleware.Authz.Handle([]string{"system_admin"}))
-	adminGroup.Use(container.Middleware.Authn.Handle)
+	adminGroup.Use(container.Middleware.Authn.Handle, container.Middleware.Authz.Handle([]string{"system_admin"}))
 	{
 		// User Management Routes
 		adminGroup.GET("users/list", container.Controllers.Admin.Users.List.Handle)
@@ -138,5 +147,12 @@ func RegisterRoutes(engine *gin.Engine, container *ioc.Container) {
 		adminGroup.POST("organizations/:orgID/members/add", container.Controllers.Admin.Organizations.Members.Add.Handle)
 		adminGroup.PUT("organizations/:orgID/members/:userID/update-role", container.Controllers.Admin.Organizations.Members.UpdateRole.Handle)
 		adminGroup.DELETE("organizations/:orgID/members/:userID/remove", container.Controllers.Admin.Organizations.Members.Remove.Handle)
+	}
+
+	// Public Routes
+	publicGroup := engine.Group("/public")
+	{
+		publicGroup.GET("/files/:fileID/download", container.Controllers.Public.Files.Download.Handle)
+		publicGroup.GET("/files/:fileID/read", container.Controllers.Public.Files.Read.Handle)
 	}
 }

@@ -31,6 +31,13 @@ func (cc *CreateController) Handle(ctx *gin.Context) {
 		return
 	}
 
+	// Limit directory name length to 255 characters
+	isTrimmed := false
+	if request.Name != "" && len(request.Name) > 255 {
+		request.Name = request.Name[:255]
+		isTrimmed = true
+	}
+
 	// Extract user ID from the context
 	userID, exists := ctx.Get("userID")
 	if !exists {
@@ -55,6 +62,13 @@ func (cc *CreateController) Handle(ctx *gin.Context) {
 			return
 		}
 		dirObjectID = &tmpID
+	} else {
+		rootDir, _, _, err := cc.fsService.ReadRootDirectory(ctx, userID.(string))
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to get root directory", nil, nil)
+			return
+		}
+		dirObjectID = &rootDir.ID
 	}
 
 	// Build directory model
@@ -75,12 +89,20 @@ func (cc *CreateController) Handle(ctx *gin.Context) {
 	// Prepare the response data
 	response := gin.H{
 		"directory": gin.H{
-			"id":        directory.ID.Hex(),
-			"name":      directory.Name,
-			"size":      directory.Size,
-			"createdAt": directory.CreatedAt,
-			"updatedAt": directory.UpdatedAt,
+			"id":         directory.ID.Hex(),
+			"name":       directory.Name,
+			"size":       directory.Size,
+			"created_at": directory.CreatedAt,
+			"updated_at": directory.UpdatedAt,
 		},
+	}
+
+	if isTrimmed {
+		meta := map[string]any{
+			"is_trimmed": true,
+		}
+		helper.FormatResponse(ctx, "success", http.StatusOK, "directory created successfully", response, meta)
+		return
 	}
 
 	// Return success response
@@ -89,7 +111,7 @@ func (cc *CreateController) Handle(ctx *gin.Context) {
 
 func (cc *CreateController) validatePayload(ctx *gin.Context, request *dto.CreateDirectoryDTO) error {
 	if err := ctx.ShouldBindJSON(request); err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid request body", nil, nil)
 		return err
 	}
 	return nil

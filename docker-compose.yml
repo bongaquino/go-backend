@@ -54,14 +54,19 @@ services:
     networks:
       - koneksi-network
 
-  # Elasticsearch (ELK Stack)
+  # Elasticsearch (ELK Stack) - Security disabled
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.9.0
     container_name: elasticsearch
+    env_file:
+      - .env.elk
     environment:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=true
+      - xpack.security.enrollment.enabled=false
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
     ulimits:
       memlock:
         soft: -1
@@ -88,12 +93,18 @@ services:
     networks:
       - koneksi-network
 
-  # Kibana (ELK Stack)
+  # Kibana (ELK Stack) - NO DIRECT PORT EXPOSURE
   kibana:
     image: docker.elastic.co/kibana/kibana:8.9.0
     container_name: kibana
-    ports:
-      - "5601:5601"
+    env_file:
+      - .env.elk
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
+      - SERVER_NAME=elk-staging.koneksi.co.kr
+      - SERVER_PUBLICBASEURL=https://elk-staging.koneksi.co.kr
     depends_on:
       - elasticsearch
     networks:
@@ -106,12 +117,9 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./gateway/apps/koneksi-server-local.json:/opt/tyk-gateway/apps/koneksi-server.json
-      - ./gateway/apps/koneksi-ipfs-gateway.json:/opt/tyk-gateway/apps/koneksi-ipfs-gateway.json
-      - ./gateway/apps/koneksi-ipfs.json:/opt/tyk-gateway/apps/koneksi-ipfs.json
-      - ./gateway/apps/koneksi-ipfs-upload.json:/opt/tyk-gateway/apps/koneksi-ipfs-upload.json
+      - ./gateway/apps:/opt/tyk-gateway/apps
       - ./gateway/templates:/opt/tyk-gateway/templates
-      - ./gateway/tyk-local.conf:/opt/tyk-gateway/tyk.conf
+      - ./gateway/tyk.conf:/opt/tyk-gateway/tyk.conf
       - ./gateway/policies/policies.json:/opt/tyk-gateway/policies/policies.json
     environment:
       TYK_GW_SECRET: "352d20ee67be67f6340b4c0605b044b7"
@@ -142,11 +150,6 @@ services:
       - koneksi-network
     ports:
       - "3000:3000"
-    # logging:
-    #   driver: "gelf"
-    #   options:
-    #     gelf-address: "udp://logstash:12201"
-    #     tag: "orchestrator"
 
 volumes:
   mongo-data:

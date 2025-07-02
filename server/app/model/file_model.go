@@ -14,6 +14,10 @@ type File struct {
 	Hash        string              `bson:"hash"`
 	Size        int64               `bson:"size"`
 	ContentType string              `bson:"content_type"`
+	Access      string              `bson:"access"`          // "private", "public", "password", "email"
+	Salt        string              `bson:"salt,omitempty"`  // Used for encrypted files
+	Nonce       string              `bson:"nonce,omitempty"` // Used for encrypted files
+	IsEncrypted bool                `bson:"is_encrypted"`
 	IsDeleted   bool                `bson:"is_deleted"`
 	CreatedAt   time.Time           `bson:"created_at"`
 	UpdatedAt   time.Time           `bson:"updated_at"`

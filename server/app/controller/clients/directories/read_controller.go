@@ -4,6 +4,7 @@ import (
 	"koneksi/server/app/helper"
 	"koneksi/server/app/model"
 	"koneksi/server/app/service"
+	"koneksi/server/config"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -13,17 +14,26 @@ import (
 type ReadController struct {
 	fsService   *service.FSService
 	ipfsService *service.IPFSService
+	userService *service.UserService
 }
 
 // NewReadController initializes a new ReadController
-func NewReadController(fsService *service.FSService, ipfsService *service.IPFSService) *ReadController {
+func NewReadController(
+	fsService *service.FSService,
+	ipfsService *service.IPFSService,
+	userService *service.UserService,
+) *ReadController {
 	return &ReadController{
 		fsService:   fsService,
 		ipfsService: ipfsService,
+		userService: userService,
 	}
 }
 
 func (rc *ReadController) Handle(ctx *gin.Context) {
+	// Load file configuration
+	fileConfig := config.LoadFileConfig()
+
 	// Extract user ID from the context
 	userID, exists := ctx.Get("userID")
 	if !exists {
@@ -36,7 +46,7 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 
 	// Check if the directory ID is not empty
 	if directoryID == "" {
-		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "file ID is required", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "directory ID is required", nil, nil)
 		return
 	}
 
@@ -62,22 +72,22 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 
 		// Format the directory data
 		directoryData := gin.H{
-			"id":        directory.ID.Hex(),
-			"name":      directory.Name,
-			"size":      directory.Size,
-			"createdAt": directory.CreatedAt,
-			"updatedAt": directory.UpdatedAt,
+			"id":         directory.ID.Hex(),
+			"name":       directory.Name,
+			"size":       directory.Size,
+			"created_at": directory.CreatedAt,
+			"updated_at": directory.UpdatedAt,
 		}
 
 		// Format the subdirectories
 		subDirectoriesData := make([]gin.H, len(subDirectories))
 		for i, subDir := range subDirectories {
 			subDirectoriesData[i] = gin.H{
-				"id":        subDir.ID.Hex(),
-				"name":      subDir.Name,
-				"size":      subDir.Size,
-				"createdAt": subDir.CreatedAt,
-				"updatedAt": subDir.UpdatedAt,
+				"id":         subDir.ID.Hex(),
+				"name":       subDir.Name,
+				"size":       subDir.Size,
+				"created_at": subDir.CreatedAt,
+				"updated_at": subDir.UpdatedAt,
 			}
 		}
 
@@ -85,13 +95,37 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 		filesData := make([]gin.H, len(files))
 		for i, file := range files {
 			filesData[i] = gin.H{
-				"id":          file.ID.Hex(),
-				"name":        file.Name,
-				"hash":        file.Hash,
-				"size":        file.Size,
-				"contentType": file.ContentType,
-				"createdAt":   file.CreatedAt,
-				"updatedAt":   file.UpdatedAt,
+				"id":           file.ID.Hex(),
+				"directory_id": file.DirectoryID.Hex(),
+				"name":         file.Name,
+				"hash":         file.Hash,
+				"size":         file.Size,
+				"content_type": file.ContentType,
+				"access":       file.Access,
+				"is_encrypted": file.IsEncrypted,
+				"recipients":   nil,
+				"created_at":   file.CreatedAt,
+				"updated_at":   file.UpdatedAt,
+			}
+			// Check if file.access is "email"
+			if file.Access == fileConfig.EmailAccess {
+				// Fetch file access details from fsService
+				fileAccessList, _ := rc.fsService.ListFileAccessByFileID(ctx, file.ID.Hex())
+				// Add file access details to the file data
+				filesData[i]["recipients"] = make([]gin.H, len(fileAccessList))
+				// Loop thru file access list to get recipient IDs then use recipient ID to get user email
+				for j, fileAccess := range fileAccessList {
+					// Get user email from fsService using recipient ID
+					user, profile, _, _, _, _ := rc.userService.GetUserInfo(ctx, fileAccess.RecipientID.Hex())
+					filesData[i]["recipients"].([]gin.H)[j] = gin.H{
+						"id":          user.ID.Hex(),
+						"email":       user.Email,
+						"first_name":  profile.FirstName,
+						"middle_name": profile.MiddleName,
+						"last_name":   profile.LastName,
+						"suffix":      profile.Suffix,
+					}
+				}
 			}
 		}
 
@@ -136,22 +170,22 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 
 		// Format the directory data
 		directoryData := gin.H{
-			"id":        directory.ID.Hex(),
-			"name":      directory.Name,
-			"size":      directory.Size,
-			"createdAt": directory.CreatedAt,
-			"updatedAt": directory.UpdatedAt,
+			"id":         directory.ID.Hex(),
+			"name":       directory.Name,
+			"size":       directory.Size,
+			"created_at": directory.CreatedAt,
+			"updated_at": directory.UpdatedAt,
 		}
 
 		// Format the subdirectories
 		subDirectoriesData := make([]gin.H, len(subDirectories))
 		for i, subDir := range subDirectories {
 			subDirectoriesData[i] = gin.H{
-				"id":        subDir.ID.Hex(),
-				"name":      subDir.Name,
-				"size":      subDir.Size,
-				"createdAt": subDir.CreatedAt,
-				"updatedAt": subDir.UpdatedAt,
+				"id":         subDir.ID.Hex(),
+				"name":       subDir.Name,
+				"size":       subDir.Size,
+				"created_at": subDir.CreatedAt,
+				"updated_at": subDir.UpdatedAt,
 			}
 		}
 
@@ -159,13 +193,37 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 		filesData := make([]gin.H, len(files))
 		for i, file := range files {
 			filesData[i] = gin.H{
-				"id":          file.ID.Hex(),
-				"name":        file.Name,
-				"hash":        file.Hash,
-				"size":        file.Size,
-				"contentType": file.ContentType,
-				"createdAt":   file.CreatedAt,
-				"updatedAt":   file.UpdatedAt,
+				"id":           file.ID.Hex(),
+				"directory_id": file.DirectoryID.Hex(),
+				"name":         file.Name,
+				"hash":         file.Hash,
+				"size":         file.Size,
+				"content_type": file.ContentType,
+				"access":       file.Access,
+				"is_encrypted": file.IsEncrypted,
+				"recipients":   nil,
+				"created_at":   file.CreatedAt,
+				"updated_at":   file.UpdatedAt,
+			}
+			// Check if file.access is "email"
+			if file.Access == fileConfig.EmailAccess {
+				// Fetch file access details from fsService
+				fileAccessList, _ := rc.fsService.ListFileAccessByFileID(ctx, file.ID.Hex())
+				// Add file access details to the file data
+				filesData[i]["recipients"] = make([]gin.H, len(fileAccessList))
+				// Loop thru file access list to get recipient IDs then use recipient ID to get user email
+				for j, fileAccess := range fileAccessList {
+					// Get user email from fsService using recipient ID
+					user, profile, _, _, _, _ := rc.userService.GetUserInfo(ctx, fileAccess.RecipientID.Hex())
+					filesData[i]["recipients"].([]gin.H)[j] = gin.H{
+						"id":          user.ID.Hex(),
+						"email":       user.Email,
+						"first_name":  profile.FirstName,
+						"middle_name": profile.MiddleName,
+						"last_name":   profile.LastName,
+						"suffix":      profile.Suffix,
+					}
+				}
 			}
 		}
 

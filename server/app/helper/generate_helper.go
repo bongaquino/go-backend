@@ -82,3 +82,45 @@ func GenerateNumericCode(length int) (string, error) {
 	}
 	return string(digits), nil
 }
+
+// GenerateFileKey generates a secure file key
+func GenerateFileKey(fileID string) (string, error) {
+	randomBytes, err := generateRandomBytes(16)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate random bytes: %w", err)
+	}
+
+	appConfig := config.LoadAppConfig()
+	h := hmac.New(sha256.New, []byte(appConfig.AppKey))
+	h.Write(randomBytes)
+	hashed := h.Sum(nil)
+
+	encoded := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(hashed)
+	cleaned := removeDashesAndUnderscores(encoded)
+
+	return fmt.Sprintf("%s_%s", fileID, cleaned), nil
+}
+
+// GenerateSalt generates a secure random salt
+func GenerateSalt() (string, error) {
+	randomBytes, err := generateRandomBytes(16)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate random bytes: %w", err)
+	}
+
+	encoded := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(randomBytes)
+	cleaned := removeDashesAndUnderscores(encoded)
+
+	return cleaned, nil
+}
+
+// GenerateNonce generates a secure random nonce
+func GenerateNonce() (string, error) {
+	randomBytes, err := generateRandomBytes(12)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate random bytes: %w", err)
+	}
+	// Use standard base64 encoding with no padding, do not remove dashes/underscores
+	encoded := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(randomBytes)
+	return encoded, nil
+}

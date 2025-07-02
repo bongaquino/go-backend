@@ -63,7 +63,7 @@ func (gc *GenerateController) Handle(ctx *gin.Context) {
 
 func (rc *GenerateController) validatePayload(ctx *gin.Context, request *dto.GenerateServiceAccountDTO) error {
 	if err := ctx.ShouldBindJSON(request); err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid request body", nil, nil)
 		return err
 	}
 	return nil

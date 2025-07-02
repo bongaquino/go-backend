@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// VVerifyAccountController handles verifying user accounts
+// VerifyAccountController handles verifying user accounts
 type VerifyAccountController struct {
 	userService *service.UserService
 }
@@ -29,7 +29,7 @@ func (vac *VerifyAccountController) Handle(ctx *gin.Context) {
 
 	// Validate the request payload
 	if err := ctx.ShouldBindJSON(&request); err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid request body", nil, nil)
 		return
 	}
 

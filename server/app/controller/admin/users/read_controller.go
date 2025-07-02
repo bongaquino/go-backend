@@ -30,7 +30,7 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	user, profile, role, limit, err := rc.userService.GetUserProfile(ctx.Request.Context(), userID)
+	user, profile, setting, role, limit, err := rc.userService.GetUserInfo(ctx.Request.Context(), userID)
 
 	// if err is not found, return a 404 error
 	if err != nil {
@@ -49,10 +49,11 @@ func (rc *ReadController) Handle(ctx *gin.Context) {
 
 	// Respond with success
 	helper.FormatResponse(ctx, "success", http.StatusOK, nil, gin.H{
-		"user":    user,
-		"profile": profile,
-		"role":    role,
-		"limit":   limit,
-		"org":     org,
+		"user":     user,
+		"profile":  profile,
+		"settings": setting,
+		"role":     role,
+		"limit":    limit,
+		"org":      org,
 	}, nil)
 }

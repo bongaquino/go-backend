@@ -65,14 +65,17 @@ func (uc *UpdateController) Handle(ctx *gin.Context) {
 
 func (rc *UpdateController) validatePayload(ctx *gin.Context, request *dto.UpdateUserDTO) error {
 	if err := ctx.ShouldBindJSON(request); err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid request body", nil, nil)
 		return err
 	}
-	// Check if new passwords pass validation
-	isValid, validationErr := helper.ValidatePassword(request.Password)
-	if !isValid || validationErr != nil {
-		helper.FormatResponse(ctx, "error", http.StatusBadRequest, validationErr.Error(), nil, nil)
-		return validationErr
+	// Only validate password if it's provided (not empty)
+	if request.Password != "" {
+		// Check if new password passes validation
+		isValid, validationErr := helper.ValidatePassword(request.Password)
+		if !isValid || validationErr != nil {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, validationErr.Error(), nil, nil)
+			return validationErr
+		}
 	}
 	return nil
 }

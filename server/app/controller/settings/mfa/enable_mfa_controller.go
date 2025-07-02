@@ -35,13 +35,17 @@ func (voc *EnableMFAController) Handle(ctx *gin.Context) {
 		OTP string `json:"otp" binding:"required"`
 	}
 	if err := ctx.ShouldBindJSON(&request); err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid request body", nil, nil)
 		return
 	}
 
 	// Verify the OTP
 	isValid, err := voc.mfaService.VerifyOTP(ctx.Request.Context(), userID.(string), request.OTP)
 	if err != nil {
+		if err.Error() == "OTP secret not set" {
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "OTP secret not set", nil, nil)
+			return
+		}
 		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, err.Error(), nil, nil)
 		return
 	}

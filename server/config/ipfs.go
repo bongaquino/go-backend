@@ -4,7 +4,8 @@ import "koneksi/server/core/env"
 
 // IPFSConfig holds the IPFS configuration
 type IPFSConfig struct {
-	IpfsNodeURL string
+	IPFSNodeURL     string
+	IPFSDownloadURL string
 }
 
 func LoadIPFSConfig() *IPFSConfig {
@@ -13,6 +14,7 @@ func LoadIPFSConfig() *IPFSConfig {
 
 	// Create the configuration from environment variables
 	return &IPFSConfig{
-		IpfsNodeURL: envVars.IpfsNodeURL,
+		IPFSNodeURL:     envVars.IPFSNodeURL,
+		IPFSDownloadURL: envVars.IPFSDownloadURL,
 	}
 }

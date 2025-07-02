@@ -34,3 +34,4 @@ Thumbs.db
 *.out
 *.cover
 *.prof
+.env.elk

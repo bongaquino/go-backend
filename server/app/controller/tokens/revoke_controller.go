@@ -9,20 +9,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// RevokeTokenController handles revoking refresh tokens
-type RevokeTokenController struct {
+// RevokeController handles revoking refresh tokens
+type RevokeController struct {
 	tokenService *service.TokenService
 }
 
-// NewRevokeTokenController initializes a new RevokeTokenController
-func NewRevokeTokenController(tokenService *service.TokenService) *RevokeTokenController {
-	return &RevokeTokenController{
+// NewRevokeController initializes a new RevokeController
+func NewRevokeController(tokenService *service.TokenService) *RevokeController {
+	return &RevokeController{
 		tokenService: tokenService,
 	}
 }
 
 // Handle processes the revoke token request (Logout)
-func (rc *RevokeTokenController) Handle(ctx *gin.Context) {
+func (rc *RevokeController) Handle(ctx *gin.Context) {
 	var request struct {
 		RefreshToken string `json:"refresh_token" binding:"required"`
 	}
@@ -44,9 +44,9 @@ func (rc *RevokeTokenController) Handle(ctx *gin.Context) {
 }
 
 // validatePayload validates the incoming request payload
-func (rc *RevokeTokenController) validatePayload(ctx *gin.Context, request any) error {
+func (rc *RevokeController) validatePayload(ctx *gin.Context, request any) error {
 	if err := ctx.ShouldBindJSON(request); err != nil {
-		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid input", nil, nil)
+		helper.FormatResponse(ctx, "error", http.StatusBadRequest, "invalid request body", nil, nil)
 		return err
 	}
 	return nil

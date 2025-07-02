@@ -15,13 +15,15 @@ import (
 // MFAService handles MFA-related operations
 type MFAService struct {
 	userRepo      *repository.UserRepository
+	settingRepo   *repository.SettingRepository
 	redisProvider *provider.RedisProvider
 }
 
 // NewMFAService initializes a new MFAService
-func NewMFAService(userRepo *repository.UserRepository, redisProvider *provider.RedisProvider) *MFAService {
+func NewMFAService(userRepo *repository.UserRepository, settingRepo *repository.SettingRepository, redisProvider *provider.RedisProvider) *MFAService {
 	return &MFAService{
 		userRepo:      userRepo,
+		settingRepo:   settingRepo,
 		redisProvider: redisProvider,
 	}
 }
@@ -65,6 +67,11 @@ func (ms *MFAService) VerifyOTP(ctx context.Context, userID, otp string) (bool, 
 		return false, fmt.Errorf("user not found")
 	}
 
+	// Check if OTP secret is already generated
+	if len(user.OtpSecret) == 0 {
+		return false, fmt.Errorf("OTP secret not set")
+	}
+
 	// Decrypt the stored OTP secret
 	decryptedOtpSecret, err := helper.Decrypt(user.OtpSecret)
 	if err != nil {
@@ -77,8 +84,10 @@ func (ms *MFAService) VerifyOTP(ctx context.Context, userID, otp string) (bool, 
 }
 
 func (ms *MFAService) EnableMFA(ctx context.Context, userID string) error {
-	// Update the user's MFA status in the database
-	err := ms.userRepo.Update(ctx, userID, bson.M{"is_mfa_enabled": true})
+	update := bson.M{
+		"is_mfa_enabled": true,
+	}
+	err := ms.settingRepo.UpdateByUserID(ctx, userID, update)
 	if err != nil {
 		return fmt.Errorf("failed to enable MFA: %w", err)
 	}
@@ -87,15 +96,22 @@ func (ms *MFAService) EnableMFA(ctx context.Context, userID string) error {
 }
 
 func (ms *MFAService) DisableMFA(ctx context.Context, userID string) error {
-	// Update the user's record to disable MFA
-	update := bson.M{
-		"is_mfa_enabled": false,
-		"otp_secret":     "",
+	updateUser := bson.M{
+		"otp_secret": "",
 	}
-	err := ms.userRepo.Update(ctx, userID, update)
+	err := ms.userRepo.Update(ctx, userID, updateUser)
+	if err != nil {
+		return fmt.Errorf("failed to clear OTP secret: %w", err)
+	}
+
+	updateSetting := bson.M{
+		"is_mfa_enabled": false,
+	}
+	err = ms.settingRepo.UpdateByUserID(ctx, userID, updateSetting)
 	if err != nil {
 		return fmt.Errorf("failed to disable MFA: %w", err)
 	}
+
 	return nil
 }
 

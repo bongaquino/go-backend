@@ -1,7 +1,6 @@
 package provider
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -13,8 +12,9 @@ import (
 
 // IPFSProvider handles interactions with the IPFS API
 type IPFSProvider struct {
-	baseURL string
-	client  *http.Client
+	nodeURL     string
+	downloadURL string
+	client      *http.Client
 }
 
 // NewIPFSProvider initializes a new IPFSProvider
@@ -22,7 +22,8 @@ func NewIPFSProvider() *IPFSProvider {
 	ipfsConfig := config.LoadIPFSConfig()
 
 	return &IPFSProvider{
-		baseURL: ipfsConfig.IpfsNodeURL,
+		nodeURL:     ipfsConfig.IPFSNodeURL,
+		downloadURL: ipfsConfig.IPFSDownloadURL,
 		client: &http.Client{
 			Timeout: 0,
 		},
@@ -31,7 +32,7 @@ func NewIPFSProvider() *IPFSProvider {
 
 // GetSwarmAddrsDetailed calls the IPFS API to get swarm addresses and returns the number of peers and their details
 func (p *IPFSProvider) GetSwarmAddrsDetailed() (int, map[string][]string, error) {
-	url := fmt.Sprintf("%s/api/v0/swarm/addrs", p.baseURL)
+	url := fmt.Sprintf("%s/api/v0/swarm/addrs", p.nodeURL)
 
 	// Make the HTTP request
 	resp, err := p.client.Post(url, "application/json", nil)
@@ -61,65 +62,132 @@ func (p *IPFSProvider) GetSwarmAddrsDetailed() (int, map[string][]string, error)
 // Pin uploads a file to IPFS and pins it
 func (p *IPFSProvider) Pin(filename string, file io.Reader) (string, error) {
 	// Build the URL for the IPFS API
-	url := fmt.Sprintf("%s/api/v0/add?pin=true", p.baseURL)
+	url := fmt.Sprintf("%s/api/v0/add?pin=true", p.nodeURL)
 
-	// Create a multipart form request
-	var body bytes.Buffer
-	writer := multipart.NewWriter(&body)
+	// Use io.Pipe to stream the multipart form data
+	pr, pw := io.Pipe()
+	writer := multipart.NewWriter(pw)
 
-	// Create a form file field
-	part, err := writer.CreateFormFile("file", filepath.Base(filename))
-	if err != nil {
-		return "", fmt.Errorf("failed to create form file: %w", err)
-	}
+	errChan := make(chan error, 1)
 
-	// Copy the file content to the form file field
-	if _, err = io.Copy(part, file); err != nil {
-		return "", fmt.Errorf("failed to copy file content: %w", err)
-	}
-
-	// Close the multipart writer to finalize the request
-	if err := writer.Close(); err != nil {
-		return "", fmt.Errorf("failed to close multipart writer: %w", err)
-	}
+	// Write the multipart form in a goroutine
+	go func() {
+		defer pw.Close()
+		defer writer.Close()
+		part, err := writer.CreateFormFile("file", filepath.Base(filename))
+		if err != nil {
+			pw.CloseWithError(err)
+			errChan <- fmt.Errorf("failed to create form file: %w", err)
+			return
+		}
+		_, err = io.Copy(part, file)
+		if err != nil {
+			pw.CloseWithError(err)
+			errChan <- fmt.Errorf("failed to copy file content: %w", err)
+			return
+		}
+		errChan <- nil
+	}()
 
 	// Create the HTTP request
-	req, err := http.NewRequest("POST", url, &body)
+	req, err := http.NewRequest("POST", url, pr)
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %w", err)
 	}
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
-	// Set the timeout for the request
+	// Send the request
 	resp, err := p.client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("failed to call IPFS API: %w", err)
 	}
 	defer resp.Body.Close()
 
+	if err := <-errChan; err != nil {
+		return "", err
+	}
+
 	// Check for non-200 status codes
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		body, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("unexpected status code: %d, body: %s", resp.StatusCode, string(body))
 	}
 
 	// Parse the response body
-	var result struct {
+	var apiResult struct {
 		Hash string `json:"Hash"`
 	}
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&apiResult); err != nil {
 		return "", fmt.Errorf("failed to decode response: %w", err)
 	}
 
-	// Check if the Hash field is empty
-	if result.Hash == "" {
+	if apiResult.Hash == "" {
 		return "", fmt.Errorf("empty hash in response")
 	}
 
-	// Return the IPFS hash of the pinned file
-	return result.Hash, nil
+	return apiResult.Hash, nil
 }
 
 // GetFileURL returns the public URL to access a pinned file using its IPFS hash
 func (p *IPFSProvider) GetFileURL(hash string) string {
-	return fmt.Sprintf("%s/ipfs/%s", p.baseURL, hash)
+	return fmt.Sprintf("%s/ipfs/%s", p.downloadURL, hash)
+}
+
+func (p *IPFSProvider) GetInternalNodeURL() string {
+	return p.nodeURL
+}
+
+func (p *IPFSProvider) Client() *http.Client {
+	return p.client
+}
+
+// ListFileChunks returns the list of chunk links for a given IPFS CID
+func (p *IPFSProvider) ListFileChunks(cid string) ([]map[string]any, error) {
+	url := fmt.Sprintf("%s/api/v0/ls?arg=%s", p.nodeURL, cid)
+
+	// Make the HTTP request
+	resp, err := p.client.Post(url, "application/json", nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to call IPFS /ls API: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Check for non-200 status codes
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("unexpected status code: %d, body: %s", resp.StatusCode, string(body))
+	}
+
+	// Decode the response
+	var result struct {
+		Objects []struct {
+			Hash  string `json:"Hash"`
+			Links []struct {
+				Name string `json:"Name"`
+				Hash string `json:"Hash"`
+				Size int64  `json:"Size"`
+				Type int    `json:"Type"` // 1 = dir, 2 = file
+			} `json:"Links"`
+		} `json:"Objects"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	if len(result.Objects) == 0 {
+		return nil, fmt.Errorf("no object data returned for CID: %s", cid)
+	}
+
+	// Convert Links to generic map output (for flexibility)
+	var chunks []map[string]any
+	for _, link := range result.Objects[0].Links {
+		chunks = append(chunks, map[string]any{
+			"name": link.Name,
+			"hash": link.Hash,
+			"size": link.Size,
+			"type": link.Type,
+		})
+	}
+
+	return chunks, nil
 }
