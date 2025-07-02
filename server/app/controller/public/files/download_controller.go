@@ -109,7 +109,7 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 	if isEncrypted {
 		passphrase := ctx.GetHeader("passphrase")
 		if passphrase == "" {
-			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "passphrase required for encrypted file", nil, nil)
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "passphrase is required for encrypted file", nil, nil)
 			return
 		}
 		keyBytes, err := helper.DeriveKey(passphrase, file.Salt)

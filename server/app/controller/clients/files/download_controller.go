@@ -72,13 +72,28 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 	isEncrypted := file.IsEncrypted
 	var aesGCM cipher.AEAD
 	var nonceBytes []byte
+
+	// Decrypt the salt if the file is encrypted
+	decryptedSalt, err := helper.Decrypt(file.Salt)
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to decrypt salt", nil, nil)
+		return
+	}
+
+	// Decrypt the nonce if the file is encrypted
+	decryptedNonce, err := helper.Decrypt(file.Nonce)
+	if err != nil {
+		helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to decrypt nonce", nil, nil)
+		return
+	}
+
 	if isEncrypted {
 		passphrase := ctx.GetHeader("passphrase")
 		if passphrase == "" {
-			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "passphrase required for encrypted file", nil, nil)
+			helper.FormatResponse(ctx, "error", http.StatusBadRequest, "passphrase is required for encrypted file", nil, nil)
 			return
 		}
-		keyBytes, err := helper.DeriveKey(passphrase, file.Salt)
+		keyBytes, err := helper.DeriveKey(passphrase, decryptedSalt)
 		if err != nil {
 			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to derive key", nil, nil)
 			return
@@ -88,7 +103,7 @@ func (dc *DownloadController) Handle(ctx *gin.Context) {
 			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to create AES-GCM cipher", nil, nil)
 			return
 		}
-		nonceBytes, err = base64.URLEncoding.WithPadding(base64.NoPadding).DecodeString(file.Nonce)
+		nonceBytes, err = base64.URLEncoding.WithPadding(base64.NoPadding).DecodeString(decryptedNonce)
 		if err != nil {
 			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "invalid nonce encoding", nil, nil)
 			return

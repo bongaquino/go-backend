@@ -260,9 +260,20 @@ func (uc *UploadController) Handle(ctx *gin.Context) {
 		IsDeleted:   false,
 	}
 	if isEncrypted {
+		// Encrypt salt and nonce
+		encryptedSalt, err := helper.Encrypt(salt)
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to encrypt salt", nil, nil)
+			return
+		}
+		encryptedNonce, err := helper.Encrypt(nonce)
+		if err != nil {
+			helper.FormatResponse(ctx, "error", http.StatusInternalServerError, "failed to encrypt nonce", nil, nil)
+			return
+		}
 		newFile.IsEncrypted = true
-		newFile.Salt = salt
-		newFile.Nonce = nonce
+		newFile.Salt = encryptedSalt
+		newFile.Nonce = encryptedNonce
 	}
 
 	// Save the file metadata to the database
