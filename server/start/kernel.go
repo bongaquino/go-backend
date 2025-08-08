@@ -25,6 +25,9 @@ func InitializeKernel() {
 	// Initialize the Gin engine
 	engine := gin.Default()
 
+	// Set MaxMultipartMemory to 2GB for large file uploads
+	engine.MaxMultipartMemory = 2 << 30 // 2GB
+
 	// Initialize IoC container
 	container := ioc.NewContainer()
 

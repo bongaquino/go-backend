@@ -42,6 +42,7 @@ jobs:
         echo "POSTMARK_API_KEY=$POSTMARK_API_KEY" >> $GITHUB_WORKSPACE/server/.env
         echo "POSTMARK_FROM=$POSTMARK_FROM" >> $GITHUB_WORKSPACE/server/.env
         echo "IPFS_NODE_URL=$IPFS_NODE_URL" >> $GITHUB_WORKSPACE/server/.env
+        echo "IPFS_DOWNLOAD_URL=$IPFS_DOWNLOAD_URL" >> $GITHUB_WORKSPACE/server/.env
       env:
         APP_NAME: ${{ vars.APP_NAME }}
         APP_VERSION: ${{ vars.APP_VERSION }}
@@ -64,6 +65,7 @@ jobs:
         POSTMARK_API_KEY: ${{ vars.POSTMARK_API_KEY }}
         POSTMARK_FROM: ${{ vars.POSTMARK_FROM }}
         IPFS_NODE_URL: ${{ vars.IPFS_NODE_URL }}
+        IPFS_DOWNLOAD_URL: ${{ vars.IPFS_DOWNLOAD_URL }}
         
     - name: Build and push Docker image
       uses: docker/build-push-action@v6
