@@ -124,7 +124,7 @@ JWT_EXPIRY=24h
 
 # Email Service
 POSTMARK_API_KEY=your-postmark-key
-FROM_EMAIL=noreply@bongaquino.com
+FROM_EMAIL=noreply@example.com
 
 # IPFS Integration
 IPFS_HOST=localhost
@@ -331,7 +331,7 @@ mongodump --db bongaquino_db
 - **📖 API Documentation**: [Swagger UI](http://localhost:3000/swagger)
 - **🐛 Bug Reports**: [GitHub Issues](https://github.com/bongaquino/go-backend/issues)
 - **💬 Support**: [Discord Community](https://discord.gg/bongaquino)
-- **📧 Contact**: bong@bongaquino.com
+- **📧 Contact**: admin@example.com
 
 ---
 
