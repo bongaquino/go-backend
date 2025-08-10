@@ -2,7 +2,7 @@ package helper
 
 import (
 	"fmt"
-	"koneksi/server/config"
+	"bongaquino/server/config"
 
 	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/totp"

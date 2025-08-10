@@ -3,8 +3,8 @@ package middleware
 import (
 	"net/http"
 
-	"koneksi/server/app/helper"
-	"koneksi/server/app/repository"
+	"bongaquino/server/app/helper"
+	"bongaquino/server/app/repository"
 
 	"github.com/gin-gonic/gin"
 )

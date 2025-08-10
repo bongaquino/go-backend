@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"koneksi/server/core/env"
+	"bongaquino/server/core/env"
 )
 
 // MongoConfig holds the MongoDB configuration

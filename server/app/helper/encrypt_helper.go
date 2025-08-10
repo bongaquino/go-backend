@@ -8,7 +8,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"io"
-	"koneksi/server/config"
+	"bongaquino/server/config"
 
 	"golang.org/x/crypto/pbkdf2"
 )

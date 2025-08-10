@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"koneksi/server/app/helper"
-	"koneksi/server/app/repository"
+	"bongaquino/server/app/helper"
+	"bongaquino/server/app/repository"
 
 	"slices"
 

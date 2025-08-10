@@ -3,8 +3,8 @@ package tokens
 import (
 	"net/http"
 
-	"koneksi/server/app/helper"
-	"koneksi/server/app/service"
+	"bongaquino/server/app/helper"
+	"bongaquino/server/app/service"
 
 	"github.com/gin-gonic/gin"
 )

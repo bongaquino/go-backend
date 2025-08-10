@@ -1,6 +1,6 @@
 {
-  "name": "koneksi-server",
-  "api_id": "koneksi-server",
+  "name": "bongaquino-server",
+  "api_id": "bongaquino-server",
   "org_id": "default",
   "use_keyless": true,
   "proxy": {

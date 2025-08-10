@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
-	"koneksi/server/app/helper"
-	"koneksi/server/app/model"
-	"koneksi/server/app/provider"
-	"koneksi/server/core/logger"
+	"bongaquino/server/app/helper"
+	"bongaquino/server/app/model"
+	"bongaquino/server/app/provider"
+	"bongaquino/server/core/logger"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"

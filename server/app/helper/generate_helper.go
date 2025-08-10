@@ -7,7 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
-	"koneksi/server/config"
+	"bongaquino/server/config"
 	"strings"
 )
 

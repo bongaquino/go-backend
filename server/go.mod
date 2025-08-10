@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 module bongaquino/server
+=======
+module koneksi/server
+>>>>>>> 1348c53f1e2e1dd6f94dc4c583ed02b1e28350ee
 
 go 1.22.3
 

@@ -2,10 +2,10 @@ package service
 
 import (
 	"context"
-	"koneksi/server/app/dto"
-	"koneksi/server/app/helper"
-	"koneksi/server/app/model"
-	"koneksi/server/app/repository"
+	"bongaquino/server/app/dto"
+	"bongaquino/server/app/helper"
+	"bongaquino/server/app/model"
+	"bongaquino/server/app/repository"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )

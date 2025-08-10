@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strings"
 
-	"koneksi/server/app/helper"
-	"koneksi/server/app/provider"
+	"bongaquino/server/app/helper"
+	"bongaquino/server/app/provider"
 
 	"github.com/gin-gonic/gin"
 )

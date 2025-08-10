@@ -1,6 +1,6 @@
 package config
 
-import "koneksi/server/core/env"
+import "bongaquino/server/core/env"
 
 // AppConfig holds the application configuration
 type AppConfig struct {

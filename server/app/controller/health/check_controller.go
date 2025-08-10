@@ -3,8 +3,8 @@ package health
 import (
 	"net/http"
 
-	"koneksi/server/app/helper"
-	"koneksi/server/config"
+	"bongaquino/server/app/helper"
+	"bongaquino/server/config"
 
 	"github.com/gin-gonic/gin"
 )

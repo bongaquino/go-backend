@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"time"
 
-	"koneksi/server/app/helper"
-	"koneksi/server/app/provider"
-	"koneksi/server/app/repository"
+	"bongaquino/server/app/helper"
+	"bongaquino/server/app/provider"
+	"bongaquino/server/app/repository"
 )
 
 type TokenService struct {

@@ -13,7 +13,7 @@ services:
       - mongo-data:/data/db
       - ./docker/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
     networks:
-      - koneksi-network
+      - bongaquino-network
 
   # Mongo Express (Web UI for MongoDB)
   mongo-express:
@@ -27,7 +27,7 @@ services:
     ports:
       - "8082:8081"
     networks:
-      - koneksi-network
+      - bongaquino-network
 
   # Redis
   redis:
@@ -40,7 +40,7 @@ services:
     volumes:
       - redis-data:/data
     networks:
-      - koneksi-network
+      - bongaquino-network
 
   # Redis Commander (Web UI for Redis)
   redis-commander:
@@ -52,7 +52,7 @@ services:
     ports:
       - "8083:8081"
     networks:
-      - koneksi-network
+      - bongaquino-network
 
   # ===================================================================
   # ELK STACK DISABLED - All ELK services removed from staging
@@ -80,7 +80,7 @@ services:
   #   ports:
   #     - "9200:9200"
   #   networks:
-  #     - koneksi-network
+  #     - bongaquino-network
 
   # # Logstash (ELK Stack) - DISABLED
   # logstash:
@@ -95,7 +95,7 @@ services:
   #   ports:
   #     - "12201:12201/udp"
   #   networks:
-  #     - koneksi-network
+  #     - bongaquino-network
 
   # # Kibana (ELK Stack) - DISABLED
   # kibana:
@@ -107,12 +107,12 @@ services:
   #     - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
   #     - ELASTICSEARCH_USERNAME=kibana_system
   #     - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
-  #     - SERVER_NAME=elk-staging.koneksi.co.kr
-  #     - SERVER_PUBLICBASEURL=https://elk-staging.koneksi.co.kr
+  #     - SERVER_NAME=elk-staging.bongaquino.co.kr
+  #     - SERVER_PUBLICBASEURL=https://elk-staging.bongaquino.co.kr
   #   depends_on:
   #     - elasticsearch
   #   networks:
-  #     - koneksi-network
+  #     - bongaquino-network
 
   # Gateway
   gateway:
@@ -134,11 +134,11 @@ services:
     depends_on:
       - redis
     networks:
-      - koneksi-network
+      - bongaquino-network
 
   # Server
   server:
-    image: koneksi/server:latest
+    image: bongaquino/server:latest
     build:
       context: server
       dockerfile: Dockerfile
@@ -151,7 +151,7 @@ services:
     depends_on:
       - mongo
     networks:
-      - koneksi-network
+      - bongaquino-network
     ports:
       - "3000:3000"
 
@@ -161,5 +161,5 @@ volumes:
   # elastic-data:  # DISABLED - ELK stack removed
 
 networks:
-  koneksi-network:
+  bongaquino-network:
     external: true

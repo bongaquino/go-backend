@@ -2,7 +2,7 @@ package env
 
 import (
 	"fmt"
-	"koneksi/server/core/logger"
+	"bongaquino/server/core/logger"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -11,16 +11,16 @@ import (
 
 // Env holds the environment variables
 type Env struct {
-	AppName               string `envconfig:"APP_NAME" default:"Koneksi"`
+	AppName               string `envconfig:"APP_NAME" default:"bongaquino"`
 	AppVersion            string `envconfig:"APP_VERSION" default:"1.0.0"`
 	AppKey                string `envconfig:"APP_KEY" required:"true"`
 	Port                  int    `envconfig:"PORT" default:"3000"`
 	Mode                  string `envconfig:"MODE" default:"debug"`
 	MongoHost             string `envconfig:"MONGO_HOST" default:"mongo"`
 	MongoPort             int    `envconfig:"MONGO_PORT" default:"27017"`
-	MongoUser             string `envconfig:"MONGO_USER" default:"koneksi_user"`
-	MongoPassword         string `envconfig:"MONGO_PASSWORD" default:"koneksi_password"`
-	MongoDatabase         string `envconfig:"MONGO_DATABASE" default:"koneksi"`
+	MongoUser             string `envconfig:"MONGO_USER" default:"bongaquino_user"`
+	MongoPassword         string `envconfig:"MONGO_PASSWORD" default:"bongaquino_password"`
+	MongoDatabase         string `envconfig:"MONGO_DATABASE" default:"bongaquino"`
 	MongoConnectionString string `envconfig:"MONGO_CONNECTION_STRING" default:""`
 	RedisHost             string `envconfig:"REDIS_HOST" default:"redis"`
 	RedisPort             int    `envconfig:"REDIS_PORT" default:"6379"`

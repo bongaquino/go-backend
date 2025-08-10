@@ -1,7 +1,7 @@
 package config
 
 import (
-	"koneksi/server/core/env"
+	"bongaquino/server/core/env"
 	"time"
 )
 
