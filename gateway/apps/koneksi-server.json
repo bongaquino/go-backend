@@ -1,0 +1,19 @@
+{
+  "name": "koneksi-server",
+  "api_id": "koneksi-server",
+  "org_id": "default",
+  "use_keyless": true,
+  "proxy": {
+    "listen_path": "/api",
+    "target_url": "http://server:3000",
+    "strip_listen_path": true
+  },
+  "version_data": {
+    "not_versioned": true,
+    "versions": {
+      "default": {
+        "name": "default"
+      }
+    }
+  }
+}
