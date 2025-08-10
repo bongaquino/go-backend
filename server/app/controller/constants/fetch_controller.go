@@ -3,9 +3,9 @@ package constants
 import (
 	"net/http"
 
-	"koneksi/server/app/helper"
-	"koneksi/server/app/service"
-	"koneksi/server/config"
+	"bongaquino/server/app/helper"
+	"bongaquino/server/app/service"
+	"bongaquino/server/config"
 
 	"github.com/gin-gonic/gin"
 )

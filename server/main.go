@@ -1,7 +1,7 @@
 package main
 
 import (
-	"koneksi/server/start"
+	"bongaquino/server/start"
 )
 
 func main() {

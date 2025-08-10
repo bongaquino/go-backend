@@ -3,9 +3,9 @@ package start
 import (
 	"fmt"
 
-	ioc "koneksi/server/core/container"
-	"koneksi/server/core/env"
-	"koneksi/server/core/logger"
+	ioc "bongaquino/server/core/container"
+	"bongaquino/server/core/env"
+	"bongaquino/server/core/logger"
 
 	"github.com/gin-gonic/gin"
 )

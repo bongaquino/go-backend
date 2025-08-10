@@ -3,7 +3,7 @@ package service
 import (
 	"fmt"
 	"io"
-	"koneksi/server/app/provider"
+	"bongaquino/server/app/provider"
 	"net/http"
 )
 

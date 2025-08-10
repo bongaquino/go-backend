@@ -1,6 +1,6 @@
 package config
 
-import "koneksi/server/core/env"
+import "bongaquino/server/core/env"
 
 // PostmarkConfig holds the Postmark configuration
 type PostmarkConfig struct {

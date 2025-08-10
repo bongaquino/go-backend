@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"koneksi/server/app/helper"
-	"koneksi/server/app/repository"
+	"bongaquino/server/app/helper"
+	"bongaquino/server/app/repository"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"

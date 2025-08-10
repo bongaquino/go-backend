@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"koneksi/server/app/helper"
-	"koneksi/server/app/provider"
-	"koneksi/server/app/repository"
+	"bongaquino/server/app/helper"
+	"bongaquino/server/app/provider"
+	"bongaquino/server/app/repository"
 
 	"go.mongodb.org/mongo-driver/bson"
 )

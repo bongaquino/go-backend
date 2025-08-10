@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"time"
 
-	"koneksi/server/config"
-	"koneksi/server/core/logger"
+	"bongaquino/server/config"
+	"bongaquino/server/core/logger"
 
 	"github.com/go-redis/redis/v8"
 )

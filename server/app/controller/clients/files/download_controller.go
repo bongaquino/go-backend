@@ -8,8 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
-	"koneksi/server/app/helper"
-	"koneksi/server/app/service"
+	"bongaquino/server/app/helper"
+	"bongaquino/server/app/service"
 )
 
 type DownloadController struct {

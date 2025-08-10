@@ -1,6 +1,6 @@
 package config
 
-import "koneksi/server/core/env"
+import "bongaquino/server/core/env"
 
 // JWTConfig holds the JWT configuration
 type JWTConfig struct {

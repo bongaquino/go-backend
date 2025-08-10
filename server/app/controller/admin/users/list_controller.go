@@ -1,8 +1,8 @@
 package users
 
 import (
-	"koneksi/server/app/helper"
-	"koneksi/server/app/service"
+	"bongaquino/server/app/helper"
+	"bongaquino/server/app/service"
 	"net/http"
 	"strconv"
 

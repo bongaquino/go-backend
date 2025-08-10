@@ -1,10 +1,10 @@
 package directories
 
 import (
-	"koneksi/server/app/dto"
-	"koneksi/server/app/helper"
-	"koneksi/server/app/model"
-	"koneksi/server/app/service"
+	"bongaquino/server/app/dto"
+	"bongaquino/server/app/helper"
+	"bongaquino/server/app/model"
+	"bongaquino/server/app/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

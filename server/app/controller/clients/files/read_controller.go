@@ -1,9 +1,9 @@
 package files
 
 import (
-	"koneksi/server/app/helper"
-	"koneksi/server/app/service"
-	"koneksi/server/config"
+	"bongaquino/server/app/helper"
+	"bongaquino/server/app/service"
+	"bongaquino/server/config"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

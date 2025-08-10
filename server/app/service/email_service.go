@@ -1,6 +1,6 @@
 package service
 
-import "koneksi/server/app/provider"
+import "bongaquino/server/app/provider"
 
 type EmailService struct {
 	postmarkProvider *provider.PostmarkProvider
@@ -13,8 +13,8 @@ func NewEmailService(postmarkProvider *provider.PostmarkProvider) *EmailService 
 }
 
 func (es *EmailService) SendWelcomeEmail(to string) error {
-	subject := "Welcome to Koneksi!"
-	body := "<h1>Welcome to Koneksi</h1><p>Thank you for joining us!</p>"
+	subject := "Welcome to bongaquino!"
+	body := "<h1>Welcome to bongaquino</h1><p>Thank you for joining us!</p>"
 	return es.postmarkProvider.SendEmail(to, subject, body)
 }
 

@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"koneksi/server/config"
-	"koneksi/server/core/logger"
+	"bongaquino/server/config"
+	"bongaquino/server/core/logger"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"

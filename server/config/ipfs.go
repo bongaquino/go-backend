@@ -1,6 +1,6 @@
 package config
 
-import "koneksi/server/core/env"
+import "bongaquino/server/core/env"
 
 // IPFSConfig holds the IPFS configuration
 type IPFSConfig struct {

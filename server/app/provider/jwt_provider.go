@@ -5,8 +5,8 @@ import (
 	"errors"
 	"time"
 
-	"koneksi/server/config"
-	"koneksi/server/core/logger"
+	"bongaquino/server/config"
+	"bongaquino/server/core/logger"
 
 	"github.com/golang-jwt/jwt/v4"
 )

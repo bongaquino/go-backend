@@ -3,7 +3,7 @@ package provider
 import (
 	"log"
 
-	"koneksi/server/config"
+	"bongaquino/server/config"
 
 	"github.com/keighl/postmark"
 )

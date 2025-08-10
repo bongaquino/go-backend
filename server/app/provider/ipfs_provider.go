@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"koneksi/server/config"
+	"bongaquino/server/config"
 	"mime/multipart"
 	"net/http"
 	"path/filepath"
