@@ -107,8 +107,8 @@ services:
   #     - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
   #     - ELASTICSEARCH_USERNAME=kibana_system
   #     - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
-  #     - SERVER_NAME=elk-staging.bongaquino.co.kr
-  #     - SERVER_PUBLICBASEURL=https://elk-staging.bongaquino.co.kr
+  #     - SERVER_NAME=elk-staging.bongaquino.com
+  #     - SERVER_PUBLICBASEURL=https://elk-staging.bongaquino.com
   #   depends_on:
   #     - elasticsearch
   #   networks:
